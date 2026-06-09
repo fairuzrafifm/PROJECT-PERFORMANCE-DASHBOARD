@@ -366,7 +366,7 @@ function doLogout() {
   selectedRoleLogin = null;
   var as = $('authScreen');
   if (as) {
-    as.style.cssText = 'position:fixed;inset:0;background:linear-gradient(135deg,#060a14 0%,#0a0f1e 50%,#0d1525 100%);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column';
+    as.style.cssText = 'position:fixed;inset:0;background:linear-gradient(135deg,#12162b 0%,#171c33 50%,#1c2240 100%);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column';
   }
 }
 
@@ -456,7 +456,7 @@ async function initAuth() {
   var ok = await checkSession();
   if (!ok) {
     var as = $('authScreen');
-    if (as) as.style.cssText = 'position:fixed;inset:0;background:linear-gradient(135deg,#060a14 0%,#0a0f1e 50%,#0d1525 100%);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column';
+    if (as) as.style.cssText = 'position:fixed;inset:0;background:linear-gradient(135deg,#12162b 0%,#171c33 50%,#1c2240 100%);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column';
   } else {
     // Session valid — startup akan dipanggil oleh checkSession → applyRole → _loginSuccess chain
     if (typeof autoLoadOnStart === 'function') autoLoadOnStart();
@@ -550,8 +550,8 @@ async function initAuth() {
             <option value="viewer">Viewer — hanya lihat</option>
           </select>
         </div>
-        <div id="_rErr" style="display:none;background:rgba(239,68,68,.1);border:1px solid var(--rd);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--rd);margin-bottom:10px"></div>
-        <div id="_rOk"  style="display:none;background:rgba(16,185,129,.1);border:1px solid var(--gn);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--gn);margin-bottom:10px"></div>
+        <div id="_rErr" style="display:none;background:rgba(244,112,122,.1);border:1px solid var(--rd);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--rd);margin-bottom:10px"></div>
+        <div id="_rOk"  style="display:none;background:rgba(61,220,151,.1);border:1px solid var(--gn);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--gn);margin-bottom:10px"></div>
         <div style="display:flex;gap:8px">
           <button id="_rBtn" class="btn bp" style="flex:1" onclick="_patchRegister()">Daftar →</button>
           <button class="btn" onclick="document.getElementById('_regModal').style.display='none'">Batal</button>
@@ -626,12 +626,12 @@ async function initAuth() {
               <h3 style="font-family:var(--fd);letter-spacing:2px;font-size:16px;margin:0">KELOLA USER</h3>
               <div style="font-size:11px;color:var(--mt);margin-top:2px">Manajemen akses & role pengguna</div>
             </div>
-            <button style="background:transparent;border:1px solid var(--bd);border-radius:8px;color:var(--mt);width:30px;height:30px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='var(--sf2)';this.style.color='var(--tx)'" onmouseout="this.style.background='transparent';this.style.color='var(--mt)'" onclick="document.getElementById('_userPanel').style.display='none'">✕</button>
+            <button style="background:transparent;border:1px solid var(--bd);border-radius:8px;color:var(--mt);width:30px;height:30px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s" onmouseover="this.style.background='var(--sf2)';this.style.color='var(--tx)'" onmouseout="this.style.background='transparent';this.style.color='var(--mt)'" onclick="document.getElementById('_userPanel').style.display='none'">${ic('x',14)}</button>
           </div>
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mt);margin-bottom:10px;display:flex;align-items:center;gap:6px"><span style="color:var(--yw)">⏳</span> Menunggu Persetujuan</div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mt);margin-bottom:10px;display:flex;align-items:center;gap:6px"><span style="color:var(--yw);display:inline-flex">${ic('clock',13)}</span> Menunggu Persetujuan</div>
           <div id="_pendingList" style="margin-bottom:18px">Memuat...</div>
           <div style="border-top:1px solid var(--bd);margin:16px 0"></div>
-          <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mt);margin-bottom:10px;display:flex;align-items:center;gap:6px"><span>👥</span> User Aktif</div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mt);margin-bottom:10px;display:flex;align-items:center;gap:6px"><span style="display:inline-flex">${ic('users',13)}</span> User Aktif</div>
           <div id="_activeList">Memuat...</div>
         </div>`;
       document.body.appendChild(m);
@@ -661,22 +661,22 @@ async function initAuth() {
             const name = (u.full_name && u.full_name !== '—') ? u.full_name : u.email.split('@')[0];
             const ini  = name.slice(0,2).toUpperCase();
             return `
-          <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
-            <div style="width:38px;height:38px;border-radius:50%;background:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0">${ini}</div>
+          <div style="background:rgba(245,196,82,.07);border:1px solid rgba(245,196,82,.2);border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+            <div style="width:38px;height:38px;border-radius:50%;background:#f5c452;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0">${ini}</div>
             <div style="flex:1;min-width:0">
               <div style="font-size:13px;font-weight:600;color:var(--tx)">${name}</div>
               <div style="font-size:11px;color:var(--mt)">${u.email} · minta: <span style="color:var(--bl);font-weight:600">${u.requested_role || 'editor'}</span></div>
             </div>
-            <button class="btn btn-sm" style="background:rgba(16,185,129,.15);color:var(--gn);border:1px solid rgba(16,185,129,.3);font-size:11px;padding:4px 10px;border-radius:6px" onclick="_patchApprove('${u.id}','${u.requested_role||'editor'}')">✓ Setuju</button>
-            <button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:var(--rd);border:1px solid rgba(239,68,68,.25);font-size:11px;padding:4px 10px;border-radius:6px" onclick="_patchReject('${u.id}')">✕ Tolak</button>
+            <button class="btn btn-sm" style="background:rgba(124,140,240,.15);color:var(--bl);border:1px solid rgba(124,140,240,.3);font-size:11px;padding:4px 10px;border-radius:6px" onclick="_patchApprove('${u.id}','${u.requested_role||'editor'}')">${ic('check',13)} Setuju</button>
+            <button class="btn btn-sm" style="background:rgba(244,112,122,.1);color:var(--rd);border:1px solid rgba(244,112,122,.25);font-size:11px;padding:4px 10px;border-radius:6px" onclick="_patchReject('${u.id}')">${ic('x',13)} Tolak</button>
           </div>`;
           }).join('')
         : '<div style="font-size:12px;color:var(--mt);padding:6px 0">Tidak ada pendaftaran baru ✓</div>';
 
       const _roleConf = {
         admin:  { bg:'rgba(139,92,246,.18)', color:'var(--pu)', label:'Admin',  av:'#8b5cf6' },
-        editor: { bg:'rgba(59,130,246,.18)',  color:'var(--bl)', label:'Editor', av:'#3b82f6' },
-        viewer: { bg:'rgba(16,185,129,.18)', color:'var(--gn)', label:'Viewer', av:'#10b981' }
+        editor: { bg:'rgba(124,140,240,.18)',  color:'var(--bl)', label:'Editor', av:'#7c8cf0' },
+        viewer: { bg:'rgba(61,220,151,.18)', color:'var(--gn)', label:'Viewer', av:'#3ddc97' }
       };
       aEl.innerHTML = (active && active.length)
         ? active.map(u => {
@@ -691,7 +691,7 @@ async function initAuth() {
               <div style="font-size:11px;color:var(--mt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.email}</div>
             </div>
             <span style="font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;flex-shrink:0;letter-spacing:.5px;text-transform:uppercase;background:${rc.bg};color:${rc.color}">${rc.label}</span>
-            ${u.role==='editor' ? `<button class="btn btn-sm" style="background:rgba(59,130,246,.12);color:var(--bl);border:1px solid rgba(59,130,246,.3);font-size:11px;padding:4px 10px;border-radius:6px;flex-shrink:0;cursor:pointer" onclick="_patchAssignProjects('${u.id}','${(u.email||'').replace(/'/g,'')}')">Proyek</button>` : ''}
+            ${u.role==='editor' ? `<button class="btn btn-sm" style="background:rgba(124,140,240,.12);color:var(--bl);border:1px solid rgba(124,140,240,.3);font-size:11px;padding:4px 10px;border-radius:6px;flex-shrink:0;cursor:pointer" onclick="_patchAssignProjects('${u.id}','${(u.email||'').replace(/'/g,'')}')">Proyek</button>` : ''}
             <select style="font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid var(--bd);background:var(--ib);color:var(--tx);flex-shrink:0;cursor:pointer;outline:none;transition:border-color .15s" onchange="_patchChangeRole('${u.id}',this.value)" onfocus="this.style.borderColor='var(--bl)'" onblur="this.style.borderColor='var(--bd)'">
               <option value="admin"  ${u.role==='admin' ?'selected':''}>Admin</option>
               <option value="editor" ${u.role==='editor'?'selected':''}>Editor</option>
@@ -743,7 +743,7 @@ async function initAuth() {
       <div style="background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:22px 24px;width:460px;max-width:94vw;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.4)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
           <h3 style="font-family:var(--fd);letter-spacing:1.5px;font-size:15px;margin:0">AKSES PROYEK</h3>
-          <button style="background:transparent;border:1px solid var(--bd);border-radius:8px;color:var(--mt);width:28px;height:28px;cursor:pointer" onclick="document.getElementById('_assignPanel').style.display='none'">✕</button>
+          <button style="background:transparent;border:1px solid var(--bd);border-radius:8px;color:var(--mt);width:28px;height:28px;cursor:pointer" onclick="document.getElementById('_assignPanel').style.display='none'">${ic('x',14)}</button>
         </div>
         <div style="font-size:11px;color:var(--mt);margin-bottom:14px">Proyek yang boleh diedit oleh <span style="color:var(--bl);font-weight:600">${email}</span></div>
         <div id="_assignList" style="flex:1;overflow-y:auto;margin-bottom:14px;min-height:60px">Memuat...</div>
@@ -836,7 +836,7 @@ async function initAuth() {
             nl.prepend(ni);
           }
         }
-        ni.innerHTML = `<span class="ni-ico">👤</span>
+        ni.innerHTML = `<span class="ni-ico">${ic('user',13)}</span>
           <div class="ni-body">
             <div class="ni-title">${count} pendaftaran menunggu</div>
             <div class="ni-sub">Klik untuk kelola user</div>
@@ -911,7 +911,7 @@ async function initAuth() {
     const btn = document.createElement('button');
     btn.id = '_btnUsers';
     btn.className = 'btn btn-sm bgs';
-    btn.innerHTML = '👥 Users';
+    btn.innerHTML = ic('users',13)+' Users';
     btn.onclick = showUserPanel;
     hr.prepend(btn);
   }
@@ -937,8 +937,10 @@ async function initAuth() {
       sb.auth.getUser().then(({ data }) => {
         if (data?.user) {
           _patchUserId = data.user.id;
+          window._meEmail = data.user.email || '';
+          window._meName = (data.user.email || '').split('@')[0];
           sb.from('user_profiles').select('full_name,email').eq('id', _patchUserId).maybeSingle()
-            .then(({ data: p }) => { if (p) _patchUserName = p.full_name || p.email; });
+            .then(({ data: p }) => { if (p) { _patchUserName = p.full_name || p.email; window._meName = _patchUserName; } });
         }
       });
     }
@@ -1014,8 +1016,8 @@ async function initAuth() {
     el.querySelectorAll('._lockBadge').forEach(b => b.remove());
     const badge = document.createElement('span');
     badge.className = '_lockBadge';
-    badge.textContent = '🔒 ' + (lockedByName || 'Dikunci');
-    badge.style.cssText = 'font-size:9px;color:var(--rd);background:rgba(239,68,68,.1);' +
+    badge.innerHTML = ic('lock',12)+' ' + (lockedByName || 'Dikunci');
+    badge.style.cssText = 'font-size:9px;color:var(--rd);background:rgba(244,112,122,.1);' +
       'padding:1px 6px;border-radius:4px;margin-left:6px;flex-shrink:0';
     el.appendChild(badge);
   };

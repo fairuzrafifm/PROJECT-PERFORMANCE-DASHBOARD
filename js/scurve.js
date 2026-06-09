@@ -57,7 +57,7 @@ function renderSCurve(){
 function drawSCurveChart(weeks, proj) {
       if (!weeks || !weeks.length) {
         var sc = document.getElementById('scChart');
-        if (sc) sc.innerHTML = '<div style="text-align:center;color:var(--mt);padding:40px;font-size:12px">Belum ada data — klik ＋ Input Minggu Ini untuk mulai</div>';
+        if (sc) sc.innerHTML = '<div style="text-align:center;color:var(--mt);padding:40px;font-size:12px">Belum ada data — klik + Input Minggu Ini untuk mulai</div>';
         return;
       }
       if (typeof Chart === 'undefined') {
@@ -67,10 +67,10 @@ function drawSCurveChart(weeks, proj) {
         return;
       }
       var light = document.documentElement.classList.contains('light');
-      var BL = '#3b82f6', OR = '#f97316', BLLT = '#93c5fd', ORLT = '#fdba74';
-      var GRID = light ? 'rgba(0,0,0,.05)' : 'rgba(255,255,255,.05)';
-      var TICK = light ? '#94a3b8' : '#64748b';
-      var TTBG = light ? '#1e293b' : '#0f172a';
+      var BL = '#7c8cf0', OR = '#3ddc97', BLLT = '#a9b4f5', ORLT = '#7eecc0';
+      var GRID = light ? 'rgba(20,30,70,.06)' : 'rgba(140,150,200,.10)';
+      var TICK = light ? '#697296' : '#8b93bd';
+      var TTBG = light ? '#1f2540' : '#1f2540';
       var labels    = weeks.map(function(w){ return 'W'+String(w.week).padStart(2,'0'); });
       var wPlanData = weeks.map(function(w){ return +(+w.wPlan||0).toFixed(2); });
       var wActData  = weeks.map(function(w){ return +(+w.wAct||0).toFixed(2); });
@@ -83,8 +83,8 @@ function drawSCurveChart(weeks, proj) {
       if (!scEl) return;
       var mkLeg = function(col,dash,lbl){
         var s=dash
-          ?'<svg width="22" height="12" style="vertical-align:middle"><line x1="0" y1="6" x2="22" y2="6" stroke="'+col+'" stroke-width="2" stroke-dasharray="5,3"/><circle cx="11" cy="6" r="3" fill="'+col+'"/></svg>'
-          :'<svg width="22" height="12" style="vertical-align:middle"><line x1="0" y1="6" x2="22" y2="6" stroke="'+col+'" stroke-width="2"/><circle cx="11" cy="6" r="3" fill="'+col+'"/></svg>';
+          ?'<svg width="22" height="12" style="vertical-align:middle"><line x1="0" y1="6" x2="22" y2="6" stroke="'+col+'" stroke-width="1.8" stroke-dasharray="5,3"/><circle cx="11" cy="6" r="2.5" fill="'+col+'"/></svg>'
+          :'<svg width="22" height="12" style="vertical-align:middle"><line x1="0" y1="6" x2="22" y2="6" stroke="'+col+'" stroke-width="1.8"/><circle cx="11" cy="6" r="2.5" fill="'+col+'"/></svg>';
         return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;color:'+TICK+';background:'+(light?'#f1f5f9':'rgba(255,255,255,.05)')+';padding:3px 10px;border-radius:20px;border:1px solid '+(light?'#e2e8f0':'rgba(255,255,255,.08)')+'">'+s+lbl+'</span>';
       };
       var mkBar = function(col,lbl){
@@ -101,16 +101,17 @@ function drawSCurveChart(weeks, proj) {
       setTimeout(function(){
         var ctx=document.getElementById('scCanvas'); if(!ctx)return;
         var grad=ctx.getContext('2d').createLinearGradient(0,0,0,360);
-        grad.addColorStop(0,BL+'30'); grad.addColorStop(1,BL+'00');
+        grad.addColorStop(0,BL+'22'); grad.addColorStop(1,BL+'00');
+        try{Chart.defaults.font.family="'DM Sans',sans-serif";}catch(e){}
         window._scChart=new Chart(ctx,{
           data:{labels:labels,datasets:[
-            {type:'bar',label:'W.Plan',data:wPlanData,backgroundColor:BLLT+'80',borderColor:BLLT,borderWidth:1,borderRadius:2,borderSkipped:'bottom',yAxisID:'yBar',order:4},
-            {type:'bar',label:'W.Actual',data:wActData,backgroundColor:OR+'99',borderColor:OR,borderWidth:1,borderRadius:2,borderSkipped:'bottom',yAxisID:'yBar',order:3},
-            {type:'line',label:'Cum. Plan',data:cPlanData,borderColor:BL,backgroundColor:grad,borderWidth:2.5,pointBackgroundColor:BL,pointRadius:3,pointHoverRadius:5,fill:true,tension:0.4,yAxisID:'yCum',order:2,clip:false},
-            {type:'line',label:'Cum. Actual',data:cActData,borderColor:OR,backgroundColor:'transparent',borderWidth:2.5,borderDash:[7,4],pointBackgroundColor:OR,pointRadius:3.5,pointHoverRadius:6,fill:false,tension:0.4,spanGaps:false,yAxisID:'yCum',order:1,clip:false},
+            {type:'bar',label:'W.Plan',data:wPlanData,backgroundColor:BLLT+'4D',borderWidth:0,borderRadius:2,borderSkipped:false,categoryPercentage:0.72,barPercentage:0.6,yAxisID:'yBar',order:4},
+            {type:'bar',label:'W.Actual',data:wActData,backgroundColor:OR+'66',borderWidth:0,borderRadius:2,borderSkipped:false,categoryPercentage:0.72,barPercentage:0.6,yAxisID:'yBar',order:3},
+            {type:'line',label:'Cum. Plan',data:cPlanData,borderColor:BL,backgroundColor:grad,borderWidth:1.8,pointRadius:0,pointHoverRadius:4,pointBackgroundColor:BL,pointBorderColor:BL,pointHitRadius:14,fill:true,tension:0.35,yAxisID:'yCum',order:2,clip:false},
+            {type:'line',label:'Cum. Actual',data:cActData,borderColor:OR,backgroundColor:'transparent',borderWidth:1.8,borderDash:[6,4],pointRadius:0,pointHoverRadius:4,pointBackgroundColor:OR,pointBorderColor:OR,pointHitRadius:14,fill:false,tension:0.35,spanGaps:false,yAxisID:'yCum',order:1,clip:false},
           ]},
           options:{
-            responsive:true,maintainAspectRatio:false,
+            responsive:true,maintainAspectRatio:false,animation:false,
             layout:{padding:{top:12,right:8}},
             interaction:{mode:'index',intersect:false},
             plugins:{
@@ -123,9 +124,9 @@ function drawSCurveChart(weeks, proj) {
               }
             },
             scales:{
-              x:{grid:{color:GRID,drawBorder:false},ticks:{color:TICK,font:{size:10},maxRotation:0,autoSkip:weeks.length>14},border:{display:false}},
+              x:{grid:{display:false},ticks:{color:TICK,font:{size:10},maxRotation:0,autoSkip:weeks.length>14},border:{display:false}},
               yBar:{type:'linear',position:'left',title:{display:true,text:'Weekly %',color:TICK,font:{size:9}},grid:{display:false},ticks:{color:TICK,font:{size:9},callback:function(v){return v+'%';}},border:{display:false},min:0,suggestedMax:Math.max.apply(null,wPlanData.concat(wActData).filter(Boolean).concat([8]))*1.3},
-              yCum:{type:'linear',position:'right',title:{display:true,text:'Kumulatif %',color:TICK,font:{size:9}},grid:{color:GRID,drawBorder:false},ticks:{color:TICK,font:{size:9},callback:function(v){return v>100?'':v+'%';}},border:{display:false},min:0,max:105}
+              yCum:{type:'linear',position:'right',title:{display:true,text:'Kumulatif %',color:TICK,font:{size:9}},grid:{color:GRID,drawBorder:false,drawTicks:false},ticks:{color:TICK,font:{size:9},callback:function(v){return v>100?'':v+'%';}},border:{display:false},min:0,max:105}
             }
           }
         });
@@ -140,21 +141,21 @@ function renderScTable(weeks){
     const varC=((+w.cAct||0)-(+w.cPlan||0));
     const vc=varC>=0?'var(--gn)':varC>=-5?'var(--yw)':'var(--rd)';
     return `<tr>
-      <td style="font-family:var(--fm);font-weight:600;color:var(--bl)">W${String(w.week).padStart(2,'0')}</td>
+      <td style="font-family:var(--fm);font-weight:600;color:var(--mt)">W${String(w.week).padStart(2,'0')}</td>
       <td style="color:var(--mt);font-size:10px">${w.dateStart||'\u2014'}</td>
-      <td style="font-family:var(--fm);color:#3b82f6">${(+w.wPlan||0).toFixed(1)}%</td>
-      <td style="font-family:var(--fm);color:var(--or)">${(+w.wAct||0).toFixed(1)}%</td>
+      <td style="font-family:var(--fm);color:var(--tx)">${(+w.wPlan||0).toFixed(1)}%</td>
+      <td style="font-family:var(--fm);color:var(--tx)">${(+w.wAct||0).toFixed(1)}%</td>
       <td style="font-family:var(--fm);color:${varW>=0?'var(--gn)':'var(--rd)'}">${(varW>=0?'+':'')+varW.toFixed(1)}%</td>
-      <td style="font-family:var(--fm);color:var(--gn)">${(+w.cPlan||0).toFixed(1)}%</td>
-      <td style="font-family:var(--fm);color:var(--yw)">${(+w.cAct||0).toFixed(1)}%</td>
+      <td style="font-family:var(--fm);color:var(--tx)">${(+w.cPlan||0).toFixed(1)}%</td>
+      <td style="font-family:var(--fm);color:var(--tx)">${(+w.cAct||0).toFixed(1)}%</td>
       <td style="font-family:var(--fm);font-weight:600;color:${vc}">${(varC>=0?'+':'')+varC.toFixed(1)}%</td>
       <td class="edit-only"><button class="btn btn-sm brd" style="padding:1px 6px;font-size:10px" onclick="delScWeek('${w.projId}',${w.week})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button></td>
     </tr>`;
   }).join('');
   $('scTable').innerHTML=`<table class="tbl"><thead><tr>
     <th>Minggu</th><th>Tanggal</th>
-    <th style="color:#3b82f6">W.Plan</th><th style="color:var(--or)">W.Actual</th><th>Variance</th>
-    <th style="color:var(--gn)">Cum.Plan</th><th style="color:var(--yw)">Cum.Actual</th><th>Var.Cum</th><th></th>
+    <th style="color:var(--bl)">W.Plan</th><th style="color:var(--tx)">W.Actual</th><th>Variance</th>
+    <th style="color:var(--bl)">Cum.Plan</th><th style="color:var(--tx)">Cum.Actual</th><th>Var.Cum</th><th></th>
   </tr></thead><tbody>${rows}</tbody></table>`;
 }
 
@@ -170,7 +171,7 @@ function renderPlanInputRows(){
     const val=ex?(+ex.wPlan||0).toFixed(1):'';
     cumTotal+=ex?(+ex.wPlan||0):0;
     rows+=`<div style="display:grid;grid-template-columns:60px 1fr 80px;align-items:center;gap:8px;padding:5px 6px;border-bottom:1px solid var(--bd)">
-      <label style="font-family:var(--fm);font-size:11px;font-weight:600;color:var(--bl)">W${String(w).padStart(2,'0')}</label>
+      <label style="font-family:var(--fm);font-size:11px;font-weight:600;color:var(--mt)">W${String(w).padStart(2,'0')}</label>
       <input type="range" min="0" max="30" step="0.1" value="${val||0}" id="spR${w}"
         oninput="$('spV${w}').value=parseFloat(this.value).toFixed(1);calcPlanTotal()"
         style="flex:1">

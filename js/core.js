@@ -4,7 +4,7 @@
 // ===============================================================
 // STATE
 // ===============================================================
-let P=[],ISS=[],PROC=[],MPLOGS=[],ACCLOGS=[],SCURVE=[],WBS=[],COSTS=[],RAB=[];
+let P=[],ISS=[],PROC=[],MPLOGS=[],ACCLOGS=[],SCURVE=[],WBS=[],COSTS=[],RAB=[],SNAPSHOTS=[],ACTIONS=[];
 // WBS structure:
 // RAB structure:
 // RAB Kategori: {id, projId, type:'kat', name, urutan, isCustom}
@@ -95,19 +95,19 @@ function updateNotif(){
   };
   // 1. Overdue procurement
   const overdue=PROC.filter(i=>i.status!=='On Site'&&i.status!=='Done'&&i.due&&(()=>{const d=parseLocalDate(i.due);d.setHours(0,0,0,0);return d<today;})());
-  if(overdue.length)items.push({ico:ICO.pkg,color:'var(--rd)',title:`${overdue.length} Item Procurement Overdue`,sub:overdue.slice(0,2).map(i=>i.item).join(', ')+(overdue.length>2?` +${overdue.length-2} lagi`:''),tab:'procurement'});
+  if(overdue.length)items.push({ico:ICO.pkg,color:'var(--rd)',title:`${overdue.length} Item Procurement Overdue`,tip:'Follow-up vendor & eskalasi PO; minta update ETA pengiriman.',sub:overdue.slice(0,2).map(i=>i.item).join(', ')+(overdue.length>2?` +${overdue.length-2} lagi`:''),tab:'procurement'});
   // 2. Procurement due <=3 hari
   const dueSoon=PROC.filter(i=>i.status!=='On Site'&&i.status!=='Done'&&i.due&&(()=>{const d=parseLocalDate(i.due);d.setHours(0,0,0,0);const diff=Math.ceil((d-today)/86400000);return diff>=0&&diff<=3;})());
-  if(dueSoon.length)items.push({ico:ICO.clock,color:'var(--yw)',title:`${dueSoon.length} Procurement Jatuh Tempo <=3 Hari`,sub:dueSoon.slice(0,2).map(i=>i.item).join(', ')+(dueSoon.length>2?` +${dueSoon.length-2} lagi`:''),tab:'procurement'});
+  if(dueSoon.length)items.push({ico:ICO.clock,color:'var(--yw)',title:`${dueSoon.length} Procurement Jatuh Tempo <=3 Hari`,tip:'Konfirmasi jadwal kirim ke vendor hari ini agar tidak telat.',sub:dueSoon.slice(0,2).map(i=>i.item).join(', ')+(dueSoon.length>2?` +${dueSoon.length-2} lagi`:''),tab:'procurement'});
   // 3. Critical projects
   const crits=P.filter(p=>p.status==='Critical');
-  if(crits.length)items.push({ico:ICO.crit,color:'var(--rd)',title:`${crits.length} Project Status Critical`,sub:crits.map(p=>p.kode).join(', '),tab:'projects'});
+  if(crits.length)items.push({ico:ICO.crit,color:'var(--rd)',title:`${crits.length} Project Status Critical`,tip:'Tinjau item bobot besar di WBS; tambah manpower atau revisi target.',sub:crits.map(p=>p.kode).join(', '),tab:'projects'});
   // 4. Delayed projects
   const del=P.filter(p=>p.status==='Delayed');
-  if(del.length)items.push({ico:ICO.bolt,color:'var(--yw)',title:`${del.length} Project Delayed`,sub:del.map(p=>p.kode).join(', '),tab:'projects'});
+  if(del.length)items.push({ico:ICO.bolt,color:'var(--yw)',title:`${del.length} Project Delayed`,tip:'Percepat item kritis; cek penyebab (material/tenaga) sebelum jadi Critical.',sub:del.map(p=>p.kode).join(', '),tab:'projects'});
   // 5. Open high-priority issues
   const highIss=ISS.filter(i=>i.status!=='Closed'&&(i.prioritas==='High'||i.priority==='High'));
-  if(highIss.length)items.push({ico:ICO.warn,color:'var(--rd)',title:`${highIss.length} Issue Priority High Belum Closed`,sub:highIss.slice(0,2).map(i=>i.uraian||i.subject||i.title||'Issue').join(', ')+(highIss.length>2?` +${highIss.length-2} lagi`:''),tab:'issues'});
+  if(highIss.length)items.push({ico:ICO.warn,color:'var(--rd)',title:`${highIss.length} Issue Priority High Belum Closed`,tip:'Tetapkan PIC & target closing; angkat di rapat harian.',sub:highIss.slice(0,2).map(i=>i.uraian||i.subject||i.title||'Issue').join(', ')+(highIss.length>2?` +${highIss.length-2} lagi`:''),tab:'issues'});
   // 6. RAB over/near budget
   if(typeof RAB!=='undefined'&&RAB.length){
     P.forEach(p=>{
@@ -118,17 +118,49 @@ function updateNotif(){
       const actByKat=typeof getRabActualByKat==='function'?getRabActualByKat(p.id):{};
       const overKats=kats.filter(k=>{const rk=items2.filter(i=>i.katId===k.id).reduce((s,i)=>s+(+i.total||0),0);return rk>0&&(actByKat[k.id]||0)>=rk;});
       const nearKats=kats.filter(k=>{const rk=items2.filter(i=>i.katId===k.id).reduce((s,i)=>s+(+i.total||0),0);const act=actByKat[k.id]||0;return rk>0&&act/rk>=0.9&&act<rk;});
-      if(overKats.length)items.push({ico:ICO.money,color:'var(--rd)',title:`${p.kode}: ${overKats.length} Kategori RAB OVER Budget`,sub:overKats.map(k=>k.name).join(', '),tab:'cost'});
-      else if(nearKats.length)items.push({ico:ICO.warn,color:'var(--yw)',title:`${p.kode}: ${nearKats.length} Kategori RAB Mendekati Limit`,sub:nearKats.map(k=>k.name).join(', '),tab:'cost'});
+      if(overKats.length)items.push({ico:ICO.money,color:'var(--rd)',title:`${p.kode}: ${overKats.length} Kategori RAB OVER Budget`,tip:'Tahan pengeluaran kategori ini; review RAB atau ajukan adendum.',sub:overKats.map(k=>k.name).join(', '),tab:'cost'});
+      else if(nearKats.length)items.push({ico:ICO.warn,color:'var(--yw)',title:`${p.kode}: ${nearKats.length} Kategori RAB Mendekati Limit`,tip:'Pantau ketat; siapkan justifikasi bila perlu tambah anggaran.',sub:nearKats.map(k=>k.name).join(', '),tab:'cost'});
     });
   }
   // 7. Dokumen Rejected
   if(typeof DOCS!=='undefined'&&DOCS.length){
     const rejected=DOCS.filter(d=>d.status==='Rejected');
-    if(rejected.length)items.push({ico:ICO.x,color:'var(--rd)',title:`${rejected.length} Dokumen Rejected`,sub:rejected.slice(0,2).map(d=>d.namaDoc||'Dokumen').join(', ')+(rejected.length>2?` +${rejected.length-2} lagi`:''),tab:'documents'});
+    if(rejected.length)items.push({ico:ICO.x,color:'var(--rd)',title:`${rejected.length} Dokumen Rejected`,tip:'Perbaiki sesuai catatan reviewer lalu submit ulang.',sub:rejected.slice(0,2).map(d=>d.namaDoc||'Dokumen').join(', ')+(rejected.length>2?` +${rejected.length-2} lagi`:''),tab:'documents'});
     // 8. Dokumen On Review > 7 hari
     const stale=DOCS.filter(d=>{if(d.status!=='On Review'||!d.tglDoc)return false;const dt=new Date(d.tglDoc);if(isNaN(dt))return false;return Math.ceil((today-dt)/86400000)>7;});
-    if(stale.length)items.push({ico:ICO.doc,color:'var(--yw)',title:`${stale.length} Dokumen On Review >7 Hari`,sub:stale.slice(0,2).map(d=>d.namaDoc||'Dokumen').join(', ')+(stale.length>2?` +${stale.length-2} lagi`:''),tab:'documents'});
+    if(stale.length)items.push({ico:ICO.doc,color:'var(--yw)',title:`${stale.length} Dokumen On Review >7 Hari`,tip:'Follow-up approver untuk percepat proses review.',sub:stale.slice(0,2).map(d=>d.namaDoc||'Dokumen').join(', ')+(stale.length>2?` +${stale.length-2} lagi`:''),tab:'documents'});
+  }
+  // 9. Proyek aktif tanpa manpower 7 hari terakhir
+  if(typeof MPLOGS!=='undefined'){
+    const actNoMp=P.filter(p=>{
+      const act=+p.actual||0;const st=p.status;
+      if(!((st==='Critical'||st==='Delayed'||st==='On Track')&&act>0&&act<99.5))return false;
+      const recent=MPLOGS.filter(m=>String(m.projId)===String(p.id)&&(()=>{const d=new Date(m.date);if(isNaN(d.getTime()))return false;return Math.ceil((today-d)/86400000)<=7&&d<=today;})()).reduce((s,m)=>s+(+m.total||0),0);
+      return recent===0;
+    });
+    if(actNoMp.length)items.push({ico:ICO.warn,color:'var(--yw)',title:`${actNoMp.length} Proyek Aktif Tanpa Manpower 7 Hari`,tip:'Assign/jadwalkan tenaga kerja; cek ketersediaan vendor atau subcon.',sub:actNoMp.map(p=>p.kode).join(', '),tab:'manpower'});
+  }
+  // 10. Proyek diproyeksikan telat (forecast berbasis SPI)
+  {
+    const fcLate=[];
+    P.forEach(p=>{
+      const cp=typeof _calcProjCurrentPlan==='function'?_calcProjCurrentPlan(p.id):p.plan;
+      const act=+p.actual||0;
+      if(!(cp>0)||act<=0||act>=99.5||!p.mulai||!p.selesai)return;
+      const spi=act/cp;if(!(spi>0)||spi>=0.95)return;
+      const sd=new Date(p.mulai),ed=new Date(p.selesai);
+      if(isNaN(sd.getTime())||isNaN(ed.getTime()))return;
+      const dur=Math.max(1,(ed-sd)/86400000);
+      const delay=Math.round((new Date(sd.getTime()+(dur/spi)*86400000)-ed)/86400000);
+      if(delay>30)fcLate.push(`${p.kode} (~${delay} hr)`);
+    });
+    if(fcLate.length)items.push({ico:ICO.clock,color:'var(--rd)',title:`${fcLate.length} Proyek Diproyeksikan Telat`,tip:'SPI perlu naik: tambah resource pada item bobot besar atau revisi baseline.',sub:fcLate.join(', '),tab:'projects'});
+  }
+  // 11. Action item overdue
+  if(typeof ACTIONS!=='undefined'){
+    const _td=new Date().toISOString().slice(0,10);
+    const ovd=ACTIONS.filter(a=>a.due&&!a.done&&a.due<_td);
+    if(ovd.length)items.push({ico:ICO.warn,color:'var(--rd)',title:`${ovd.length} Action Item Overdue`,sub:ovd.slice(0,4).map(a=>{const pp=P.find(x=>String(x.id)===String(a.projId));return (pp?pp.kode:'?')+': '+String(a.text||'').slice(0,28);}).join(' \u00b7 '),tip:'Tindak lanjuti atau jadwalkan ulang tenggatnya.',tab:'projects'});
   }
   // Update badge
   const badge=$('notifBadge');
@@ -139,7 +171,7 @@ function updateNotif(){
   if(timeEl)timeEl.textContent=new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
   if(!list)return;
   if(!items.length){list.innerHTML='<div class="notif-empty">&#10003; Tidak ada alert aktif</div>';return;}
-  list.innerHTML=items.map(it=>`<div class="notif-item" onclick="(function(){const te=document.querySelector('.tab[onclick*=\\'${it.tab}\\']');if(te)sw('${it.tab}',te);$('notifDropdown').classList.remove('open');})()"><div class="ni-ico">${it.ico}</div><div class="ni-body"><div class="ni-title" style="color:${it.color}">${it.title}</div><div class="ni-sub">${it.sub}</div></div></div>`).join('');
+  list.innerHTML=items.map(it=>`<div class="notif-item" onclick="(function(){const te=document.querySelector('.tab[onclick*=\\'${it.tab}\\']');if(te)sw('${it.tab}',te);$('notifDropdown').classList.remove('open');})()"><div class="ni-ico">${it.ico}</div><div class="ni-body"><div class="ni-title" style="color:${it.color}">${it.title}</div><div class="ni-sub">${it.sub}</div>${it.tip?`<div class="ni-tip"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg><span>${it.tip}</span></div>`:''}</div></div>`).join('');
 }
 // Update notif badge setiap 30 detik dan saat data berubah
 setInterval(()=>{if(typeof PROC!=='undefined')updateNotif();},30000);
@@ -315,10 +347,10 @@ function renderSB(){
       </div>
       <div class="pi-bar"><div class="pi-fill" style="width:${p.actual}%;background:${bc[p.status]||'var(--bl)'}"></div></div>
       <div class="pi-meta">
-        <span style="color:var(--mt)">Actual <span style="font-family:var(--fm);color:${bc[p.status]||'var(--bl)'}">${p.actual}%</span></span>
-        <span style="color:var(--mt)">Plan <span style="font-family:var(--fm)">${typeof _calcProjCurrentPlan==='function'?_calcProjCurrentPlan(p.id).toFixed(1):p.plan}%</span></span>
+        <span style="color:var(--mt)">Actual <span style="font-family:var(--fm);color:#dce8f4">${(+p.actual||0).toFixed(1)}%</span></span>
+        <span style="color:var(--mt)">Plan <span style="font-family:var(--fm);color:#dce8f4">${typeof _calcProjCurrentPlan==='function'?_calcProjCurrentPlan(p.id).toFixed(1):p.plan}%</span></span>
       </div>
-    </div>`).join('')||'<div style="padding:16px;text-align:center;color:var(--mt);font-size:11px">Belum ada project</div>';
+    </div>`).join('')||'<div style="text-align:center;color:var(--mt);font-size:12px;padding:20px">Belum ada project</div>';
 }
 function onWbsProjChange(id){
   selId=String(id);
@@ -429,6 +461,8 @@ function _syncAllProjSelectors(id){
     rabEl.value=sid;
     if(activeTab==='cost')renderRab();
   }
+  // Sinkronkan label searchable picker proyek (jika modul searchselect aktif)
+  if(typeof _refreshProjPickers==='function')_refreshProjPickers();
 }
 
 
@@ -649,7 +683,7 @@ function showConfirm (msg, onYes) {
 
     box.innerHTML = [
       '<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:16px">',
-        '<div style="width:32px;height:32px;border-radius:50%;background:rgba(239,68,68,.15);',
+        '<div style="width:32px;height:32px;border-radius:50%;background:rgba(244,112,122,.15);',
              'display:flex;align-items:center;justify-content:center;flex-shrink:0">',
           '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--rd)" stroke-width="2.5">',
             '<polyline points="3 6 5 6 21 6"/>',

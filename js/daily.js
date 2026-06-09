@@ -90,11 +90,11 @@ function renderDrMainTable(projId,date){
 
     // Progress bar width for category
     const barW=Math.min(100,catPct).toFixed(1);
-    html+=`<tr style="background:linear-gradient(90deg,rgba(59,130,246,.07) 0%,rgba(59,130,246,.03) 100%);border-top:1px solid rgba(59,130,246,.15);border-bottom:1px solid rgba(59,130,246,.1)">`
-      +`<td style="padding:9px 4px 9px 12px;font-family:var(--fd);font-size:14px;font-weight:700;color:var(--bl);letter-spacing:.5px">${String.fromCharCode(65+ci)}</td>`
-      +`<td style="padding:9px 10px;font-family:var(--fb);font-size:11.5px;font-weight:700;color:var(--bl)">${safeStr(cat.name)}</td>`
+    html+=`<tr style="background:rgba(124,140,240,.10);border-top:1px solid rgba(124,140,240,.18);border-bottom:1px solid rgba(124,140,240,.12)">`
+      +`<td style="padding:9px 4px 9px 12px;font-family:var(--fd);font-size:14px;font-weight:700;color:var(--bl);letter-spacing:.5px;box-shadow:inset 3px 0 0 var(--bl)">${String.fromCharCode(65+ci)}</td>`
+      +`<td style="padding:9px 10px;font-family:var(--fb);font-size:11.5px;font-weight:700;color:var(--tx)">${safeStr(cat.name)}</td>`
       +`<td colspan="5"></td>`
-      +`<td style="padding:9px 14px 9px 0;text-align:right;font-family:var(--fm);font-size:11px;font-weight:700;color:var(--gn)">${(catKontrib*100).toFixed(2)}%</td>`
+      +`<td style="padding:9px 14px 9px 0;text-align:right;font-family:var(--fm);font-size:11px;font-weight:700;color:var(--tx)">${(catKontrib*100).toFixed(2)}%</td>`
       +`<td></td>`
       +'</tr>';
 
@@ -105,11 +105,11 @@ function renderDrMainTable(projId,date){
         html+=_drNodeRow(`${ci+1}.${si+1}`,sub,date,20,false);
       } else {
         const subKontrib=subItems.reduce((s,x)=>s+_drNodeKontrib(x,date),0);
-        html+=`<tr style="background:rgba(16,185,129,.04);border-top:1px solid rgba(16,185,129,.1)">`
-          +`<td style="padding:7px 4px 7px 20px;font-family:var(--fm);font-size:10px;color:var(--gn);font-weight:600">${ci+1}.${si+1}</td>`
-          +`<td style="padding:7px 10px;font-family:var(--fb);font-size:11px;font-weight:600;color:var(--gn)">${safeStr(sub.name)}</td>`
+        html+=`<tr style="background:rgba(124,140,240,.04);border-top:1px solid rgba(124,140,240,.1)">`
+          +`<td style="padding:7px 4px 7px 20px;font-family:var(--fm);font-size:10px;color:var(--tx);font-weight:600;box-shadow:inset 2px 0 0 rgba(124,140,240,.45)">${ci+1}.${si+1}</td>`
+          +`<td style="padding:7px 10px;font-family:var(--fb);font-size:11px;font-weight:600;color:var(--tx)">${safeStr(sub.name)}</td>`
           +`<td colspan="5"></td>`
-          +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--gn);font-weight:600">${(subKontrib*100).toFixed(2)}%</td>`
+          +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--tx);font-weight:600">${(subKontrib*100).toFixed(2)}%</td>`
           +`<td></td>`
           +'</tr>';
         subItems.forEach((item,ii)=>{
@@ -141,7 +141,7 @@ function _drNodeRow(num,node,date,indent,isDeep){
   const noQty=!qtyPlan;
   const hasToday=todayQty>0;
   const pctColor=pct>=100?'var(--gn)':pct>=50?'var(--or)':'var(--rd)';
-  const rowBg=hasToday?'background:rgba(16,185,129,.05)':'';
+  const rowBg=hasToday?'background:rgba(61,220,151,.05)':'';
   const borderTop=isDeep?'border-top:1px solid rgba(30,45,69,.25)':'border-top:1px solid rgba(30,45,69,.3)';
 
   // Progress mini-bar for % selesai column
@@ -154,16 +154,16 @@ function _drNodeRow(num,node,date,indent,isDeep){
   </div>`;
 
   return `<tr style="${rowBg};${borderTop};transition:background .1s"
-    onmouseover="this.style.background='rgba(59,130,246,.04)'"
-    onmouseout="this.style.background='${hasToday?'rgba(16,185,129,.05)':''}'">`
-    +`<td style="padding:7px 4px 7px ${indent}px;font-family:var(--fm);font-size:10px;color:var(--mt);white-space:nowrap">${num}</td>`
+    onmouseover="this.style.background='rgba(124,140,240,.06)'"
+    onmouseout="this.style.background='${hasToday?'rgba(61,220,151,.05)':''}'">`
+    +`<td style="padding:7px 4px 7px ${indent}px;font-family:var(--fm);font-size:10px;color:var(--mt);white-space:nowrap;box-shadow:inset 2px 0 0 var(--bd)">${num}</td>`
     +`<td style="padding:7px 10px;font-family:var(--fb);font-size:11px;color:var(--tx)">${safeStr(node.name)}</td>`
     +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--mt)">${bobot.toFixed(2)}%</td>`
-    +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--bl)">${noQty?'\u2014':`${qtyPlan}`}</td>`
+    +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--tx)">${noQty?'\u2014':`${qtyPlan}`}</td>`
     +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:11.5px;font-weight:700;color:${hasToday?'var(--gn)':'var(--mt)'}">${hasToday?`+${todayQty}`:'\u2014'}</td>`
-    +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--or)">${noQty?'\u2014':`${cumQty}`}</td>`
+    +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--tx)">${noQty?'\u2014':`${cumQty}`}</td>`
     +`<td style="padding:7px 14px 7px 0">${pctCell}</td>`
-    +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--gn)">${(kontrib*100).toFixed(2)}%</td>`
+    +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--tx)">${(kontrib*100).toFixed(2)}%</td>`
     +`<td style="padding:7px 8px;text-align:center;font-family:var(--fb);font-size:10px;color:var(--mt)">${sat?`<span style="background:var(--sf2);padding:1px 6px;border-radius:4px;border:1px solid var(--bd)">${sat}</span>`:'\u2014'}</td>`
     +'</tr>';
 }
@@ -172,23 +172,23 @@ function renderDrQtySetupForm(){
   const all=WBS.filter(w=>String(w.projId)===String(projId));
   const cats=all.filter(w=>w.type==='cat').sort((a,b)=>a.order-b.order);
   const leafNodes=all.filter(w=>(w.type==='item')||(w.type==='subcat'&&!all.some(x=>x.type==='item'&&x.parentId===w.id)));
-  if(!leafNodes.length){$('drQtySetupForm').innerHTML='<div style="text-align:center;color:var(--mt);padding:20px">Belum ada item WBS</div>';return;}
+  if(!leafNodes.length){$('drQtySetupForm').innerHTML='<div style="text-align:center;color:var(--mt);font-size:12px;padding:20px">Belum ada item WBS</div>';return;}
   let html='';
   cats.forEach((cat,ci)=>{
-    html+=`<div style="font-family:var(--fd);font-size:12px;letter-spacing:1px;color:var(--bl);margin:10px 0 4px;padding:6px 10px;background:rgba(59,130,246,.07);border-radius:6px">${String.fromCharCode(65+ci)}. ${safeStr(cat.name)}</div>`;
+    html+=`<div style="font-family:var(--fd);font-size:12px;letter-spacing:1px;color:var(--tx);margin:10px 0 4px;padding:6px 10px;background:rgba(124,140,240,.07);border-radius:6px">${String.fromCharCode(65+ci)}. ${safeStr(cat.name)}</div>`;
     all.filter(w=>w.type==='subcat'&&w.parentId===cat.id).sort((a,b)=>a.order-b.order).forEach((sub,si)=>{
       const subItems=all.filter(w=>w.type==='item'&&w.parentId===sub.id);
       const nodes=subItems.length?subItems:[sub];
-      if(subItems.length)html+=`<div style="font-size:11px;color:var(--gn);padding:3px 10px;font-weight:600">${ci+1}.${si+1} ${safeStr(sub.name)}</div>`;
+      if(subItems.length)html+=`<div style="font-size:11px;color:var(--tx);padding:3px 10px;font-weight:600">${ci+1}.${si+1} ${safeStr(sub.name)}</div>`;
       nodes.forEach((node,ii)=>{
         const label=subItems.length?`${ci+1}.${si+1}.${ii+1} ${safeStr(node.name)}`:`${ci+1}.${si+1} ${safeStr(node.name)}`;
         html+=`<div style="display:grid;grid-template-columns:1fr 110px 130px;gap:8px;align-items:center;padding:5px 12px;border-bottom:1px solid var(--bd)">
           <div style="font-size:11px">${label} <span style="font-size:9px;color:var(--mt);font-family:var(--fm)">bobot:${(+node.bobot||0).toFixed(2)}%</span></div>
           <div>
-            <label style="font-size:9px;color:var(--bl);display:block;font-weight:600">Qty Plan</label>
+            <label style="font-size:9px;color:var(--mt);display:block;font-weight:600">Qty Plan</label>
             <input type="number" min="0" step="1" placeholder="162"
               value="${node.qtyPlan!=null?node.qtyPlan:''}" id="drqp_${node.id}" class="fi"
-              style="padding:4px 6px;font-size:13px;text-align:center;border-radius:4px;border:1px solid var(--bl);background:rgba(59,130,246,.06);width:100%">
+              style="padding:4px 6px;font-size:13px;text-align:center;border-radius:4px;border:1px solid var(--bl);background:rgba(124,140,240,.06);width:100%">
           </div>
           <div>
             <label style="font-size:9px;color:var(--mt);display:block;font-weight:600">Satuan (pcs, m, unit...)</label>
@@ -219,18 +219,18 @@ function renderDrInputForm(){
   if(!projId){$('drInputForm').innerHTML='';return;}
   const weekNum=getWbsWeekNum(projId,date);
   const banner=$('drWeekInfoBanner');
-  if(banner)banner.innerHTML=weekNum?`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> <b>${date}</b> = <b style="color:var(--or)">W${String(weekNum).padStart(2,'0')}</b> \u2014 Qty otomatis masuk ke minggu ini`:`⚠ Tanggal mulai project belum diset`;
+  if(banner)banner.innerHTML=weekNum?`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> <b>${date}</b> = <b style="color:var(--tx)">W${String(weekNum).padStart(2,'0')}</b> \u2014 Qty otomatis masuk ke minggu ini`:`${ic('warn',13)} Tanggal mulai project belum diset`;
   const all=WBS.filter(w=>String(w.projId)===String(projId));
   const cats=all.filter(w=>w.type==='cat').sort((a,b)=>a.order-b.order);
   const leafNodes=all.filter(w=>(w.type==='item')||(w.type==='subcat'&&!all.some(x=>x.type==='item'&&x.parentId===w.id)));
   if(!leafNodes.length){$('drInputForm').innerHTML='<div style="text-align:center;color:var(--mt);padding:20px">Setup WBS & Qty Plan terlebih dahulu</div>';return;}
   let html='';
   cats.forEach((cat,ci)=>{
-    html+=`<div style="font-family:var(--fd);font-size:12px;letter-spacing:1px;color:var(--bl);margin:10px 0 4px;padding:6px 10px;background:rgba(59,130,246,.07);border-radius:6px">${String.fromCharCode(65+ci)}. ${safeStr(cat.name)}</div>`;
+    html+=`<div style="font-family:var(--fd);font-size:12px;letter-spacing:1px;color:var(--tx);margin:10px 0 4px;padding:6px 10px;background:rgba(124,140,240,.07);border-radius:6px">${String.fromCharCode(65+ci)}. ${safeStr(cat.name)}</div>`;
     all.filter(w=>w.type==='subcat'&&w.parentId===cat.id).sort((a,b)=>a.order-b.order).forEach((sub,si)=>{
       const subItems=all.filter(w=>w.type==='item'&&w.parentId===sub.id);
       const nodes=subItems.length?subItems:[sub];
-      if(subItems.length)html+=`<div style="font-size:11px;color:var(--gn);padding:3px 10px;font-weight:600">${ci+1}.${si+1} ${safeStr(sub.name)}</div>`;
+      if(subItems.length)html+=`<div style="font-size:11px;color:var(--tx);padding:3px 10px;font-weight:600">${ci+1}.${si+1} ${safeStr(sub.name)}</div>`;
       nodes.forEach((node,ii)=>{
         const label=subItems.length?`${ci+1}.${si+1}.${ii+1} ${safeStr(node.name)}`:`${ci+1}.${si+1} ${safeStr(node.name)}`;
         const qtyPlan=+node.qtyPlan||0;const dl=node.dailyLogs||[];
@@ -241,15 +241,15 @@ function renderDrInputForm(){
           <div>
             <span style="font-size:11px">${label}</span>
             <span style="font-size:9px;color:var(--mt);font-family:var(--fm);margin-left:6px">bobot:${(+node.bobot||0).toFixed(2)}%</span>
-            ${qtyPlan?`<span style="font-size:9px;color:var(--bl);font-family:var(--fm);margin-left:4px">plan:${qtyPlan} ${node.qtySatuan||''}</span>`:''}
-            <span style="font-size:9px;color:var(--or);font-family:var(--fm);margin-left:4px">cum:${cumQty} ${node.qtySatuan||''} (${pct.toFixed(1)}%)</span>
+            ${qtyPlan?`<span style="font-size:9px;color:var(--mt);font-family:var(--fm);margin-left:4px">plan:${qtyPlan} ${node.qtySatuan||''}</span>`:''}
+            <span style="font-size:9px;color:var(--mt);font-family:var(--fm);margin-left:4px">cum:${cumQty} ${node.qtySatuan||''} (${pct.toFixed(1)}%)</span>
           </div>
           <div>
-            <label style="font-size:9px;color:var(--gn);display:block;font-weight:600">Qty Hari Ini${node.qtySatuan?' ('+node.qtySatuan+')':''}</label>
+            <label style="font-size:9px;color:var(--mt);display:block;font-weight:600">Qty Hari Ini${node.qtySatuan?' ('+node.qtySatuan+')':''}</label>
             <input type="number" min="0" step="1" placeholder="0"
               value="${todayLog.qty!=null?todayLog.qty:''}"
               id="dri_${node.id}_qty" oninput="updateDrPreview()" class="fi"
-              style="padding:5px 8px;font-size:14px;font-weight:700;text-align:center;border-radius:4px;border:1.5px solid ${todayLog.qty!=null?'var(--gn)':'var(--bd)'};background:${todayLog.qty!=null?'rgba(16,185,129,.08)':'var(--sf2)'};width:100%">
+              style="padding:5px 8px;font-size:14px;font-weight:700;text-align:center;border-radius:4px;border:1.5px solid ${todayLog.qty!=null?'var(--gn)':'var(--bd)'};background:${todayLog.qty!=null?'rgba(61,220,151,.08)':'var(--sf2)'};width:100%">
           </div>
           <div>
             <label style="font-size:9px;color:var(--mt);display:block">Catatan / Kendala</label>
@@ -328,11 +328,11 @@ function toggleDrHistory(){
   const isOpen=hCard.style.display!=='none';
   if(isOpen){
     hCard.style.display='none';
-    if(btn){btn.textContent='📋 Lihat Riwayat';btn.style.borderColor='var(--bl)';btn.style.color='var(--bl)';}
+    if(btn){btn.innerHTML=ic('clipboard',13)+' Lihat Riwayat';btn.style.borderColor='var(--bl)';btn.style.color='var(--bl)';}
     return;
   }
   hCard.style.display='block';
-  if(btn){btn.textContent='✕ Tutup Riwayat';btn.style.borderColor='var(--rd)';btn.style.color='var(--rd)';}
+  if(btn){btn.innerHTML=ic('x',13)+' Tutup Riwayat';btn.style.borderColor='var(--rd)';btn.style.color='var(--rd)';}
   renderDailyHistoryTable(projId);
 }
 function renderDailyHistoryTable(projId){
@@ -344,7 +344,7 @@ function renderDailyHistoryTable(projId){
   const dates=[...dateSet].sort().reverse();
   const proj=P.find(p=>String(p.id)===String(projId));
   if($('drHistTitle'))$('drHistTitle').textContent=proj?.kode||'';
-  if(!dates.length){$('drHistTable').innerHTML='<div style="text-align:center;color:var(--mt);padding:20px">Belum ada data daily report</div>';return;}
+  if(!dates.length){$('drHistTable').innerHTML='<div style="text-align:center;color:var(--mt);font-size:12px;padding:20px">Belum ada data daily report</div>';return;}
   let html=`<table class="tbl"><thead><tr>
     <th>Tanggal</th><th>Minggu</th><th>Item</th>
     <th style="text-align:right">Qty</th>
@@ -361,10 +361,10 @@ function renderDailyHistoryTable(projId){
       const kontrib=qtyPlan>0?(+node.bobot||0)*(qty/qtyPlan):0;
       html+=`<tr>
         <td style="font-family:var(--fm);font-size:10px;white-space:nowrap">${first?date:''}</td>
-        <td style="color:var(--or);font-size:10px;font-family:var(--fm)">${first&&weekNum?'W'+String(weekNum).padStart(2,'0'):''}</td>
+        <td style="color:var(--mt);font-size:10px;font-family:var(--fm)">${first&&weekNum?'W'+String(weekNum).padStart(2,'0'):''}</td>
         <td style="font-size:11px">${safeStr(node.name)}</td>
-        <td style="text-align:right;font-family:var(--fm);font-weight:700;color:var(--gn)">${qty>0?'+'+qty+' '+(node.qtySatuan||''):'\u2014'}</td>
-        <td style="text-align:right;font-family:var(--fm);color:var(--gn)">${kontrib>0?(kontrib*100).toFixed(2)+'%':'\u2014'}</td>
+        <td style="text-align:right;font-family:var(--fm);font-weight:700;color:var(--tx)">${qty>0?'+'+qty+' '+(node.qtySatuan||''):'\u2014'}</td>
+        <td style="text-align:right;font-family:var(--fm);color:var(--tx)">${kontrib>0?(kontrib*100).toFixed(2)+'%':'\u2014'}</td>
         <td style="color:var(--mt);font-size:10px">${log.notes||'\u2014'}</td>
         <td style="text-align:center">
           <button class="btn btn-sm brd edit-only" style="padding:1px 5px;font-size:9px" onclick="delDailyLog('${node.id}','${date}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>

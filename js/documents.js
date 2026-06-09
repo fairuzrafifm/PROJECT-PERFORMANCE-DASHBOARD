@@ -13,12 +13,12 @@ if (typeof DOCS === 'undefined') var DOCS = [];
 
 // ── CONSTANTS ─────────────────────────────────────────────────────
 var _DOC_STATUS_CFG = {
-  'Submitted':          { c: 'var(--bl)', bg: 'rgba(59,130,246,.15)',  bd: 'rgba(59,130,246,.3)'  },
-  'On Review':          { c: 'var(--yw)', bg: 'rgba(245,158,11,.15)',  bd: 'rgba(245,158,11,.3)'  },
-  'Approved':           { c: 'var(--gn)', bg: 'rgba(16,185,129,.15)',  bd: 'rgba(16,185,129,.3)'  },
-  'Approved with Note': { c: '#10b981',   bg: 'rgba(16,185,129,.1)',   bd: 'rgba(245,158,11,.4)'  },
-  'Rejected':           { c: 'var(--rd)', bg: 'rgba(239,68,68,.15)',   bd: 'rgba(239,68,68,.3)'   },
-  'WIP':                { c: 'var(--or)', bg: 'rgba(249,115,22,.15)',   bd: 'rgba(249,115,22,.3)'  },
+  'Submitted':          { c: 'var(--bl)', bg: 'rgba(124,140,240,.15)',  bd: 'rgba(124,140,240,.3)'  },
+  'On Review':          { c: 'var(--yw)', bg: 'rgba(245,196,82,.15)',  bd: 'rgba(245,196,82,.3)'  },
+  'Approved':           { c: 'var(--gn)', bg: 'rgba(61,220,151,.15)',  bd: 'rgba(61,220,151,.3)'  },
+  'Approved with Note': { c: '#3ddc97',   bg: 'rgba(61,220,151,.1)',   bd: 'rgba(245,196,82,.4)'  },
+  'Rejected':           { c: 'var(--rd)', bg: 'rgba(244,112,122,.15)',   bd: 'rgba(244,112,122,.3)'   },
+  'WIP':                { c: 'var(--pu)', bg: 'rgba(167,139,250,.15)',   bd: 'rgba(167,139,250,.3)'  },
 };
 var _DOC_STATUS_KEYS = Object.keys(_DOC_STATUS_CFG);
 var _DOC_KATEGORI = [
@@ -277,12 +277,12 @@ function _updateDocKPI() {
 
 // ── KATEGORI COLOR MAP ────────────────────────────────────────────
 var _KAT_COLORS = [
-  {c:'var(--bl)', bg:'rgba(59,130,246,.1)',   bd:'rgba(59,130,246,.25)'},
-  {c:'var(--gn)', bg:'rgba(16,185,129,.1)',   bd:'rgba(16,185,129,.25)'},
+  {c:'var(--bl)', bg:'rgba(124,140,240,.1)',   bd:'rgba(124,140,240,.25)'},
+  {c:'var(--gn)', bg:'rgba(61,220,151,.1)',   bd:'rgba(61,220,151,.25)'},
   {c:'var(--pu)', bg:'rgba(139,92,246,.1)',   bd:'rgba(139,92,246,.25)'},
-  {c:'var(--or)', bg:'rgba(249,115,22,.1)',   bd:'rgba(249,115,22,.25)'},
-  {c:'var(--yw)', bg:'rgba(245,158,11,.1)',   bd:'rgba(245,158,11,.25)'},
-  {c:'var(--rd)', bg:'rgba(239,68,68,.1)',    bd:'rgba(239,68,68,.25)'},
+  {c:'var(--or)', bg:'rgba(124,140,240,.1)',   bd:'rgba(124,140,240,.25)'},
+  {c:'var(--yw)', bg:'rgba(245,196,82,.1)',   bd:'rgba(245,196,82,.25)'},
+  {c:'var(--rd)', bg:'rgba(244,112,122,.1)',    bd:'rgba(244,112,122,.25)'},
   {c:'#06b6d4',  bg:'rgba(6,182,212,.1)',     bd:'rgba(6,182,212,.25)'},
   {c:'#f472b6',  bg:'rgba(244,114,182,.1)',   bd:'rgba(244,114,182,.25)'},
 ];
@@ -358,18 +358,19 @@ function renderDocs() {
     _DOC_STATUS_KEYS.forEach(function(s){ cnt[s] = 0; });
     base.forEach(function(d){ if (cnt[d.status] !== undefined) cnt[d.status]++; });
 
-    summaryEl.innerHTML = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:2px">' +
+    summaryEl.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:2px';
+    summaryEl.innerHTML =
       _DOC_STATUS_KEYS.map(function(s) {
         var cfg = _DOC_STATUS_CFG[s];
         var isActive = statFilt === s;
-        var ring = isActive ? 'box-shadow:0 0 0 2px ' + cfg.c + ';transform:translateY(-1px);' : '';
-        return '<div onclick="document.getElementById(\'docFiltStatus\').value=(\'' + s + '\'===document.getElementById(\'docFiltStatus\').value?\'\':\'' + s + '\');renderDocs()" ' +
-          'style="background:' + cfg.bg + ';border:1px solid ' + cfg.bd + ';border-radius:10px;padding:10px 18px;text-align:center;cursor:pointer;min-width:100px;transition:all .15s;' + ring + '">' +
-          '<div style="font-family:var(--fd);font-size:28px;letter-spacing:1px;color:' + cfg.c + ';line-height:1">' + cnt[s] + '</div>' +
-          '<div style="font-size:8px;text-transform:uppercase;letter-spacing:.7px;color:' + cfg.c + ';opacity:.9;margin-top:4px;font-weight:700">' + s + '</div>' +
-          (isActive ? '<div style="width:20px;height:2px;background:' + cfg.c + ';border-radius:1px;margin:5px auto 0"></div>' : '<div style="height:7px"></div>') +
+        var act = isActive ? 'border-color:var(--bl);box-shadow:var(--sh-h);transform:translateY(-2px);' : '';
+        return '<div class="kpi" onclick="document.getElementById(\'docFiltStatus\').value=(\'' + s + '\'===document.getElementById(\'docFiltStatus\').value?\'\':\'' + s + '\');renderDocs()" ' +
+          'style="text-align:center;' + act + '">' +
+          '<span style="position:absolute;top:14px;right:14px;width:6px;height:6px;border-radius:50%;background:' + cfg.c + ';opacity:.85"></span>' +
+          '<div class="kv" style="font-size:26px">' + cnt[s] + '</div>' +
+          '<div class="kl" style="margin:6px 0 0">' + s + '</div>' +
           '</div>';
-      }).join('') + '</div>';
+      }).join('');
   }
 
   // ── Table ──
@@ -392,18 +393,18 @@ function renderDocs() {
     var katColor = _katColor(d.kategori);
     var linkHtml = d.linkDoc
       ? '<a href="' + safeStr(d.linkDoc) + '" target="_blank" rel="noopener noreferrer" title="Buka dokumen" ' +
-        'style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:rgba(59,130,246,.12);color:var(--bl);text-decoration:none;border:1px solid rgba(59,130,246,.25)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block;margin-right:0"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>'
+        'style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;background:rgba(124,140,240,.12);color:var(--bl);text-decoration:none;border:1px solid rgba(124,140,240,.25)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block;margin-right:0"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>'
       : '';
     var proj = _docProjName(d.projId);
     return '<tr style="border-bottom:1px solid rgba(30,45,69,.4);transition:background .12s" ' +
-      'onmouseover="this.style.background=\'rgba(59,130,246,.04)\'" ' +
+      'onmouseover="this.style.background=\'rgba(124,140,240,.04)\'" ' +
       'onmouseout="this.style.background=\'\'">' +
       '<td style="width:24px;text-align:center;color:var(--mt);font-size:9px;font-family:var(--fm);padding:0 4px 0 10px">' + (i+1) + '</td>' +
-      '<td style="white-space:nowrap"><span style="font-size:9px;font-weight:700;letter-spacing:.3px;padding:2px 7px;border-radius:4px;background:rgba(249,115,22,.1);color:var(--or);border:1px solid rgba(249,115,22,.2)">' + safeStr(proj) + '</span></td>' +
+      '<td style="white-space:nowrap"><span style="font-size:9px;font-weight:700;letter-spacing:.3px;padding:2px 7px;border-radius:4px;background:rgba(124,140,240,.1);color:var(--or);border:1px solid rgba(124,140,240,.2)">' + safeStr(proj) + '</span></td>' +
       '<td style="font-weight:600;max-width:220px"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + safeStr(d.namaDoc) + '">' + safeStr(d.namaDoc) + '</div>' +
       (d.catatan ? '<div style="font-size:9px;color:var(--mt);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + safeStr(d.catatan) + '">' + safeStr(d.catatan) + '</div>' : '') +
       '</td>' +
-      '<td style="font-family:var(--fm);font-size:10px;color:var(--bl);white-space:nowrap">' + safeStr(d.nomorDoc || '—') + '</td>' +
+      '<td style="font-family:var(--fm);font-size:10px;color:var(--tx);white-space:nowrap">' + safeStr(d.nomorDoc || '—') + '</td>' +
       '<td><span style="background:' + katColor.bg + ';color:' + katColor.c + ';border:1px solid ' + katColor.bd + ';border-radius:5px;padding:2px 8px;font-size:9px;font-weight:600;white-space:nowrap">' + safeStr(d.kategori || '—') + '</span></td>' +
       '<td style="text-align:center"><span style="font-size:9px;font-family:var(--fm);background:var(--sf2);color:var(--mt);padding:2px 6px;border-radius:4px">' + safeStr(d.revisi || '—') + '</span></td>' +
       '<td style="font-size:10px;white-space:nowrap;color:var(--mt)">' + _fmtDocDate(d.tglDoc) + '</td>' +
@@ -420,7 +421,7 @@ function renderDocs() {
   }).join('');
 
   tableEl.innerHTML =
-    '<table style="width:100%;border-collapse:collapse;font-size:11px">' +
+    '<table class="hov-rows" style="width:100%;min-width:1120px;border-collapse:collapse;font-size:11px">' +
     '<thead><tr style="background:var(--sf2);border-bottom:2px solid var(--bd);position:sticky;top:0;z-index:2;box-shadow:inset 0 -2px 0 var(--bd),0 4px 7px -3px rgba(0,0,0,.4)">' +
     '<th style="width:24px;padding:8px 4px 8px 10px"></th>' +
     '<th style="padding:8px 10px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--mt);font-weight:700;white-space:nowrap">Project</th>' +
@@ -607,7 +608,7 @@ function exportDocsPDF() {
     return '<tr>' +
       '<td>' + safeStr(_docProjName(d.projId)) + '</td>' +
       '<td><b>' + safeStr(d.namaDoc) + '</b></td>' +
-      '<td style="font-family:monospace;font-size:10px">' + safeStr(d.nomorDoc || '—') + '</td>' +
+      '<td style="font-family:var(--fm);font-size:10px">' + safeStr(d.nomorDoc || '—') + '</td>' +
       '<td>' + safeStr(d.kategori || '—') + '</td>' +
       '<td style="text-align:center">' + safeStr(d.revisi || '—') + '</td>' +
       '<td style="white-space:nowrap">' + _fmtDocDate(d.tglDoc) + '</td>' +
@@ -625,14 +626,14 @@ function exportDocsPDF() {
     '<title>Master Dokumen — ATW Solar</title><style>' +
     '*{box-sizing:border-box;margin:0;padding:0}' +
     'body{font-family:"Segoe UI",Arial,sans-serif;color:#1e293b;font-size:11px;padding:16px 24px}' +
-    '.hdr{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:3px solid #f97316;padding-bottom:12px;margin-bottom:16px}' +
+    '.hdr{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:3px solid #7c8cf0;padding-bottom:12px;margin-bottom:16px}' +
     '.hdr-l{display:flex;align-items:center;gap:12px}' +
     '.hdr-l img{height:38px;object-fit:contain}' +
-    '.company{font-size:16px;font-weight:800;color:#f97316;letter-spacing:1px}' +
+    '.company{font-size:16px;font-weight:800;color:var(--bl);letter-spacing:1px}' +
     '.subtitle{font-size:9px;color:#64748b;margin-top:2px;text-transform:uppercase;letter-spacing:1.5px}' +
     '.meta{text-align:right;font-size:10px;color:#64748b;line-height:2}' +
     '.meta b{color:#1e293b}' +
-    '.sec{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#f97316;border-bottom:1px solid #fed7aa;padding-bottom:4px;margin:12px 0 9px}' +
+    '.sec{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--bl);border-bottom:1px solid #fed7aa;padding-bottom:4px;margin:12px 0 9px}' +
     'table{width:100%;border-collapse:collapse;font-size:10px}' +
     'th{background:#f1f5f9;color:#64748b;font-size:9px;text-transform:uppercase;letter-spacing:.5px;padding:5px 7px;border-bottom:2px solid #e2e8f0;text-align:left;white-space:nowrap}' +
     'td{padding:4px 7px;border-bottom:1px solid #f1f5f9;vertical-align:top}' +
@@ -781,11 +782,11 @@ window._onCloneDocSrcChange = function () {
 
     var statusColors = {
       'Submitted': 'var(--bl)', 'On Review': 'var(--yw)', 'Approved': 'var(--gn)',
-      'Approved with Note': '#10b981', 'Rejected': 'var(--rd)', 'WIP': 'var(--or)',
+      'Approved with Note': '#3ddc97', 'Rejected': 'var(--rd)', 'WIP': 'var(--pu)',
     };
 
     // Summary
-    var summary = '<div style="color:var(--pu);font-weight:600;margin-bottom:8px">' +
+    var summary = '<div style="color:var(--tx);font-weight:600;margin-bottom:8px">' +
       docs.length + ' dokumen akan di-clone:</div>';
 
     // Status breakdown chips

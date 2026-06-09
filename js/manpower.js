@@ -1,6 +1,9 @@
 // ===============================================================
 // MANPOWER TAB
 // ===============================================================
+// Buffer riwayat milestone procurement saat modal terbuka (bare global — JANGAN window.*)
+let _procLogs = [];
+
 function renderMP(){
   const today=new Date().toISOString().slice(0,10);
   const weekOffset=+(gv('mpTrendWeek')||0);
@@ -40,7 +43,7 @@ function renderMP(){
         <div style="font-family:var(--fm);font-weight:600;color:${(+log.total||0)>0?'var(--or)':'var(--mt)'}">${log.total||0}</div>
         <div style="font-family:var(--fm);color:${tl>0?'var(--rd)':'var(--mt)'}">${tl>0?tl+'h':'\u2014'}</div>
       </div>`;
-    }).join(''):'<div style="text-align:center;color:var(--mt);padding:20px;font-size:12px">Belum ada log manpower</div>';
+    }).join(''):'<div style="text-align:center;color:var(--mt);font-size:12px;padding:20px">Belum ada log manpower</div>';
   }
 
   // Weekly trend chart
@@ -80,29 +83,29 @@ function renderMpLog(){
   const fP=fp?.value||'';
   const logs=[...MPLOGS].filter(m=>!fP||m.projId==fP).sort((a,b)=>b.date.localeCompare(a.date));
   if(!$('mpLogTable'))return;
-  if(!logs.length){$('mpLogTable').innerHTML='<div style="text-align:center;color:var(--mt);padding:16px;font-size:12px">Belum ada data</div>';return;}
+  if(!logs.length){$('mpLogTable').innerHTML='<div style="text-align:center;color:var(--mt);font-size:12px;padding:20px">Belum ada data</div>';return;}
   $('mpLogTable').innerHTML=`<table class="tbl" style="min-width:900px"><thead><tr><th>Tgl</th><th>Project</th><th>SPV</th><th>Mdr</th><th>Inst</th><th>Tukang</th><th>Helper</th><th>Safety</th><th>Total</th><th>MH</th><th>TL</th><th>Catatan / Aktivitas</th><th></th></tr></thead><tbody>
     ${logs.map(m=>{
       const pr=P.find(p=>p.id==m.projId);
       const tl=+m.timeLost||0;
       return`<tr>
         <td style="font-family:var(--fm);font-size:10px;white-space:nowrap">${fmtDate(m.date)}</td>
-        <td style="color:var(--bl);font-size:10px">${pr?.kode||'\u2014'}</td>
+        <td style="color:var(--mt);font-size:10px">${pr?.kode||'\u2014'}</td>
         <td>${m.spv||0}</td><td>${m.mandor||0}</td><td>${m.installer||0}</td>
         <td>${m.tukang||0}</td><td>${m.helper||0}</td><td>${m.safety||0}</td>
-        <td style="font-weight:600;color:var(--or)">${m.total||0}</td>
+        <td style="font-weight:600;color:var(--tx)">${m.total||0}</td>
         <td style="color:var(--mt)">${m.mhActual||0}</td>
         <td style="color:${tl>0?'var(--rd)':'var(--mt)'}">${tl>0?tl+'h':'\u2014'}</td>
         <td style="max-width:160px">
           ${m.notes?`<div style="color:var(--mt);font-size:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.notes}</div>`:''}
           ${(m.activities&&m.activities.length)?`<div style="margin-top:2px;display:flex;flex-wrap:wrap;gap:2px">
-            ${m.activities.map(a=>`<span title="${a.wbsName}: ${a.total} orang" style="font-size:8px;background:rgba(59,130,246,.12);color:var(--bl);padding:1px 5px;border-radius:3px;white-space:nowrap;border:1px solid rgba(59,130,246,.2);cursor:default">
+            ${m.activities.map(a=>`<span title="${a.wbsName}: ${a.total} orang" style="font-size:8px;background:rgba(124,140,240,.12);color:var(--bl);padding:1px 5px;border-radius:3px;white-space:nowrap;border:1px solid rgba(124,140,240,.2);cursor:default">
               ${(a.wbsName||'Aktivitas').slice(0,18)}: <b>${a.total}</b>
             </span>`).join('')}
           </div>`:'<span style="color:var(--bd);font-size:9px">—</span>'}
         </td>
         <td style="white-space:nowrap">
-          <button class="btn btn-sm" style="padding:1px 5px;font-size:10px" onclick="openModal('inputMp','${m.id}')">✏</button>
+          <button class="btn btn-sm" style="padding:1px 5px;font-size:10px" onclick="openModal('inputMp','${m.id}')">${ic('edit',13)}</button>
           <button class="btn btn-sm brd" style="padding:1px 5px;font-size:10px" onclick="delMpLog('${m.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>
         </td>
       </tr>`;
@@ -233,7 +236,7 @@ function renderMpActivity(){
       <td style="font-weight:600;font-size:12px;max-width:220px">
         <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.wbsName}">${r.wbsName}</div>
       </td>
-      <td style="font-size:10px;color:var(--bl);white-space:nowrap">${r.projKode}</td>
+      <td style="font-size:10px;color:var(--mt);white-space:nowrap">${r.projKode}</td>
       <td style="text-align:center;font-family:var(--fm)">${r.days}</td>
       <td style="text-align:center;font-family:var(--fm);color:${r.spv>0?'var(--bl)':'var(--mt)'}">${r.spv||'—'}</td>
       <td style="text-align:center;font-family:var(--fm);color:${r.mandor>0?'var(--pu,#8b5cf6)':'var(--mt)'}">${r.mandor||'—'}</td>
@@ -241,11 +244,11 @@ function renderMpActivity(){
       <td style="text-align:center;font-family:var(--fm);color:${r.tukang>0?'var(--tl,#2dd4bf)':'var(--mt)'}">${r.tukang||'—'}</td>
       <td style="text-align:center;font-family:var(--fm);color:${r.helper>0?'var(--or)':'var(--mt)'}">${r.helper||'—'}</td>
       <td style="text-align:center;font-family:var(--fm);color:${r.safety>0?'var(--yw)':'var(--mt)'}">${r.safety||'—'}</td>
-      <td style="text-align:center;font-family:var(--fm);font-weight:700;font-size:14px;color:var(--or)">${r.total}</td>
+      <td style="text-align:center;font-family:var(--fm);font-weight:700;font-size:14px;color:var(--tx)">${r.total}</td>
       <td style="min-width:100px">
         <div style="display:flex;align-items:center;gap:5px">
           <div style="flex:1;background:var(--sf2);border-radius:3px;height:6px;overflow:hidden">
-            <div style="width:${barW}%;height:100%;background:linear-gradient(90deg,var(--or),var(--yw));border-radius:3px"></div>
+            <div style="width:${barW}%;height:100%;background:linear-gradient(90deg,var(--bl),#a9b4f5);border-radius:3px"></div>
           </div>
           <span style="font-size:10px;color:var(--mt);flex-shrink:0">${pct}%</span>
         </div>
@@ -276,14 +279,14 @@ function renderMpActivity(){
           <tbody>
             ${r.entries.sort((a,b)=>a.date>b.date?1:-1).map(e=>`
             <tr style="border-bottom:1px solid var(--bd)">
-              <td style="padding:4px 12px;font-family:var(--fm);color:var(--bl)">${e.date}</td>
+              <td style="padding:4px 12px;font-family:var(--fm);color:var(--tx)">${e.date}</td>
               <td style="padding:4px 8px;text-align:center">${e.spv||'—'}</td>
               <td style="padding:4px 8px;text-align:center">${e.mandor||'—'}</td>
               <td style="padding:4px 8px;text-align:center">${e.installer||'—'}</td>
               <td style="padding:4px 8px;text-align:center">${e.tukang||'—'}</td>
               <td style="padding:4px 8px;text-align:center">${e.helper||'—'}</td>
               <td style="padding:4px 8px;text-align:center">${e.safety||'—'}</td>
-              <td style="padding:4px 8px;text-align:center;font-weight:700;color:var(--or)">${e.total}</td>
+              <td style="padding:4px 8px;text-align:center;font-weight:700;color:var(--tx)">${e.total}</td>
               <td style="padding:4px 8px;color:var(--mt);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.notes||'—'}</td>
             </tr>`).join('')}
             <tr style="background:var(--sf);font-weight:700;border-top:2px solid var(--bd)">
@@ -294,7 +297,7 @@ function renderMpActivity(){
               <td style="padding:5px 8px;text-align:center">${r.tukang||'—'}</td>
               <td style="padding:5px 8px;text-align:center">${r.helper||'—'}</td>
               <td style="padding:5px 8px;text-align:center">${r.safety||'—'}</td>
-              <td style="padding:5px 8px;text-align:center;color:var(--or)">${r.total}</td>
+              <td style="padding:5px 8px;text-align:center;color:var(--tx)">${r.total}</td>
               <td></td>
             </tr>
           </tbody>
@@ -313,13 +316,13 @@ function renderMpActivity(){
   html+=`<tr style="background:var(--sf2);font-weight:700;border-top:2px solid var(--bd);position:sticky;bottom:0">
     <td colspan="2" style="padding:8px 10px;font-size:11px;color:var(--mt)">GRAND TOTAL — ${rows.length} item pekerjaan</td>
     <td style="text-align:center;font-family:var(--fm)">${rows.reduce((s,r)=>s+r.days,0)}</td>
-    <td style="text-align:center;font-family:var(--fm);color:var(--bl)">${gSpv}</td>
+    <td style="text-align:center;font-family:var(--fm);color:var(--tx)">${gSpv}</td>
     <td style="text-align:center;font-family:var(--fm)">${gMandor}</td>
-    <td style="text-align:center;font-family:var(--fm);color:var(--gn)">${gInst}</td>
+    <td style="text-align:center;font-family:var(--fm);color:var(--tx)">${gInst}</td>
     <td style="text-align:center;font-family:var(--fm)">${gTukang}</td>
-    <td style="text-align:center;font-family:var(--fm);color:var(--or)">${gHelper}</td>
+    <td style="text-align:center;font-family:var(--fm);color:var(--tx)">${gHelper}</td>
     <td style="text-align:center;font-family:var(--fm)">${gSafety}</td>
-    <td style="text-align:center;font-family:var(--fm);font-size:16px;font-weight:800;color:var(--or)">${grandTotal}</td>
+    <td style="text-align:center;font-family:var(--fm);font-size:16px;font-weight:800;color:var(--tx)">${grandTotal}</td>
     <td colspan="2"></td>
   </tr>`;
 
@@ -333,7 +336,7 @@ function toggleMpActDetail(rowId){
   if(!row)return;
   const hidden=row.style.display==='none';
   row.style.display=hidden?'table-row':'none';
-  if(btn)btn.textContent=hidden?'▼ Tutup':'Detail →';
+  if(btn)btn.innerHTML=hidden?ic('chevDown',12)+' Tutup':'Detail '+ic('chevRight',12);
 }
 
 function delMpLog(id){
@@ -443,7 +446,7 @@ function addMpActivityRow(existing, wbsChoices){
   row.style.cssText='background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:10px 12px;position:relative';
   row.innerHTML=`
     <button onclick="this.closest('.mp-act-row').remove();updateMpActSummary()"
-      style="position:absolute;top:6px;right:8px;background:none;border:none;cursor:pointer;color:var(--mt);font-size:14px;line-height:1;padding:0" title="Hapus aktivitas">✕</button>
+      style="position:absolute;top:6px;right:8px;background:none;border:none;cursor:pointer;color:var(--mt);font-size:14px;line-height:1;padding:0" title="Hapus aktivitas">${ic('x',14)}</button>
 
     <div style="margin-bottom:8px">
       <label style="font-size:10px;color:var(--mt);font-weight:600;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px">Item Pekerjaan / Aktivitas</label>
@@ -465,8 +468,8 @@ function addMpActivityRow(existing, wbsChoices){
         </div>`;
       }).join('')}
       <div style="text-align:center">
-        <div style="font-size:9px;color:var(--or);margin-bottom:2px">Total</div>
-        <div class="mpa-rowtot" style="font-family:var(--fm);font-weight:700;color:var(--or);font-size:14px;padding:4px 0">${
+        <div style="font-size:9px;color:var(--mt);margin-bottom:2px">Total</div>
+        <div class="mpa-rowtot" style="font-family:var(--fm);font-weight:700;color:var(--tx);font-size:14px;padding:4px 0">${
           existing?[existing.spv||0,existing.mandor||0,existing.installer||0,existing.tukang||0,existing.helper||0,existing.safety||0].reduce((s,v)=>s+v,0):0
         }</div>
       </div>
@@ -742,7 +745,8 @@ function saveProc(){
     notes:(gv('pNotes')||'').trim(),
     harga:hargaVal,
     rabKatId:rabKatId||null,
-    rabItemId:rabItemId||null
+    rabItemId:rabItemId||null,
+    logs:(Array.isArray(_procLogs)?_procLogs.slice():[])
   };
   if(editProcId){
     const i=PROC.findIndex(x=>String(x.id)===String(editProcId));
@@ -758,4 +762,64 @@ function saveProc(){
 }
 
 function delProc(){showConfirm('Hapus item ini?',()=>{PROC=PROC.filter(p=>String(p.id)!==String(editProcId));dirty();cm('addProc');renderProc();toast('Item dihapus','warn')});}
+
+// ── Riwayat Milestone Procurement (PR / PO / IR) ───────────────
+function _renderProcLogs(){
+  const box=document.getElementById('pLogList'); if(!box)return;
+  const logs=Array.isArray(_procLogs)?_procLogs:[];
+  if(!logs.length){box.innerHTML='<div style="font-size:10px;color:var(--mt)">Belum ada riwayat milestone.</div>';return;}
+  const ec={'PR Submit':'var(--yw)','PO Release':'var(--bl)','IR (Item Receive)':'var(--gn)'};
+  box.innerHTML=logs.slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))).map(l=>{
+    const c=ec[l.event]||'var(--pu)';
+    return '<div style="display:flex;align-items:center;gap:8px;background:var(--sf2);border:1px solid var(--bd);border-left:3px solid '+c+';border-radius:7px;padding:6px 9px">'
+      +'<span style="font-size:10px;font-weight:700;color:'+c+';white-space:nowrap">'+safeStr(l.event)+'</span>'
+      +'<span style="font-size:10px;color:var(--tx);font-family:var(--fm);white-space:nowrap">'+(safeStr(l.date)||'\u2014')+'</span>'
+      +'<span style="flex:1;min-width:0;font-size:10px;color:var(--mt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+safeStr(l.note||'')+'</span>'
+      +(l.by?'<span style="font-size:9px;color:var(--mt);white-space:nowrap">oleh '+safeStr(l.by)+'</span>':'')
+      +'<button class="btn" type="button" onclick="removeProcLog(\''+l.id+'\')" style="padding:1px 6px;font-size:11px;line-height:1;flex-shrink:0">\u00d7</button>'
+      +'</div>';
+  }).join('');
+}
+function addProcLog(){
+  const ev=gv('pLogEvent'), date=gv('pLogDate'), note=(gv('pLogNote')||'').trim(), by=(gv('pLogBy')||'').trim();
+  if(!date){toast('Pilih tanggal milestone','error');return;}
+  if(!Array.isArray(_procLogs))_procLogs=[];
+  _procLogs.push({id:(typeof genId==='function'?genId():'plog_'+Date.now()),event:ev,date:date,note:note,by:by,ts:new Date().toISOString()});
+  try{ if(by) localStorage.setItem('atw_proc_by',by); }catch(e){}
+  sv('pLogNote','');
+  _renderProcLogs();
+}
+function removeProcLog(id){
+  if(!Array.isArray(_procLogs))return;
+  const i=_procLogs.findIndex(x=>String(x.id)===String(id)); if(i>=0)_procLogs.splice(i,1);
+  _renderProcLogs();
+}
+
+// ── Export Procurement (sesuai filter) ke Excel ────────────────
+function exportProcExcel(){
+  if(typeof XLSX==='undefined'){toast('Excel belum siap, coba lagi sebentar','warn');return;}
+  const filtProj=gv('procFiltProj'), filt=gv('procFilt'), filtKat=gv('procFiltKat'), search=(gv('procSearch')||'').toLowerCase();
+  const rows=PROC.filter(i=>{
+    if(filtProj&&String(i.projId)!==String(filtProj))return false;
+    if(filt&&i.status!==filt)return false;
+    if(filtKat&&i.kategori!==filtKat)return false;
+    if(search&&!String(i.item||'').toLowerCase().includes(search)&&!String(i.supplier||'').toLowerCase().includes(search))return false;
+    return true;
+  });
+  if(!rows.length){toast('Tidak ada item untuk diekspor (cek filter)','warn');return;}
+  const _trim=v=>{if(!v)return '';const t=String(v).trim();return t.includes('T')?t.slice(0,10):t;};
+  const latest=(logs,ev)=>{const f=(logs||[]).filter(l=>l.event===ev).map(l=>l.date).filter(Boolean).sort();return f.length?f[f.length-1]:'';};
+  const items=rows.map(i=>{const pr=P.find(p=>String(p.id)===String(i.projId));const logs=Array.isArray(i.logs)?i.logs:[];
+    return {'Kode Project':pr?.kode||'',Item:i.item||'',Kategori:i.kategori||'',Qty:i.qty||'',Satuan:i.satuan||'',Supplier:i.supplier||'','Due Date':_trim(i.due),Status:i.status||'',Harga:+i.harga||0,'PR Submit':latest(logs,'PR Submit'),'PO Release':latest(logs,'PO Release'),'IR (Item Receive)':latest(logs,'IR (Item Receive)'),'Jml Riwayat':logs.length,Catatan:i.notes||''};});
+  const log=[];
+  rows.forEach(i=>{const pr=P.find(p=>String(p.id)===String(i.projId));(Array.isArray(i.logs)?i.logs:[]).slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))).forEach(l=>{
+    log.push({'Kode Project':pr?.kode||'',Item:i.item||'',Event:l.event||'',Tanggal:_trim(l.date),Catatan:l.note||'',Oleh:l.by||'',Dicatat:l.ts?String(l.ts).slice(0,19).replace('T',' '):''});});});
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(items),'PROCUREMENT');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(log.length?log:[{Info:'Belum ada riwayat milestone'}]),'MILESTONE_LOG');
+  const fn='ATW_Procurement_'+new Date().toISOString().slice(0,10)+'.xlsx';
+  XLSX.writeFile(wb,fn);
+  if(typeof clean==='function')clean(fn);
+  toast('\u2713 Tersimpan: "'+fn+'" ('+rows.length+' item)');
+}
 

@@ -102,7 +102,7 @@ function renderCost(){
     }).filter(r=>r.pTotal>0).sort((a,b)=>b.pTotal-a.pTotal);
     const grandTotal=projRows.reduce((s,r)=>s+r.pTotal,0);
     if(!projRows.length){
-      summEl.innerHTML='<div style="text-align:center;color:var(--mt);font-size:12px;padding:16px">Belum ada data cost</div>';
+      summEl.innerHTML='<div style="text-align:center;color:var(--mt);font-size:12px;padding:20px">Belum ada data cost</div>';
     }else{
       summEl.innerHTML=`<table class="tbl"><thead><tr>
         <th>Project</th><th>Procurement</th><th>Operasional</th><th>Total</th><th>% dari Semua</th>
@@ -111,9 +111,9 @@ function renderCost(){
         const pct=grandTotal?Math.round(pTotal/grandTotal*100):0;
         return`<tr>
           <td><span style="font-family:var(--fm);color:var(--bl);font-size:11px">${p.kode}</span><br><span style="font-size:10px;color:var(--mt)">${p.nama}</span></td>
-          <td style="font-family:var(--fm);color:var(--bl)">${fmtRp(pProc)}</td>
-          <td style="font-family:var(--fm);color:var(--pu)">${fmtRp(pOpex)}</td>
-          <td style="font-family:var(--fm);font-weight:700;color:var(--or)">${fmtRp(pTotal)}</td>
+          <td style="font-family:var(--fm);color:var(--tx)">${fmtRp(pProc)}</td>
+          <td style="font-family:var(--fm);color:var(--tx)">${fmtRp(pOpex)}</td>
+          <td style="font-family:var(--fm);font-weight:700;color:var(--tx)">${fmtRp(pTotal)}</td>
           <td style="min-width:100px">
             <div style="display:flex;align-items:center;gap:6px">
               <div class="cost-bar" style="flex:1"><div class="cost-bar-fill" style="width:${pct}%"></div></div>
@@ -123,9 +123,9 @@ function renderCost(){
         </tr>`;}).join('')}
       <tr style="border-top:2px solid var(--bd);font-weight:700">
         <td style="color:var(--tx)">TOTAL</td>
-        <td style="font-family:var(--fm);color:var(--bl)">${fmtRp(projRows.reduce((s,r)=>s+r.pProc,0))}</td>
-        <td style="font-family:var(--fm);color:var(--pu)">${fmtRp(projRows.reduce((s,r)=>s+r.pOpex,0))}</td>
-        <td style="font-family:var(--fm);color:var(--or)">${fmtRp(grandTotal)}</td>
+        <td style="font-family:var(--fm);color:var(--tx)">${fmtRp(projRows.reduce((s,r)=>s+r.pProc,0))}</td>
+        <td style="font-family:var(--fm);color:var(--tx)">${fmtRp(projRows.reduce((s,r)=>s+r.pOpex,0))}</td>
+        <td style="font-family:var(--fm);color:var(--tx)">${fmtRp(grandTotal)}</td>
         <td></td>
       </tr>
       </tbody></table>`;
@@ -136,7 +136,7 @@ function renderCost(){
   const detEl=$('costDetailTable');
   if(!detEl)return;
   if(!filtered.length){
-    detEl.innerHTML=`<div style="text-align:center;color:var(--mt);font-size:12px;padding:22px">${all.length?'Tidak ada entri cocok filter':'Belum ada data pengeluaran \u2014 klik ＋ Tambah Pengeluaran atau update harga di Procurement'}</div>`;
+    detEl.innerHTML=`<div style="text-align:center;color:var(--mt);font-size:12px;padding:22px">${all.length?'Tidak ada entri cocok filter':'Belum ada data pengeluaran \u2014 klik + Tambah Pengeluaran atau update harga di Procurement'}</div>`;
     return;
   }
   const typeLabel=t=>t==='procurement'?`<span class="cost-type-proc">PROC</span>`:t==='opex'?`<span class="cost-type-opex">OPEX</span>`:`<span class="cost-type-other">LAIN</span>`;
@@ -157,20 +157,20 @@ function renderCost(){
     let rabTag='<span style="font-size:9px;color:var(--bd)">—</span>';
     if(co.rabItemId){
       const ri=RAB.find(r=>String(r.id)===String(co.rabItemId));
-      if(ri)rabTag='<span style="font-size:9px;background:rgba(59,130,246,.12);color:var(--bl);padding:1px 5px;border-radius:3px;white-space:nowrap;display:inline-block" title="'+(ri.deskripsi||ri.name||'')+'">'+(ri.deskripsi||ri.name||'').slice(0,20)+'</span>';
+      if(ri)rabTag='<span style="font-size:9px;background:rgba(124,140,240,.12);color:var(--bl);padding:1px 5px;border-radius:3px;white-space:nowrap;display:inline-block" title="'+(ri.deskripsi||ri.name||'')+'">'+(ri.deskripsi||ri.name||'').slice(0,20)+'</span>';
     }else if(co.rabKatId){
       const rk=RAB.find(r=>String(r.id)===String(co.rabKatId));
       if(rk)rabTag='<span style="font-size:9px;background:rgba(139,92,246,.1);color:var(--pu);padding:1px 5px;border-radius:3px;white-space:nowrap;display:inline-block" title="'+(rk.name||'')+'">'+( rk.name||'').slice(0,20)+'</span>';
     }
     return`<tr>
       <td style="font-family:var(--fm);font-size:10px;white-space:nowrap">${co.date||'—'}</td>
-      <td style="font-family:var(--fm);font-size:10px;color:var(--bl)">${pr?.kode||'—'}</td>
+      <td style="font-family:var(--fm);font-size:10px;color:var(--mt)">${pr?.kode||'—'}</td>
       <td>${typeLabel(co.type)}</td>
       <td style="color:var(--mt);font-size:11px">${co.kategori||'—'}</td>
       <td style="font-weight:500;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${co.deskripsi||''}">${co.deskripsi||'—'}</td>
       <td>${rabTag}</td>
       <td style="color:var(--mt);font-size:11px">${co.paidBy||'—'}</td>
-      <td style="font-family:var(--fm);font-weight:700;color:var(--gn);text-align:right;white-space:nowrap">${fmtRp(co.amount)}</td>
+      <td style="font-family:var(--fm);font-weight:700;color:var(--tx);text-align:right;white-space:nowrap">${fmtRp(co.amount)}</td>
       <td>${canEdit?`<button class="btn btn-sm edit-only" style="padding:2px 6px" onclick="openModal('editCost','${co.id}')">&#x270F;</button>`:'<span style="font-size:9px;color:var(--mt)">via Proc</span>'}</td>
     </tr>`;}).join('')}
   </tbody></table>`;
@@ -179,7 +179,7 @@ function renderCost(){
 function openCostModal(id=null){
   editCostId=id?String(id):null;
   $('costMT').textContent=id?'EDIT PENGELUARAN':'TAMBAH PENGELUARAN';
-  $('btnSaveCost').innerHTML=id?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan':'＋ Tambah';
+  $('btnSaveCost').innerHTML=id?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan':ic('plus',13)+' Tambah';
   $('btnDelCost').style.display=id?'block':'none';
   $('cProj').innerHTML=P.map(p=>`<option value="${p.id}">${p.kode} \u2014 ${p.nama}</option>`).join('');
   const entry=id?COSTS.find(x=>String(x.id)===String(id)):null;
@@ -350,7 +350,7 @@ function _updateCostRabBudget(){
     if(uAmt)uAmt.textContent='Rp '+afterThis.toLocaleString('id-ID')+' ('+pct+'%)';
     if(bar){
       bar.style.width=pct+'%';
-      bar.style.background=pct>=100?'var(--rd)':pct>=85?'var(--yw)':'linear-gradient(90deg,var(--gn),#34d399)';
+      bar.style.background=pct>=100?'var(--rd)':pct>=85?'var(--yw)':'linear-gradient(90deg,var(--gn),#6fe7b8)';
     }
     if(sAmt){
       sAmt.textContent='Rp '+Math.abs(sisa).toLocaleString('id-ID')+(sisa<0?' (OVER!)':'');
@@ -370,7 +370,7 @@ function _updateCostRabBudget(){
     if(lbl)lbl.textContent=(rk?.name||'Kategori')+' (total):';
     if(bAmt)bAmt.textContent=totalBudget>0?'Rp '+totalBudget.toLocaleString('id-ID'):'Tidak diset';
     if(uAmt)uAmt.textContent='Rp '+totalUsed.toLocaleString('id-ID')+(totalBudget>0?' ('+pct+'%)':'');
-    if(bar){bar.style.width=pct+'%';bar.style.background=pct>=100?'var(--rd)':pct>=85?'var(--yw)':'linear-gradient(90deg,var(--gn),#34d399)';}
+    if(bar){bar.style.width=pct+'%';bar.style.background=pct>=100?'var(--rd)':pct>=85?'var(--yw)':'linear-gradient(90deg,var(--gn),#6fe7b8)';}
     if(sAmt){
       sAmt.textContent=totalBudget>0?'Rp '+Math.abs(sisa).toLocaleString('id-ID')+(sisa<0?' (OVER!)':''):'\u2014';
       sAmt.style.color=sisa<0?'var(--rd)':sisa<totalBudget*0.1?'var(--yw)':'var(--gn)';
@@ -501,7 +501,7 @@ function _updateProcRabBudget(){
     if($('pRabUsedAmt'))$('pRabUsedAmt').textContent='Rp '+afterThis.toLocaleString('id-ID')+(budget>0?' ('+pct+'%)':'');
     if($('pRabBar')){
       $('pRabBar').style.width=pct+'%';
-      $('pRabBar').style.background=pct>=100?'var(--rd)':pct>=85?'var(--yw)':'linear-gradient(90deg,var(--gn),#34d399)';
+      $('pRabBar').style.background=pct>=100?'var(--rd)':pct>=85?'var(--yw)':'linear-gradient(90deg,var(--gn),#6fe7b8)';
     }
     if($('pRabSisaAmt')){
       $('pRabSisaAmt').textContent='Rp '+Math.abs(sisa).toLocaleString('id-ID')+(sisa<0?' (OVER!)':'');
@@ -522,7 +522,7 @@ function _updateProcRabBudget(){
     if($('pRabUsedAmt'))$('pRabUsedAmt').textContent='Rp '+afterThis.toLocaleString('id-ID')+(totalBudget>0?' ('+pct+'%)':'');
     if($('pRabBar')){
       $('pRabBar').style.width=pct+'%';
-      $('pRabBar').style.background=pct>=100?'var(--rd)':pct>=85?'var(--yw)':'linear-gradient(90deg,var(--gn),#34d399)';
+      $('pRabBar').style.background=pct>=100?'var(--rd)':pct>=85?'var(--yw)':'linear-gradient(90deg,var(--gn),#6fe7b8)';
     }
     if($('pRabSisaAmt')){
       $('pRabSisaAmt').textContent=totalBudget>0?'Rp '+Math.abs(sisa).toLocaleString('id-ID')+(sisa<0?' (OVER!)':''):'—';
@@ -776,14 +776,14 @@ function renderRab(){
   const el2=$('rabK2');if(el2)el2.textContent=fmtRpShort(totalActual);
   const el2s=$('rabK2s');if(el2s)el2s.textContent=`${pctUsed}% dari total RAB`;
   const el3=$('rabK3');
-  if(el3){el3.textContent=fmtRpShort(Math.abs(sisaAngg));el3.style.color=sisaAngg<0?'var(--rd)':sisaAngg/totalRab<0.1&&totalRab>0?'var(--yw)':'var(--gn)';}
-  const el3s=$('rabK3s');if(el3s)el3s.textContent=sisaAngg<0?'⚠ MELEBIHI RAB':sisaAngg===0?'Pas RAB':'Tersedia';
+  if(el3){el3.textContent=fmtRpShort(Math.abs(sisaAngg));el3.style.color=sisaAngg<0?'var(--rd)':sisaAngg/totalRab<0.1&&totalRab>0?'var(--yw)':'var(--tx)';}
+  const el3s=$('rabK3s');if(el3s)el3s.innerHTML=sisaAngg<0?ic('warn',12)+' MELEBIHI RAB':sisaAngg===0?'Pas RAB':'Tersedia';
   const el4=$('rabK4');if(el4)el4.textContent=critKats;
   const el4s=$('rabK4s');if(el4s)el4s.textContent=`kategori sudah ≥90% terpakai`;
 
   if(!kats.length&&!items.length){
     rabTable.innerHTML=`<div style="text-align:center;color:var(--mt);font-size:12px;padding:24px">
-      Belum ada RAB untuk project ini. Klik <strong>＋ Kategori</strong> untuk memulai.
+      Belum ada RAB untuk project ini. Klik <strong>+ Kategori</strong> untuk memulai.
     </div>`;
     return;
   }
@@ -797,12 +797,12 @@ function renderRab(){
     const pctKat=rabKatTotal>0?Math.round(actKat/rabKatTotal*100):0;
     const sisaKat=rabKatTotal-actKat;
     const fillClass=pctKat>=100?'rab-pct-danger':pctKat>=90?'rab-pct-warn':'rab-pct-ok';
-    const badge=pctKat>=100?`<span class="rab-badge-over">OVER ${pctKat}%</span>`:pctKat>=90?`<span class="rab-badge-warn">${pctKat}% ⚠</span>`:`<span class="rab-badge-ok">${pctKat}%</span>`;
+    const badge=pctKat>=100?`<span class="rab-badge-over">OVER ${pctKat}%</span>`:pctKat>=90?`<span class="rab-badge-warn">${pctKat}% ${ic('warn',11)}</span>`:`<span class="rab-badge-ok">${pctKat}%</span>`;
 
     rows+=`<tr class="rab-kat-row" onclick="toggleRabKat('rkat_${k.id}')">
       <td colspan="4">
         <div class="rab-kat-name">
-          <span id="rkat_${k.id}_ico">▼</span>
+          <span id="rkat_${k.id}_ico" style="display:inline-flex;color:var(--mt)">${ic('chevDown',13)}</span>
           <span style="font-size:12px">${k.name}</span>
           ${badge}
           <div class="rab-progress-bar" style="flex:1;max-width:140px">
@@ -810,12 +810,12 @@ function renderRab(){
           </div>
         </div>
       </td>
-      <td style="font-family:var(--fm);text-align:right;color:var(--bl)">${fmtRp(rabKatTotal)}</td>
-      <td style="font-family:var(--fm);text-align:right;color:var(--gn)">${fmtRp(actKat)}</td>
+      <td style="font-family:var(--fm);text-align:right;color:var(--tx)">${fmtRp(rabKatTotal)}</td>
+      <td style="font-family:var(--fm);text-align:right;color:var(--tx)">${fmtRp(actKat)}</td>
       <td style="font-family:var(--fm);text-align:right;color:${sisaKat<0?'var(--rd)':sisaKat/rabKatTotal<0.1&&rabKatTotal>0?'var(--yw)':'var(--tx)'};font-weight:700">${fmtRp(Math.abs(sisaKat))}${sisaKat<0?' (OVER)':''}</td>
       <td class="edit-only" style="white-space:nowrap">
-        <button class="btn btn-sm" style="padding:2px 6px;font-size:10px" onclick="event.stopPropagation();openRabKatModal('${k.id}')">✏</button>
-        <button class="btn btn-sm" style="padding:2px 6px;font-size:10px;border-color:var(--bl);color:var(--bl)" onclick="event.stopPropagation();openRabItemModal(null,'${k.id}')">＋</button>
+        <button class="btn btn-sm" style="padding:2px 6px;font-size:10px" onclick="event.stopPropagation();openRabKatModal('${k.id}')">${ic('edit',13)}</button>
+        <button class="btn btn-sm" style="padding:2px 6px;font-size:10px;border-color:var(--bl);color:var(--bl)" onclick="event.stopPropagation();openRabItemModal(null,'${k.id}')">${ic('plus',13)}</button>
       </td>
     </tr>`;
 
@@ -837,7 +837,7 @@ function renderRab(){
           </td>
           <td style="color:var(--mt);font-size:10px;text-align:center">${item.volume||'\u2014'} ${item.satuan||''}</td>
           <td style="font-family:var(--fm);text-align:right;font-size:10px;color:var(--mt)">${fmtRp(item.hargaSatuan)}</td>
-          <td style="font-family:var(--fm);text-align:right;color:var(--bl)">${fmtRp(itemBudget)}</td>
+          <td style="font-family:var(--fm);text-align:right;color:var(--tx)">${fmtRp(itemBudget)}</td>
           <td style="font-family:var(--fm);text-align:right;color:${itemActual>0?'var(--or)':'var(--mt)'}">
             ${itemActual>0?fmtRp(itemActual):'<span style="font-size:10px">\u2014</span>'}
             ${itemActual>0?`<div class="rab-progress-bar" style="min-width:60px;margin-top:3px"><div class="rab-progress-fill ${itemFillClass}" style="width:${itemPct}%"></div></div>`:''}
@@ -846,13 +846,13 @@ function renderRab(){
             ${itemActual>0?fmtRp(Math.abs(itemSisa))+(itemSisa<0?' \u26A0':''):'<span style="font-size:10px">\u2014</span>'}
           </td>
           <td class="edit-only" style="white-space:nowrap;display:flex;gap:3px;align-items:center">
-            <button class="btn btn-sm" style="padding:2px 6px;font-size:10px;border-color:var(--gn);color:var(--gn);font-weight:700" onclick="event.stopPropagation();addCostForRabItem('${item.id}','${item.katId}',\`${item.deskripsi||item.name||''}\`)" title="Input pengeluaran untuk item ini">＋</button>
-            <button class="btn btn-sm" style="padding:2px 6px;font-size:10px" onclick="event.stopPropagation();openRabItemModal('${item.id}')">✏</button>
+            <button class="btn btn-sm" style="padding:2px 6px;font-size:10px;border-color:var(--bl);color:var(--bl);font-weight:700" onclick="event.stopPropagation();addCostForRabItem('${item.id}','${item.katId}',\`${item.deskripsi||item.name||''}\`)" title="Input pengeluaran untuk item ini">${ic('plus',13)}</button>
+            <button class="btn btn-sm" style="padding:2px 6px;font-size:10px" onclick="event.stopPropagation();openRabItemModal('${item.id}')">${ic('edit',13)}</button>
           </td>
         </tr>`;
       });
     } else {
-      rows+=`<tr><td colspan="8" style="padding:6px 28px;color:var(--mt);font-size:11px;font-style:italic">Belum ada item \u2014 klik ＋ untuk tambah</td></tr>`;
+      rows+=`<tr><td colspan="8" style="padding:6px 28px;color:var(--mt);font-size:11px;font-style:italic">Belum ada item \u2014 klik + untuk tambah</td></tr>`;
     }
     rows+=`</tbody>`;
   });
@@ -875,8 +875,8 @@ function renderRab(){
   ${rows}
   <tr style="border-top:2px solid var(--bd);font-weight:700;background:var(--sf2)">
     <td colspan="4" style="color:var(--tx)">TOTAL RAB</td>
-    <td style="font-family:var(--fm);text-align:right;color:var(--bl)">${fmtRp(grandTotal)}</td>
-    <td style="font-family:var(--fm);text-align:right;color:var(--gn)">${fmtRp(grandAct)}</td>
+    <td style="font-family:var(--fm);text-align:right;color:var(--tx)">${fmtRp(grandTotal)}</td>
+    <td style="font-family:var(--fm);text-align:right;color:var(--tx)">${fmtRp(grandAct)}</td>
       <td style="font-family:var(--fm);text-align:right;color:${grandSisa<0?'var(--rd)':'var(--tx)'};font-weight:700">${fmtRp(Math.abs(grandSisa))}${grandSisa<0?' (OVER)':''}</td>
     <td></td>
   </tr>
@@ -935,7 +935,7 @@ function toggleRabKat(tbodyId){
   if(!tb)return;
   const hidden=tb.style.display==='none';
   tb.style.display=hidden?'':'none';
-  if(ico)ico.textContent=hidden?'▼':'\u25B6';
+  if(ico)ico.innerHTML=hidden?ic('chevDown',13):ic('chevRight',13);
 }
 
 function calcRabTotal(){
@@ -964,7 +964,7 @@ function updateRabItemDropdown(){
 function openRabKatModal(id=null){
   editRabCatId=id?String(id):null;
   $('rabKatMT').textContent=id?'EDIT KATEGORI RAB':'TAMBAH KATEGORI RAB';
-  $('btnSaveRabKat').innerHTML=id?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan':'＋ Tambah';
+  $('btnSaveRabKat').innerHTML=id?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan':ic('plus',13)+' Tambah';
   $('btnDelRabKat').style.display=id?'block':'none';
   // Fill project dropdown
   $('rkProj').innerHTML=P.map(p=>`<option value="${p.id}">${p.kode} \u2014 ${p.nama}</option>`).join('');
@@ -1012,7 +1012,7 @@ function delRabKat(){
 function openRabItemModal(id=null,defaultKatId=null){
   editRabId=id?String(id):null;
   $('rabItemMT').textContent=id?'EDIT ITEM RAB':'TAMBAH ITEM RAB';
-  $('btnSaveRabItem').innerHTML=id?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan':'＋ Tambah';
+  $('btnSaveRabItem').innerHTML=id?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan':ic('plus',13)+' Tambah';
   $('btnDelRabItem').style.display=id?'block':'none';
   $('riProj').innerHTML=P.map(p=>`<option value="${p.id}">${p.kode} \u2014 ${p.nama}</option>`).join('');
   if(id){
@@ -1100,7 +1100,7 @@ function _onCloneRabSrcChange(){
     $('cloneRabPreview').innerHTML='<div style="color:var(--mt);font-style:italic">Belum ada RAB di project ini.</div>';return;
   }
   const totalRab=items.reduce((s,i)=>s+(+i.total||0),0);
-  let html=`<div style="color:var(--or);font-weight:600;margin-bottom:6px">${kats.length} kategori | ${items.length} item | Total: ${fmtRpShort(totalRab)}</div>`;
+  let html=`<div style="color:var(--mt);font-weight:600;margin-bottom:6px">${kats.length} kategori | ${items.length} item | Total: ${fmtRpShort(totalRab)}</div>`;
   kats.forEach((k,ki)=>{
     const katItems=items.filter(i=>i.katId===k.id);
     const katTotal=katItems.reduce((s,i)=>s+(+i.total||0),0);

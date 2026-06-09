@@ -13,6 +13,39 @@ const sv=(id,v)=>{const e=$(id);if(e)e.value=v;};
 const gv=id=>$(id)?.value||'';
 const show=id=>$(id)?.classList.add('open');
 
+// ── IKON KONSISTEN (Lucide/Feather, stroke 1.75) ───────────
+// ic('edit',14) → string inline SVG. Mewarisi warna dari `color` induk (currentColor).
+const _ICON_PATHS={
+  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  chevDown:'<polyline points="6 9 12 15 18 9"/>',
+  chevRight:'<polyline points="9 18 15 12 9 6"/>',
+  warn:'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',
+  reset:'<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>',
+  lock:'<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  clipboard:'<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>',
+  arrowUp:'<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>',
+  copy:'<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'
+};
+function _cardState(){ try{return JSON.parse(localStorage.getItem('atw_card_collapse')||'{}');}catch(e){return {};} }
+function cardCollapsed(key){ return !!_cardState()[key]; }
+function cardChev(key){ return '<span class="cardchev" onclick="toggleCardCollapse(this,\''+key+'\')">'+ic(cardCollapsed(key)?'chevRight':'chevDown',14)+'</span>'; }
+function cardCls(key){ return 'card collapsible'+(cardCollapsed(key)?' collapsed':''); }
+function toggleCardCollapse(chev,key){ var card=chev.closest('.card'); if(!card)return; var col=card.classList.toggle('collapsed'); chev.innerHTML=ic(col?'chevRight':'chevDown',14); if(!col){ var kids=card.children; for(var i=0;i<kids.length;i++){ var el=kids[i]; if(el.classList&&el.classList.contains('ct'))continue; el.classList.remove('card-anim-in'); void el.offsetWidth; el.classList.add('card-anim-in'); (function(e){setTimeout(function(){e.classList.remove('card-anim-in');},260);})(el); } } try{var st=_cardState();st[key]=col;localStorage.setItem('atw_card_collapse',JSON.stringify(st));}catch(e){} }
+function ic(name,size){
+  var p=_ICON_PATHS[name]; if(!p) return '';
+  var s=size||14;
+  return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block">'+p+'</svg>';
+}
+// dot kecil / kotak isi utk marker legenda (mis. pengganti ■)
+function icDot(color,size){var s=size||10;return '<span style="display:inline-block;width:'+s+'px;height:'+s+'px;border-radius:2px;background:'+(color||'currentColor')+';vertical-align:-1px"></span>';}
+
 // Format tanggal \u2014 handle ISO string, locale string, date object
 function fmtDate(d){
   if(!d)return '\u2014';

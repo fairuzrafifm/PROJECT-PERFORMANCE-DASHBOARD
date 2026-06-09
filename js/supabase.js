@@ -95,6 +95,8 @@ async function loadFromSupabase() {
       { data: wbs },
       { data: scurve },
       { data: documents },
+      { data: snapshots },
+      { data: actionItems },
     ] = await Promise.all([
       (_initSb()).from('projects').select('*').order('created_at'),
       (_initSb()).from('project_history').select('*').order('date'),
@@ -107,6 +109,8 @@ async function loadFromSupabase() {
       (_initSb()).from('wbs').select('*').order('order'),
       (_initSb()).from('scurve').select('*').order('week'),
       (_initSb()).from('documents').select('*').order('created_at', { ascending: false }),
+      (_initSb()).from('snapshots').select('*').order('date'),
+      (_initSb()).from('action_items').select('*').order('created_at'),
     ]);
 
     // Map dari snake_case Supabase → camelCase dashboard
@@ -121,6 +125,12 @@ async function loadFromSupabase() {
     SCURVE  = (scurve || []).map(mapScurve);
     if (typeof mapDocument === 'function') {
       DOCS = (documents || []).map(mapDocument);
+    }
+    if (typeof mapSnapshot === 'function') {
+      SNAPSHOTS = (snapshots || []).map(mapSnapshot);
+    }
+    if (typeof mapActionItem === 'function') {
+      ACTIONS = (actionItems || []).map(mapActionItem);
     }
 
     // Merge history ke masing-masing project
@@ -137,6 +147,7 @@ async function loadFromSupabase() {
 
     render();
     toast('Data berhasil dimuat ✓');
+    if (typeof autoSnapshotWeekly === 'function') setTimeout(autoSnapshotWeekly, 1500);
     sbSubscribeRealtime();           // start listening perubahan realtime
 
   } catch (err) {
@@ -327,7 +338,27 @@ function _updatePresence(users) {
   _renderPresencePanel(_onlineUsers);
 }
 
-/** (Versi avatar-strip _renderOnlineUsers dihapus — definisi aktif ada di bawah, ~baris 530+) */
+/** Render avatar strip di header */
+function _renderOnlineUsers(users) {
+  const el = document.getElementById('online-users');
+  if (!el) return;
+
+  if (!users.length) { el.innerHTML = ''; return; }
+
+  const colors = ['#7c8cf0','#3ddc97','#7c8cf0','#8b5cf6','#ec4899','#06b6d4'];
+  el.innerHTML = users.slice(0, 5).map((u, i) => {
+    const initials = (u.name || 'U').split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const color = colors[i % colors.length];
+    const proj = u.editingProjId ? ' · editing' : '';
+    return '<span title="' + (u.name||'User') + ' (' + (u.role||'?') + ')' + proj + '" ' +
+      'style="display:inline-flex;align-items:center;justify-content:center;' +
+      'width:24px;height:24px;border-radius:50%;background:' + color + ';' +
+      'color:#fff;font-size:9px;font-weight:700;margin-left:-4px;' +
+      'border:2px solid var(--sf);cursor:default;flex-shrink:0">' +
+      initials + '</span>';
+  }).join('') + (users.length > 5 ?
+    '<span style="font-size:9px;color:var(--mt);margin-left:4px">+' + (users.length-5) + '</span>' : '');
+}
 
 /** Render panel detail presence (untuk modal/popover) */
 function _renderPresencePanel(users) {
@@ -339,7 +370,7 @@ function _renderPresencePanel(users) {
     return;
   }
 
-  const colors = ['#3b82f6','#10b981','#f97316','#8b5cf6','#ec4899','#06b6d4'];
+  const colors = ['#7c8cf0','#3ddc97','#7c8cf0','#8b5cf6','#ec4899','#06b6d4'];
   el.innerHTML = users.map((u, i) => {
     const color = colors[i % colors.length];
     const initials = (u.name||'U').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
@@ -355,11 +386,11 @@ function _renderPresencePanel(users) {
         '<div style="font-size:11px;font-weight:600;color:var(--tx);overflow:hidden;' +
           'text-overflow:ellipsis;white-space:nowrap">' + (u.name||'User') + '</div>' +
         '<div style="font-size:9px;color:var(--mt)">' +
-          (projName ? '✏ ' + projName : '● Online') +
+          (projName ? ic('edit',11)+' ' + projName : icDot('currentColor',7)+' Online') +
         '</div>' +
       '</div>' +
       '<span style="margin-left:auto;font-size:8px;color:var(--mt);' +
-        'background:rgba(59,130,246,.1);padding:1px 6px;border-radius:10px">' +
+        'background:rgba(124,140,240,.1);padding:1px 6px;border-radius:10px">' +
         (u.role||'viewer') + '</span>' +
     '</div>';
   }).join('');
@@ -454,6 +485,40 @@ async function sbSaveWbs(node) {
 /** Simpan S-Curve entry */
 async function sbSaveScurve(entry) {
   const { error } = await (_initSb()).from('scurve').upsert(unmapScurve(entry), { onConflict: 'proj_id,week' });
+  if (error) throw error;
+}
+
+/** Snapshot mingguan: map row <-> objek & simpan */
+function mapSnapshot(r){
+  return { id:r.id, projId:r.proj_id, week:r.week, date:r.date,
+    actual:+r.actual||0, plan:+r.plan||0,
+    spi:(r.spi!=null?+r.spi:null), cpi:(r.cpi!=null?+r.cpi:null) };
+}
+function unmapSnapshot(s){
+  return { id:s.id, proj_id:s.projId, week:s.week, date:s.date,
+    actual:+s.actual||0, plan:+s.plan||0,
+    spi:(s.spi!=null?+s.spi:null), cpi:(s.cpi!=null?+s.cpi:null) };
+}
+async function sbSaveSnapshot(entry){
+  const { error } = await (_initSb()).from('snapshots').upsert(unmapSnapshot(entry), { onConflict: 'proj_id,week' });
+  if (error) throw error;
+}
+
+/** Action items: map row <-> objek & simpan/hapus */
+function mapActionItem(r){
+  return { id:r.id, projId:r.proj_id, text:r.text||'', pic:r.pic||'',
+    due:r.due||'', done:!!r.done, createdAt:r.created_at||'' };
+}
+function unmapActionItem(a){
+  return { id:a.id, proj_id:a.projId, text:(a.text||'').slice(0,500),
+    pic:a.pic||'', due:a.due||null, done:!!a.done };
+}
+async function sbSaveActionItem(a){
+  const { error } = await (_initSb()).from('action_items').upsert(unmapActionItem(a), { onConflict: 'id' });
+  if (error) throw error;
+}
+async function sbDeleteActionItem(id){
+  const { error } = await (_initSb()).from('action_items').delete().eq('id', id);
   if (error) throw error;
 }
 
@@ -588,7 +653,8 @@ function mapProcurement(r) {
     id: r.id, projId: r.proj_id, item: r.item, kategori: r.kategori,
     qty: r.qty, satuan: r.satuan, due: r.due, supplier: r.supplier,
     harga: r.harga, status: r.status, notes: r.notes,
-    rabKatId: r.rab_kat_id, rabItemId: r.rab_item_id
+    rabKatId: r.rab_kat_id, rabItemId: r.rab_item_id,
+    logs: Array.isArray(r.logs) ? r.logs : []
   };
 }
 function unmapProcurement(p) {
@@ -597,7 +663,8 @@ function unmapProcurement(p) {
     qty: p.qty || 0, satuan: p.satuan, due: p.due || null,
     supplier: p.supplier, harga: p.harga || 0, status: p.status,
     notes: p.notes, rab_kat_id: p.rabKatId || null,
-    rab_item_id: p.rabItemId || null
+    rab_item_id: p.rabItemId || null,
+    logs: Array.isArray(p.logs) ? p.logs : []
   };
 }
 
@@ -683,6 +750,7 @@ function mapWbs(r) {
     order: r.order, cumPlan: r.cum_plan, cumActual: r.cum_actual,
     startDate: r.start_date, finishDate: r.finish_date,
     weeklyData: r.weekly_data || {}, weeklyPlan: r.weekly_plan || {},
+    predecessors: Array.isArray(r.predecessors) ? r.predecessors : (r.predecessors ? JSON.parse(r.predecessors) : []),
     // Daily Report fields
     qtyPlan:   r.qty_plan   != null ? +r.qty_plan : 0,
     satuan:    r.satuan     || '',
@@ -699,6 +767,7 @@ function unmapWbs(w) {
     order: w.order || 0, cum_plan: w.cumPlan || 0, cum_actual: w.cumActual || 0,
     start_date: w.startDate || null, finish_date: w.finishDate || null,
     weekly_data: w.weeklyData || {}, weekly_plan: w.weeklyPlan || {},
+    predecessors: Array.isArray(w.predecessors) ? w.predecessors : [],
     // Daily Report fields — simpan ke Supabase
     qty_plan:   w.qtyPlan   != null ? +w.qtyPlan  : 0,
     satuan:     w.satuan    || w.qtySatuan || '',   // support dua alias
@@ -1199,7 +1268,7 @@ window.addEventListener('load', function _initSyncEngine() {
     if (typeof showConfirm === 'function') {
       showConfirm('Hapus issue ini?', async () => {
         if (typeof ISS !== 'undefined')
-          window.ISS = ISS.filter(i => String(i.id) !== String(id));
+          ISS = ISS.filter(i => String(i.id) !== String(id));
         if (typeof dirty === 'function') dirty();
         if (typeof cm === 'function') cm('addIssue');
         if (typeof renderIssues === 'function') renderIssues();
@@ -1233,7 +1302,7 @@ window.addEventListener('load', function _initSyncEngine() {
     if (typeof showConfirm === 'function') {
       showConfirm('Hapus item ini?', async () => {
         if (typeof PROC !== 'undefined')
-          window.PROC = PROC.filter(p => String(p.id) !== String(id));
+          PROC = PROC.filter(p => String(p.id) !== String(id));
         if (typeof dirty === 'function') dirty();
         if (typeof cm === 'function') cm('addProc');
         if (typeof renderProc === 'function') renderProc();
@@ -1393,7 +1462,7 @@ window.addEventListener('load', function _initSyncEngine() {
     const msg = `Hapus "${(node.name||'').slice(0,30)}"${toRm.size > 1 ? ' dan ' + (toRm.size - 1) + ' child-nya' : ''}?`;
     if (typeof showConfirm === 'function') {
       showConfirm(msg, async () => {
-        window.WBS = WBS.filter(w => !toRm.has(String(w.id)));
+        WBS = WBS.filter(w => !toRm.has(String(w.id)));
         if (typeof dirty === 'function') dirty();
         if (typeof renderWBS === 'function') renderWBS();
         if (typeof toast === 'function') toast('Dihapus', 'warn');
@@ -2116,8 +2185,8 @@ window.addEventListener('load', function _initSyncEngine() {
         badge.style.cssText = [
           'display:none;margin-left:8px;padding:1px 8px;border-radius:10px;',
           'font-size:9px;font-family:var(--fm);cursor:pointer;',
-          'background:rgba(249,115,22,.15);color:var(--or);',
-          'border:1px solid rgba(249,115,22,.3);animation:pulse 2s infinite'
+          'background:rgba(124,140,240,.15);color:var(--or);',
+          'border:1px solid rgba(124,140,240,.3);animation:pulse 2s infinite'
         ].join('');
         badge.onclick = function () { _flush(); };
         info.appendChild(badge);
@@ -2225,27 +2294,11 @@ window.addEventListener('load', function _initSyncEngine() {
       var q = _qLoad();
       if (!q.length) return;
 
-      // ── Aging: buang operasi terlalu lama (>7 hari) — kemungkinan basi/konflik ──
-      var MAX_AGE = 7 * 24 * 60 * 60 * 1000;
-      var MAX_TRIES = 5;
-      var now = Date.now();
-      var agedCount = 0;
-      q = q.filter(function (op) {
-        if (op.ts && (now - op.ts) > MAX_AGE) { agedCount++; return false; }
-        return true;
-      });
-      if (agedCount) {
-        _qSave(q);
-        console.warn('[SQ] ' + agedCount + ' operasi kedaluwarsa (>7 hari) dibuang');
-        try { toast(agedCount + ' operasi lama dibatalkan (kedaluwarsa)', 'warn'); } catch (e) {}
-        if (!q.length) { _uiBadge(); return; }
-      }
-
       _flushing = true;
       var smsg = document.getElementById('smsg');
       if (smsg) smsg.textContent = 'Mengirim ' + q.length + ' operasi tertunda...';
 
-      var ok = 0, fail = 0, dead = 0;
+      var ok = 0, fail = 0;
       var client = (typeof _initSb === 'function') ? _initSb() : null;
 
       for (var i = 0; i < q.length; i++) {
@@ -2256,32 +2309,17 @@ window.addEventListener('load', function _initSyncEngine() {
           ok++;
         } catch (e) {
           console.warn('[SQ flush fail]', op.type, e.message);
-          var tries = (op.tries || 0) + 1;
-          if (tries >= MAX_TRIES) {
-            // ── Max-retry: buang permanen agar tidak retry selamanya / menyumbat antrian ──
-            _qRemove(op.id);
-            dead++;
-            console.warn('[SQ] operasi dibuang setelah ' + MAX_TRIES + 'x gagal:', op.type, op.key || op.id);
-          } else {
-            // Simpan kenaikan hitung percobaan
-            var cur = _qLoad();
-            var ix = cur.findIndex(function (x) { return x.id === op.id; });
-            if (ix >= 0) { cur[ix].tries = tries; _qSave(cur); }
-            fail++;
-          }
+          fail++;
         }
       }
       _flushing = false;
       _uiBadge();
 
-      if (ok > 0 && fail === 0 && dead === 0) {
+      if (ok > 0 && fail === 0) {
         try { toast(ok + ' operasi berhasil tersimpan ke Supabase \u2713'); } catch (e) {}
         if (typeof _sbStatusOk === 'function') _sbStatusOk();
       } else if (fail > 0) {
         try { toast(fail + ' operasi gagal \u2014 klik badge untuk coba lagi', 'error'); } catch (e) {}
-      }
-      if (dead > 0) {
-        try { toast(dead + ' operasi gagal permanen (>' + MAX_TRIES + 'x) dan dibatalkan', 'error'); } catch (e) {}
       }
     }
 
