@@ -344,7 +344,7 @@ function renderDetail(id){
   const _pid=String(p.id);
   const _rp=x=>(typeof fmtRp==='function')?fmtRp(x):'Rp '+Math.round(+x||0).toLocaleString('id-ID');
   const _rabBudget=RAB.filter(r=>String(r.projId)===_pid&&r.type==='item').reduce((s,r)=>s+(+r.total||0),0);
-  const _costsP=COSTS.filter(c=>String(c.projId)===_pid&&!c._deleted);
+  const _costsP=(typeof getAllCosts==='function'?getAllCosts():COSTS).filter(c=>String(c.projId)===_pid&&!c._deleted);
   const _costProc=_costsP.filter(c=>c.type==='procurement').reduce((s,c)=>s+(+c.amount||0),0);
   const _costOpex=_costsP.filter(c=>c.type!=='procurement').reduce((s,c)=>s+(+c.amount||0),0);
   const _costReal=_costProc+_costOpex;
@@ -642,7 +642,26 @@ function renderIssues(){
 // ===============================================================
 // PROCUREMENT
 // ===============================================================
+function _procKatName(i){
+  let kid=i.rabKatId;
+  if(!kid&&i.rabItemId){ const ri=RAB.find(r=>String(r.id)===String(i.rabItemId)); if(ri)kid=ri.katId; }
+  if(kid){ const rk=RAB.find(r=>r.type==='kat'&&String(r.id)===String(kid)); if(rk&&rk.name)return rk.name; }
+  return i.kategori||'';
+}
 function renderProc(){
+  // Isi filter Kategori dari kategori RAB (+ kategori procurement yg ada), pertahankan pilihan
+  (function(){
+    const sel=$('procFiltKat'); if(sel){
+      const cur=sel.value||'';
+      const fpv=gv('procFiltProj')||'';
+      const names=[]; const seen={};
+      RAB.filter(r=>r.type==='kat'&&(!fpv||String(r.projId)===String(fpv))).forEach(k=>{const nm=k.name;if(nm&&!seen[nm.toLowerCase()]){seen[nm.toLowerCase()]=1;names.push(nm);}});
+      PROC.filter(pp=>!fpv||String(pp.projId)===String(fpv)).forEach(pp=>{const nm=_procKatName(pp);if(nm&&!seen[nm.toLowerCase()]){seen[nm.toLowerCase()]=1;names.push(nm);}});
+      names.sort((a,b)=>a.localeCompare(b));
+      sel.innerHTML='<option value="">Semua Kategori</option>'+names.map(nm=>'<option'+(nm===cur?' selected':'')+'>'+safeStr(nm)+'</option>').join('');
+      sel.value=cur;
+    }
+  })();
   // Update project dropdown \u2014 jangan timpa nilai yang sudah di-set manual oleh user
   const fp=$('procFiltProj');
   if(fp){
@@ -660,7 +679,7 @@ function renderProc(){
   const filtered=PROC.filter(i=>{
     if(filtProj&&String(i.projId)!==String(filtProj))return false;
     if(filt&&i.status!==filt)return false;
-    if(filtKat&&i.kategori!==filtKat)return false;
+    if(filtKat&&_procKatName(i)!==filtKat)return false;
     if(search&&!i.item?.toLowerCase().includes(search)&&!i.supplier?.toLowerCase().includes(search))return false;
     return true;
   });
@@ -680,11 +699,11 @@ function renderProc(){
   if($('pc6'))$('pc6').textContent=dueSoon;
   const sc={Overdue:'var(--rd)','Due Today':'var(--yw)','In Transit':'var(--bl)','On Site':'var(--gn)','Waiting Approval':'var(--pu)','PO Issued':'#a9b4f5'};
   if(!filtered.length){$('procTable').innerHTML=`<div style="text-align:center;color:var(--mt);font-size:12px;padding:22px">${PROC.length?'Tidak ada item yang cocok dengan filter':'Belum ada item procurement'}</div>`;return;}
-  $('procTable').innerHTML=`<table class="tbl"><thead><tr><th>Project</th><th>Item</th><th>Kat.</th><th>Qty</th><th>Supplier</th><th>Due</th><th>Status</th><th>Harga</th><th>RAB Link</th><th>Catatan</th><th>PR/PO/IR</th><th></th></tr></thead><tbody>
+  $('procTable').innerHTML=`<table class="tbl"><thead><tr><th>Project</th><th>Item</th><th>Kat.</th><th>Qty</th><th>Supplier</th><th>Due</th><th>Status</th><th>Harga</th><th>RAB Link</th><th>Catatan</th><th>PR/PO/IR</th><th>Dok</th><th></th></tr></thead><tbody>
     ${filtered.map(i=>{
       const pr=P.find(p=>p.id===i.projId);
       const item=safeStr(i.item)||'\u2014';
-      const kat=safeStr(i.kategori)||'\u2014';
+      const kat=safeStr(_procKatName(i))||'\u2014';
       const qty=safeStr(i.qty)||'\u2014';
       const sat=safeStr(i.satuan)||'';
       const sup=safeStr(i.supplier)||'\u2014';
@@ -735,6 +754,7 @@ function renderProc(){
         const parts=[seg('PR',lt('PR Submit'),'var(--yw)'),seg('PO',lt('PO Release'),'var(--bl)'),seg('IR',lt('IR (Item Receive)'),'var(--gn)')].filter(Boolean);
         return (parts.length?parts.join(' \u00b7 '):'')+' <span style="color:var(--mt);opacity:.6">('+lg.length+')</span>';
       })()}</td>
+      <td style="text-align:center">${(()=>{const lk=i.link;if(!lk)return '<span style="color:var(--bd)">\u2014</span>';const e=String(lk).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');if(!/^https?:\/\//i.test(lk))return '<span title="'+e+'" style="color:var(--mt);font-size:10px">link</span>';return '<a href="'+e+'" target="_blank" rel="noopener noreferrer" title="Buka dokumen di cloud" onclick="event.stopPropagation()" style="color:var(--bl);cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block;pointer-events:none"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>';})()}</td>
       <td><button class="btn btn-sm" style="padding:2px 6px" onclick="openModal('editProc','${i.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td>
     </tr>`;}).join('')}
   </tbody></table>`;
@@ -960,10 +980,12 @@ function openModal(type,id=null){
     // Populate RAB dropdowns — akan hide kategori jika ada link RAB
     const pProjId=pr?.projId||(selId||'');
     _populateProcRab(pProjId, pr?.rabKatId||'', pr?.rabItemId||'');
+    if(typeof _populateProcKat==='function') _populateProcKat(pProjId, pr?.kategori||'');
     _procLogs = Array.isArray(pr?.logs) ? pr.logs.slice() : [];
     if(typeof _renderProcLogs==='function') _renderProcLogs();
     sv('pLogEvent','PR Submit'); sv('pLogDate', new Date().toISOString().slice(0,10)); sv('pLogNote','');
     sv('pLogBy', (window._meName||'') || (function(){try{return localStorage.getItem('atw_proc_by')||'';}catch(e){return '';}})());
+    sv('pLink', pr?.link||'');
     show('ov-addProc');
   }
   if(type==='addCost'||type==='editCost'){openCostModal(id);return;}

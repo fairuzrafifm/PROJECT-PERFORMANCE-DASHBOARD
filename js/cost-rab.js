@@ -421,6 +421,21 @@ function _onCostAmountInput(){
 function _onProcProjChange(){
   const projId=gv('pProj')||'';
   _populateProcRab(projId,'','');
+  _populateProcKat(projId,'');
+}
+// Isi dropdown Kategori procurement dari kategori RAB proyek (selValue dipertahankan utk data lama)
+function _populateProcKat(projId, selVal){
+  const sel=$('pKat'); if(!sel)return;
+  const cur=(selVal!=null&&selVal!=='')?String(selVal):'';
+  const names=[]; const seen={};
+  RAB.filter(r=>r.type==='kat'&&String(r.projId)===String(projId))
+    .sort((a,b)=>(+a.urutan||0)-(+b.urutan||0)||((a.name||'')>(b.name||'')?1:-1))
+    .forEach(k=>{const nm=k.name; if(nm&&!seen[nm.toLowerCase()]){seen[nm.toLowerCase()]=1;names.push(nm);}});
+  const opts=names.slice();
+  if(cur&&!seen[cur.toLowerCase()]) opts.unshift(cur);
+  if(!opts.length){ sel.innerHTML='<option value="">\u2014 Belum ada kategori RAB \u2014</option>'; return; }
+  sel.innerHTML=opts.map(nm=>`<option${nm===cur?' selected':''}>${safeStr(nm)}</option>`).join('');
+  sel.value = cur || opts[0];
 }
 
 function _populateProcRab(projId, selKatId, selItemId){

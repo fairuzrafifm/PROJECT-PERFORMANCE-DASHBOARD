@@ -746,6 +746,7 @@ function saveProc(){
     harga:hargaVal,
     rabKatId:rabKatId||null,
     rabItemId:rabItemId||null,
+    link:(gv('pLink')||'').trim(),
     logs:(Array.isArray(_procLogs)?_procLogs.slice():[])
   };
   if(editProcId){
@@ -810,7 +811,7 @@ function exportProcExcel(){
   const _trim=v=>{if(!v)return '';const t=String(v).trim();return t.includes('T')?t.slice(0,10):t;};
   const latest=(logs,ev)=>{const f=(logs||[]).filter(l=>l.event===ev).map(l=>l.date).filter(Boolean).sort();return f.length?f[f.length-1]:'';};
   const items=rows.map(i=>{const pr=P.find(p=>String(p.id)===String(i.projId));const logs=Array.isArray(i.logs)?i.logs:[];
-    return {'Kode Project':pr?.kode||'',Item:i.item||'',Kategori:i.kategori||'',Qty:i.qty||'',Satuan:i.satuan||'',Supplier:i.supplier||'','Due Date':_trim(i.due),Status:i.status||'',Harga:+i.harga||0,'PR Submit':latest(logs,'PR Submit'),'PO Release':latest(logs,'PO Release'),'IR (Item Receive)':latest(logs,'IR (Item Receive)'),'Jml Riwayat':logs.length,Catatan:i.notes||''};});
+    return {'Kode Project':pr?.kode||'',Item:i.item||'',Kategori:(typeof _procKatName==='function'?_procKatName(i):(i.kategori||'')),Qty:i.qty||'',Satuan:i.satuan||'',Supplier:i.supplier||'','Due Date':_trim(i.due),Status:i.status||'',Harga:+i.harga||0,'PR Submit':latest(logs,'PR Submit'),'PO Release':latest(logs,'PO Release'),'IR (Item Receive)':latest(logs,'IR (Item Receive)'),'Jml Riwayat':logs.length,Catatan:i.notes||'','Link Dokumen':i.link||''};});
   const log=[];
   rows.forEach(i=>{const pr=P.find(p=>String(p.id)===String(i.projId));(Array.isArray(i.logs)?i.logs:[]).slice().sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))).forEach(l=>{
     log.push({'Kode Project':pr?.kode||'',Item:i.item||'',Event:l.event||'',Tanggal:_trim(l.date),Catatan:l.note||'',Oleh:l.by||'',Dicatat:l.ts?String(l.ts).slice(0,19).replace('T',' '):''});});});

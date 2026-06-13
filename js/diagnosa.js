@@ -93,7 +93,8 @@
     var COSTS_ = (typeof COSTS !== 'undefined') ? COSTS : [];
     var rab = RAB_.filter(function (r) { return String(r.projId) === pid && r.type === 'item'; })
       .reduce(function (s, r) { return s + (+r.total || 0); }, 0);
-    var costReal = COSTS_.filter(function (c) { return String(c.projId) === pid && !c._deleted; })
+    var allC_ = (typeof getAllCosts === 'function') ? getAllCosts() : COSTS_;
+    var costReal = allC_.filter(function (c) { return String(c.projId) === pid && !c._deleted; })
       .reduce(function (s, c) { return s + (+c.amount || 0); }, 0);
     var ev = rab * (act / 100);
     var cpi = costReal > 0 ? (ev / costReal) : null;
