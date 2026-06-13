@@ -123,6 +123,7 @@
 :root.light .btn{background:#f1f5f9;border-color:var(--bd);color:var(--tx)}
 :root.light .bp{background:var(--bl);border-color:var(--bl);color:#fff}
 :root.light .bg{background:rgba(124,140,240,.1);border-color:var(--bl);color:var(--bl)}
+:root.light .bgn{background:rgba(47,182,126,.12);border-color:var(--gn);color:#1a8f63}
 :root.light .bb{background:rgba(29,110,181,.1);border-color:var(--bl);color:var(--bl)}
 :root.light .bgs{background:rgba(29,110,181,.1);border-color:var(--atb);color:var(--atb)}
 :root.light .psc{background:#ffffff;border-color:var(--bd)}
@@ -553,6 +554,7 @@ select.fi{cursor:pointer}
 .btn-sm{padding:3px 9px;font-size:11px}
 .bp{background:var(--bl);border-color:var(--bl);color:#fff;font-weight:600}.bp:hover{background:#6675e8;color:#fff;border-color:#6675e8}
 .bg{background:rgba(124,140,240,.12);border-color:var(--bl);color:var(--bl);font-weight:600}.bg:hover{background:var(--bl);color:#fff}
+.bgn{background:rgba(47,182,126,.12);border-color:var(--gn);color:var(--gn);font-weight:600}.bgn:hover{background:var(--gn);border-color:var(--gn);color:#fff}
 .bb{background:rgba(124,140,240,.12);border-color:var(--bl);color:var(--bl);font-weight:600}.bb:hover{background:var(--bl);color:#fff}
 .bgs{background:rgba(45,122,181,.12);border-color:var(--atb);color:var(--atb);font-weight:600}.bgs:hover{background:var(--atb);color:#fff}
 .brd{background:rgba(244,112,122,.1);border-color:var(--rd);color:var(--rd)}.brd:hover{background:var(--rd);color:#fff}
@@ -1444,11 +1446,10 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
           </select>
           <select class="fi" style="width:auto;padding:4px 9px;font-size:11px" id="procFiltKat" onchange="renderProc()">
             <option value="">Semua Kategori</option>
-            <option>Equipment</option><option>Material</option><option>Civil</option><option>Service</option>
           </select>
           <input class="fi" style="width:160px;padding:4px 9px;font-size:11px" id="procSearch" placeholder="Cari item..." oninput="renderProc()">
         </div>
-        <button class="btn btn-sm" onclick="exportProcExcel()" title="Export procurement (sesuai filter) ke Excel"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Excel</button>
+        <button class="btn bgn btn-sm" onclick="exportProcExcel()" title="Export procurement (sesuai filter) ke Excel"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Excel</button>
         <button class="btn bg btn-sm" onclick="openModal('addProc')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Item</button>
       </div>
       <div class="krow" style="grid-template-columns:repeat(6,1fr)">
@@ -2050,7 +2051,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   <!-- Kategori: auto-fill & hidden jika RAB dipilih -->
   <div class="fg" id="pKatWrap">
     <label class="fl">Kategori <span id="pKatHint" style="font-weight:400;color:var(--mt);font-size:9px"></span></label>
-    <select class="fi" id="pKat"><option>Equipment</option><option>Material</option><option>Civil</option><option>Service</option></select>
+    <select class="fi" id="pKat"></select>
   </div>
   <div class="fg"><label class="fl">Nama Item *</label><input class="fi" id="pItem" placeholder="Solar Panel 400Wp"></div>
   <div class="f3">
@@ -2115,6 +2116,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     </div>
     <div style="font-size:9px;color:var(--mt);margin-top:5px">Catat tiap milestone (PR di-submit, PO rilis, barang diterima). Tersimpan sebagai riwayat/audit trail.</div>
   </div>
+  <div class="fg"><label class="fl">Link Dokumen (OneDrive / cloud)</label><input class="fi" id="pLink" placeholder="https://… tempel link folder/file dokumen"></div>
   <div class="fg"><label class="fl">Keterangan</label><input class="fi" id="pNotes"></div>
   <div class="mfoot">
     <button class="btn brd" id="btnDelProc" onclick="delProc()" style="margin-right:auto;display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Hapus</button>
