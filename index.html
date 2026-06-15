@@ -487,6 +487,14 @@ select.fi{cursor:pointer}
 }
 .wbs-inline-text input[type=text] { max-width: none !important; }
 
+/* ── PERF: lewati paint baris WBS di luar viewport (scroll lebih ringan) ──
+   Aman karena #wbsTable .tbl sudah table-layout:fixed -> lebar kolom tidak
+   bergantung isi baris. 'auto' mengingat tinggi terakhir tiap baris. */
+#wbsTable .tbl tbody tr {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 36px;
+}
+
 /* ── LOADING SKELETON (Quick Win 3) ──────────────────────── */
 @keyframes shimmer {
   0%   { background-position: -680px 0 }
@@ -760,7 +768,9 @@ select.fi{cursor:pointer}
 /* Smooth scroll on containers only */
 .content,.sidebar{scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
 /* Reduce repaints on hover */
-.pi,.kpi,.psc,.tab{transform:translateZ(0)}
+/* .pi,.kpi,.psc,.tab : translateZ(0) DIHAPUS — over-promotion layer GPU.
+   Mengurangi memori GPU & compositing. (sticky header .tbl thead th tetap
+   dipromosikan karena load-bearing untuk kemulusan sticky) */
 /* GPU-accelerate modals */
 .ov .modal{transform:translateZ(0);will-change:transform}
 
