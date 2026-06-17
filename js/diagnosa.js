@@ -112,8 +112,10 @@
     var allC_ = (typeof getAllCosts === 'function') ? getAllCosts() : COSTS_;
     var costReal = allC_.filter(function (c) { return String(c.projId) === pid && !c._deleted; })
       .reduce(function (s, c) { return s + (+c.amount || 0); }, 0);
+    var costEarned = allC_.filter(function (c) { return String(c.projId) === pid && !c._deleted && (c._src !== 'procurement' || c._hasIR); })
+      .reduce(function (s, c) { return s + (+c.amount || 0); }, 0);
     var ev = rab * (act / 100);
-    var cpi = costReal > 0 ? (ev / costReal) : null;
+    var cpi = costEarned > 0 ? (ev / costEarned) : null;
     var eac = (cpi && cpi > 0) ? (rab / cpi) : null;
     var eacOver = eac != null ? (eac - rab) : null;
     var serap = rab > 0 ? Math.round(costReal / rab * 1000) / 10 : 0;
@@ -225,10 +227,19 @@
     }
 
     // Skor kesehatan
-    var score = 100;
-    F.forEach(function (f) { if (f.sev === 'crit') score -= 22; else if (f.sev === 'warn') score -= 10; });
-    score = Math.max(0, Math.min(100, score));
-    var health = score >= 80 ? { t: 'Sehat', c: 'var(--gn)' }
+    // Skor kinerja: dari SPI (jadwal, bobot 0.6) & CPI (biaya, bobot 0.4) saja —
+    // bukan dari proyeksi/potensi. SPI & CPI dibatasi 0..1 agar unggul di satu sisi
+    // tidak menutupi masalah di sisi lain. + penalti keterlambatan material (fakta).
+    var _wS = 0.6, _wC = 0.4, _acc = 0, _wsum = 0;
+    if (spi != null) { _acc += _wS * Math.max(0, Math.min(1, spi)); _wsum += _wS; }
+    if (cpi != null) { _acc += _wC * Math.max(0, Math.min(1, cpi)); _wsum += _wC; }
+    var score = null;
+    if (_wsum > 0) {
+      var _matPen = Math.min(10, (procOverdue || 0) * 5); // material overdue, maks -10
+      score = Math.max(0, Math.min(100, Math.round((_acc / _wsum) * 100 - _matPen)));
+    }
+    var health = (score == null) ? { t: 'Belum dinilai', c: 'var(--mt)' }
+      : score >= 80 ? { t: 'Sehat', c: 'var(--gn)' }
       : score >= 55 ? { t: 'Perlu Perhatian', c: 'var(--yw)' }
         : { t: 'Kritis', c: 'var(--rd)' };
 
@@ -280,7 +291,7 @@
     L.push('ISSUES: ' + a.issOpen + ' open (' + a.issHigh + ' prioritas High)');
     L.push('DOKUMEN: ' + a.docRej + ' rejected, ' + a.docStale + ' on-review >7 hari');
     L.push('');
-    L.push('TEMUAN OTOMATIS (skor kesehatan ' + a.score + '/100 \u2014 ' + a.health.t + '):');
+    L.push('TEMUAN OTOMATIS (skor kesehatan ' + (a.score==null?'\u2014':a.score) + '/100 \u2014 ' + a.health.t + '):');
     if (a.findings.length) {
       a.findings.forEach(function (f) { L.push('- [' + (f.sev === 'crit' ? 'KRITIS' : f.sev === 'warn' ? 'PERHATIAN' : 'OK') + '] ' + f.t); });
     } else { L.push('- Tidak ada masalah signifikan terdeteksi.'); }
@@ -348,7 +359,7 @@
       + '<span>' + (typeof cardChev === 'function' ? cardChev('diagnosa') : '') + 'DIAGNOSA & REKOMENDASI</span>'
       + '<span style="display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.3px;color:' + a.health.c + ';text-transform:none">'
       + '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + a.health.c + '"></span>'
-      + a.health.t + ' \u00b7 ' + a.score + '/100</span>'
+      + a.health.t + ' \u00b7 ' + (a.score==null?'\u2014':a.score) + '/100</span>'
       + '</div>'
       + schedStrip
       + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px">'

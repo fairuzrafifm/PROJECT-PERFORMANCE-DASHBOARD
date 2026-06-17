@@ -224,7 +224,7 @@ function generateMpReport(){
     const closeBtn=document.createElement('button');
     closeBtn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Tutup';closeBtn.id='mpRCloseBtn';
     closeBtn.style.cssText='position:fixed;top:12px;right:12px;z-index:100000;background:#ef4444;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3)';
-    closeBtn.onclick=()=>{iframe.remove();closeBtn.remove();printBtn.remove();};
+    closeBtn.onclick=()=>{iframe.remove();closeBtn.remove();printBtn.remove();const _mb=document.getElementById('wrModeBtn');if(_mb)_mb.remove();};
     document.body.appendChild(closeBtn);
     const printBtn=document.createElement('button');
     printBtn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print / Save PDF';printBtn.id='mpRPrintBtn';
@@ -292,6 +292,7 @@ function buildMpReportHTML(projId,dateFrom,dateTo,periodLabel,proj){
 
   const logoHtml=logo?`<img src="${logo}" style="height:54px;object-fit:contain">`:
     `<div style="font-weight:900;font-size:22px;color:#475569;letter-spacing:1px">ATW SOLAR</div>`;
+  const clientLogoHtml=(proj&&proj.logo)?`<img src="${proj.logo}" style="height:50px;max-width:150px;object-fit:contain">`:'';
   const projLabel=proj?`${proj.kode} \u2014 ${proj.nama}${proj.client?' ('+proj.client+')':''}${proj.mdPlan?' '+proj.mdPlan:''}`:'Semua Project';
 
   // ── Page 1 ──
@@ -300,7 +301,7 @@ function buildMpReportHTML(projId,dateFrom,dateTo,periodLabel,proj){
 
     ${'<'}!-- HEADER -->
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;border-bottom:3px solid #475569;padding-bottom:12px">
-      <div>${logoHtml}</div>
+      <div style="display:flex;align-items:center;gap:16px">${clientLogoHtml}${logoHtml}</div>
       <div style="text-align:right">
         <div style="font-size:13px;font-weight:700;color:#1e293b;margin-bottom:2px">${projLabel}</div>
         <div style="font-size:13px;font-weight:700;color:#475569">${periodLabel}</div>
@@ -479,12 +480,13 @@ function generateWeeklyReport(){
     if(wrPhotos[n])wrPhotos[n].caption=cap;
   }
 
-  const html=buildWeeklyReportHTML(projId,week);
+  const html=buildWeeklyReportHTML(projId,week,window._wrRecoveryMode||'aggressive');
   cm('weeklyReport');
 
   const old=document.getElementById('weeklyPrintFrame');if(old)old.remove();
   const oldC=document.getElementById('wrCloseBtn');if(oldC)oldC.remove();
   const oldP=document.getElementById('wrPrintBtn');if(oldP)oldP.remove();
+  const oldM=document.getElementById('wrModeBtn');if(oldM)oldM.remove();
 
   // Ambil logo
   let _wrLogo=''; try{_wrLogo=localStorage.getItem('atw_dash_logo')||'';}catch(e){}
@@ -588,18 +590,27 @@ function generateWeeklyReport(){
     const closeBtn=document.createElement('button');
     closeBtn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Tutup Preview';closeBtn.id='wrCloseBtn';
     closeBtn.style.cssText='position:fixed;top:12px;right:12px;z-index:100000;background:#ef4444;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3)';
-    closeBtn.onclick=()=>{iframe.remove();closeBtn.remove();printBtn.remove();};
+    closeBtn.onclick=()=>{iframe.remove();closeBtn.remove();printBtn.remove();const _mb=document.getElementById('wrModeBtn');if(_mb)_mb.remove();};
     document.body.appendChild(closeBtn);
     const printBtn=document.createElement('button');
     printBtn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print / Save PDF';printBtn.id='wrPrintBtn';
     printBtn.style.cssText='position:fixed;top:12px;right:160px;z-index:100000;background:#475569;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3)';
     printBtn.onclick=()=>iframe.contentWindow.print();
     document.body.appendChild(printBtn);
+    const modeBtn=document.createElement('button');
+    const _rm=window._wrRecoveryMode||'aggressive';
+    modeBtn.innerHTML=(_rm==='spread'?'\u26a1 Mode: Realistis (sebar)':'\u26a1 Mode: Agresif (kejar)');
+    modeBtn.id='wrModeBtn';
+    modeBtn.title='Ganti cara hitung target catch-up di Workplan Next Week';
+    modeBtn.style.cssText='position:fixed;top:12px;right:300px;z-index:100000;background:#6366f1;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3)';
+    modeBtn.onclick=()=>{window._wrRecoveryMode=(window._wrRecoveryMode==='spread'?'aggressive':'spread');generateWeeklyReport();};
+    document.body.appendChild(modeBtn);
   },100);
 }
 
 
-function buildWeeklyReportHTML(projId,week){
+function buildWeeklyReportHTML(projId,week,recoveryMode){
+  recoveryMode=recoveryMode||'aggressive';
   const proj=P.find(p=>String(p.id)===String(projId));if(!proj)return '';
   const all=WBS.filter(w=>String(w.projId)===String(projId));
   const cats=all.filter(w=>w.type==='cat').sort((a,b)=>a.order-b.order);
@@ -711,6 +722,7 @@ function buildWeeklyReportHTML(projId,week){
       <th style="${th}">Item Pekerjaan</th>
       <th style="${th};width:55px">Bobot</th>
       <th style="${th};width:70px">Qty Plan</th>
+      <th style="${th};width:80px">Achievement Last Week</th>
       <th style="${th};width:70px">Qty W${String(week).padStart(2,'0')}</th>
       <th style="${th};width:70px">Qty Cum.</th>
       <th style="${th};width:60px">% Selesai</th>
@@ -720,13 +732,13 @@ function buildWeeklyReportHTML(projId,week){
 
   // WBS rows
   cats.forEach((cat,ci)=>{
-    html+=`<tr style="background:#f1f5f9;color:#1e293b"><td style="${tdc};font-weight:700;color:#334155">${String.fromCharCode(65+ci)}</td><td style="${td};font-weight:700;color:#334155" colspan="8">${cat.name}</td></tr>`;
+    html+=`<tr style="background:#f1f5f9;color:#1e293b"><td style="${tdc};font-weight:700;color:#334155">${String.fromCharCode(65+ci)}</td><td style="${td};font-weight:700;color:#334155" colspan="9">${cat.name}</td></tr>`;
     all.filter(w=>w.type==='subcat'&&w.parentId===cat.id).sort((a,b)=>a.order-b.order).forEach((sub,si)=>{
       const subItems=all.filter(w=>w.type==='item'&&w.parentId===sub.id).sort((a,b)=>a.order-b.order);
       const isLeaf=subItems.length===0;
       if(isLeaf){html+=_wrItemRowNew(`${ci+1}.${si+1}`,sub,week,th,td,tdc,true);}
       else{
-        html+=`<tr style="background:#dcfce7;color:#15803d"><td style="${tdc};color:#15803d">${ci+1}.${si+1}</td><td style="${td};font-weight:600;color:#15803d" colspan="8">${sub.name}</td></tr>`;
+        html+=`<tr style="background:#dcfce7;color:#15803d"><td style="${tdc};color:#15803d">${ci+1}.${si+1}</td><td style="${td};font-weight:600;color:#15803d" colspan="9">${sub.name}</td></tr>`;
         subItems.forEach((item,ii)=>{html+=_wrItemRowNew(`${ci+1}.${si+1}.${ii+1}`,item,week,th,td,tdc,false);});
       }
     });
@@ -838,6 +850,15 @@ function buildWeeklyReportHTML(projId,week){
   html+=`<div style="background:#374151;color:#fff;text-align:center;padding:5px;font-weight:700;font-size:11px;margin-bottom:0">WORKPLAN NEXT WEEK (W${String(week+1).padStart(2,'0')})</div>
   <table style="${ts};margin-bottom:10px">
     <tr><th style="${th}">#</th><th style="${th}">Item Pekerjaan</th><th style="${th};width:70px">Target Qty</th><th style="${th};width:55px">Satuan</th><th style="${th};width:60px">Target %</th><th style="${th}">Rencana Aktivitas</th></tr>`;
+  // Aktual kumulatif per item DIHITUNG SAMPAI minggu laporan (bukan nilai live sekarang),
+  // supaya laporan minggu lampau mencerminkan kondisi pada waktunya.
+  const _cumActAt=(node)=>{
+    if(+node.qtyPlan>0){
+      const q=(node.dailyLogs||[]).filter(l=>l.week<=week).reduce((s,l)=>s+(l.qty!=null?+l.qty:0),0);
+      return Math.min(100,(q/+node.qtyPlan)*100);
+    }
+    return +(node.cumActual||0); // item tanpa qty/dailyLogs: tak bisa direkonstruksi historis
+  };
   let nwRow=0;
   cats.forEach((cat,ci)=>{
     const catLeaves=[];
@@ -845,12 +866,12 @@ function buildWeeklyReportHTML(projId,week){
       const subItems=all.filter(w=>w.type==='item'&&String(w.parentId)===String(sub.id)).sort((a,b)=>+a.order-+b.order);
       if(subItems.length===0){
         const wp=sub.weeklyPlan&&sub.weeklyPlan[week+1];
-        const done=+(sub.cumActual||0)>=100;
+        const done=_cumActAt(sub)>=100;
         if(wp&&+(wp.wPlan||0)>0&&!done)catLeaves.push({node:sub,wp});
       } else {
         subItems.forEach(item=>{
           const wp=item.weeklyPlan&&item.weeklyPlan[week+1];
-          const done=+(item.cumActual||0)>=100;
+          const done=_cumActAt(item)>=100;
           if(wp&&+(wp.wPlan||0)>0&&!done)catLeaves.push({node:item,wp});
         });
       }
@@ -863,13 +884,31 @@ function buildWeeklyReportHTML(projId,week){
     </tr>`;
     catLeaves.forEach(({node,wp})=>{
       nwRow++;
-      const qty=+node.qtyPlan?Math.round(+node.qtyPlan*(+(wp.wPlan||0)/100)):'';
+      // Target disesuaikan dgn aktual: plan kumulatif s/d minggu depan - aktual kumulatif saat ini
+      const _wpAll=node.weeklyPlan||{};
+      let _cumPlanNext=+(wp.cumPlan||0);
+      if(!(_cumPlanNext>0)){_cumPlanNext=0;for(let _w=1;_w<=week+1;_w++){if(_wpAll[_w])_cumPlanNext+=(+(_wpAll[_w].wPlan)||0);}}
+      const _cumAct=_cumActAt(node);
+      const _planW=+(wp.wPlan||0);
+      let _adjTarget;
+      if(recoveryMode==='spread'){
+        let _finishW=week+1;
+        Object.keys(_wpAll).forEach(_k=>{const _kn=+_k;if(_kn>_finishW&&((+(_wpAll[_k].wPlan)||0)>0||(+(_wpAll[_k].cumPlan)||0)>0))_finishW=_kn;});
+        const _remW=Math.max(1,_finishW-week);
+        const _deficit=(_cumPlanNext-_planW)-_cumAct;
+        _adjTarget=Math.max(0,_planW+_deficit/_remW);
+      } else {
+        _adjTarget=Math.max(0,_cumPlanNext-_cumAct);
+      }
+      const _diff=_adjTarget-_planW;
+      const _adjClr=_diff>0.05?'#b91c1c':(_diff<-0.05?'#16a34a':'#334155');
+      const qty=+node.qtyPlan?Math.round(+node.qtyPlan*(_adjTarget/100)):'';
       html+=`<tr>
         <td style="${tdc}">${nwRow}</td>
         <td style="${td};padding-left:16px">${node.name}</td>
         <td style="${tdc}">${qty}</td>
         <td style="${tdc}">${node.qtySatuan||''}</td>
-        <td style="${tdc};font-weight:600;color:#334155">${(+(wp.wPlan||0)).toFixed(1)}%</td>
+        <td style="${tdc};font-weight:700;color:${_adjClr}">${_adjTarget.toFixed(1)}%<div style="font-size:7px;color:#94a3b8;font-weight:400">plan ${_planW.toFixed(1)}%</div></td>
         <td style="${td};color:#374151">${wp.rencana||''}</td>
       </tr>`;
     });
@@ -878,6 +917,10 @@ function buildWeeklyReportHTML(projId,week){
   const minBlank=Math.max(3,5-nwRow);
   for(let i=0;i<minBlank;i++){html+=`<tr><td style="${tdc}">${nwRow+i+1}</td><td style="${td}"></td><td style="${tdc}"></td><td style="${tdc}"></td><td style="${tdc}"></td><td style="${td}"></td></tr>`;}
   html+=`</table>`;
+  const _modeNote=recoveryMode==='spread'
+    ? 'Mode <b>Realistis</b>: defisit disebar rata ke sisa minggu sampai item selesai (target = plan mingguan + defisit\u00f7sisa minggu).'
+    : 'Mode <b>Agresif</b>: seluruh defisit dikejar minggu depan (= plan kumulatif s/d minggu depan \u2212 aktual saat ini).';
+  html+=`<div style="font-size:8px;color:#64748b;margin:-6px 0 10px">Target % \u2014 ${_modeNote} <span style="color:#b91c1c">Merah</span> = perlu mengejar, <span style="color:#16a34a">hijau</span> = di depan rencana.</div>`;
 
   // SIGNATURE
   html+=`<table style="${ts};margin-top:8px">
@@ -904,9 +947,9 @@ function buildWeeklyReportHTML(projId,week){
   <table style="${ts};margin-bottom:10px">
     <tr><th style="${th}">Minggu</th><th style="${th};text-align:right">W.Plan</th><th style="${th};text-align:right">W.Actual</th><th style="${th};text-align:right">Cum.Plan</th><th style="${th};text-align:right">Cum.Actual</th><th style="${th};text-align:right">Variance</th><th style="${th}">Status</th></tr>
     ${(()=>{
-      const scData=SCURVE.filter(d=>String(d.projId)===String(projId)).sort((a,b)=>a.week-b.week);
+      const scData=(()=>{const _m=new Map();SCURVE.filter(d=>String(d.projId)===String(projId)).forEach(d=>{const _e=_m.get(d.week);if(!_e||((_e.cAct==null||_e.cAct==='')&&d.cAct!=null))_m.set(d.week,d);});return [..._m.values()].sort((a,b)=>a.week-b.week);})();
       if(!scData.length)return`<tr><td colspan="7" style="${tdc};color:#94a3b8;padding:12px">Belum ada data S-Curve</td></tr>`;
-      return scData.map(d=>{
+      return scData.filter(d=>+d.week<=week).map(d=>{
         const v=(+(d.cAct||0))-(+(d.cPlan||0));
         const clr=v>=-3?'#16a34a':v>=-10?'#d97706':'#dc2626';
         const isThisWeek=d.week===week;
@@ -927,7 +970,7 @@ function buildWeeklyReportHTML(projId,week){
   <div style="margin-bottom:16px;padding:10px 0;background:#fff;border:1px solid #e2e8f0;border-radius:6px">
     <div style="font-size:9px;font-weight:700;color:#374151;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;padding:0 14px">S-CURVE PROGRESS CHART</div>
     ${(()=>{
-      const scData=SCURVE.filter(d=>String(d.projId)===String(projId)).sort((a,b)=>a.week-b.week);
+      const scData=(()=>{const _m=new Map();SCURVE.filter(d=>String(d.projId)===String(projId)).forEach(d=>{const _e=_m.get(d.week);if(!_e||((_e.cAct==null||_e.cAct==='')&&d.cAct!=null))_m.set(d.week,d);});return [..._m.values()].sort((a,b)=>a.week-b.week);})();
       if(!scData.length)return'<div style="text-align:center;color:#94a3b8;font-size:10px;padding:30px">Belum ada data S-Curve</div>';
 
       const W=560, H=200;
@@ -1068,7 +1111,8 @@ function _wrItemRowNew(num,node,week,th,td,tdc,isGn){
   const qtyPlan=+node.qtyPlan||0;
   const dl=node.dailyLogs||[];
   const weekQty=dl.filter(l=>l.week===week).reduce((s,l)=>s+(l.qty!=null?+l.qty:0),0);
-  const cumQty=Math.min(qtyPlan||999999,dl.reduce((s,l)=>s+(l.qty!=null?+l.qty:0),0));
+  const prevWeekQty=week>1?dl.filter(l=>l.week===week-1).reduce((s,l)=>s+(l.qty!=null?+l.qty:0),0):0;
+  const cumQty=Math.min(qtyPlan||999999,dl.filter(l=>l.week<=week).reduce((s,l)=>s+(l.qty!=null?+l.qty:0),0));
   const pct=qtyPlan>0?Math.min(100,cumQty/qtyPlan*100):(+node.cumActual||0);
   const kontrib=qtyPlan>0?(+node.bobot||0)/100*(cumQty/qtyPlan)*100:(+node.bobot||0)*(pct/100);
   const nameStyle=isGn?'font-weight:600;color:#15803d':'';
@@ -1077,8 +1121,9 @@ function _wrItemRowNew(num,node,week,th,td,tdc,isGn){
     <td style="${td};${nameStyle};padding-left:${isGn?14:24}px">${node.name}</td>
     <td style="${tdc}">${(+node.bobot||0).toFixed(1)}%</td>
     <td style="${tdc};color:#334155">${qtyPlan?qtyPlan+' '+(node.qtySatuan||''):'\u2014'}</td>
-    <td style="${tdc};font-weight:700;color:${weekQty>0?'#16a34a':'#94a3b8'}">${weekQty>0?'+'+weekQty:'\u2014'}</td>
-    <td style="${tdc};color:#475569">${qtyPlan?cumQty:pct.toFixed(1)+'%'}</td>
+    <td style="${tdc};color:${prevWeekQty>0?'#475569':'#94a3b8'}">${prevWeekQty>0?Math.round(prevWeekQty*100)/100:'\u2014'}</td>
+    <td style="${tdc};font-weight:700;color:${weekQty>0?'#16a34a':'#94a3b8'}">${weekQty>0?'+'+(Math.round(weekQty*100)/100):'\u2014'}</td>
+    <td style="${tdc};color:#475569">${qtyPlan?Math.round(cumQty*100)/100:pct.toFixed(1)+'%'}</td>
     <td style="${tdc};font-weight:700;color:#475569">${pct.toFixed(1)}%</td>
     <td style="${tdc};color:#16a34a">${kontrib>0?kontrib.toFixed(2)+'%':'\u2014'}</td>
     <td style="${tdc}">${node.qtySatuan||'\u2014'}</td>
@@ -1087,3 +1132,209 @@ function _wrItemRowNew(num,node,week,th,td,tdc,isGn){
 
 
 
+
+// ============================================================
+// DAILY REPORT PDF — print-to-PDF (pola sama dgn laporan lain, Arial/grayscale)
+// Satu tanggal terpilih + blok tanda tangan.
+// ============================================================
+function generateDailyReportPDF(){
+  const projId=($('drProjSel')&&$('drProjSel').value)||(typeof selId!=='undefined'&&selId)||(P[0]&&P[0].id);
+  const date=($('drDate')&&$('drDate').value)||new Date().toISOString().slice(0,10);
+  if(!projId){toast('Pilih project dulu');return;}
+  const proj=P.find(p=>String(p.id)===String(projId));
+  const fullHtml=buildDailyReportHTML(projId,date,proj);
+
+  const iframe=document.createElement('iframe');
+  iframe.id='drReportFrame';
+  iframe.style.cssText='position:fixed;top:0;left:0;width:100%;height:100%;z-index:99999;border:none;background:#fff;display:block';
+  document.body.appendChild(iframe);
+  const iDoc=iframe.contentDocument||iframe.contentWindow.document;
+  iDoc.open();iDoc.write(fullHtml);iDoc.close();
+
+  setTimeout(function(){
+    const closeBtn=document.createElement('button');
+    closeBtn.innerHTML='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Tutup';
+    closeBtn.id='drRCloseBtn';
+    closeBtn.style.cssText='position:fixed;top:12px;right:12px;z-index:100000;background:#ef4444;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3)';
+    const printBtn=document.createElement('button');
+    printBtn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print / Save PDF';
+    printBtn.id='drRPrintBtn';
+    printBtn.style.cssText='position:fixed;top:12px;right:100px;z-index:100000;background:#475569;color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:12px;cursor:pointer;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3)';
+    closeBtn.onclick=function(){iframe.remove();closeBtn.remove();printBtn.remove();};
+    printBtn.onclick=function(){iframe.contentWindow.print();};
+    document.body.appendChild(closeBtn);
+    document.body.appendChild(printBtn);
+  },120);
+}
+
+function buildDailyReportHTML(projId,date,proj){
+  const fmtD=d=>d?String(d).split('-').reverse().join('/'):'-';
+  const weekNum=(typeof getWbsWeekNum==='function')?getWbsWeekNum(projId,date):0;
+  let logo='';try{logo=localStorage.getItem('atw_dash_logo')||'';}catch(e){}
+  if(!logo){const img=$('dashLogoImg');if(img&&img.src&&img.src.indexOf('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAlg')<0)logo=img.src;}
+  const logoHtml=logo?`<img src="${logo}" style="height:48px;object-fit:contain">`:`<div style="font-weight:900;font-size:20px;color:#475569;letter-spacing:1px">ATW SOLAR</div>`;
+  const clientLogoHtml=(proj&&proj.logo)?`<img src="${proj.logo}" style="height:46px;max-width:150px;object-fit:contain">`:`<div style="width:110px;height:46px;background:#f1f5f9;border:1px dashed #cbd5e1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#94a3b8">Client Logo</div>`;
+  const atwLogoHtml=(typeof ATW_LOGO_B64!=='undefined'&&ATW_LOGO_B64)?`<img src="${ATW_LOGO_B64}" style="height:44px;object-fit:contain">`:logoHtml;
+  const projLabel=proj?`${proj.kode||''} \u2014 ${proj.nama||''}${proj.client?' ('+proj.client+')':''}`:'Project';
+
+  const all=WBS.filter(w=>String(w.projId)===String(projId));
+  const cats=all.filter(w=>w.type==='cat').sort((a,b)=>a.order-b.order);
+
+  // KPI (replika renderDailyReport)
+  const leafNodes=all.filter(w=>(w.type==='item')||(w.type==='subcat'&&!all.some(x=>x.type==='item'&&x.parentId===w.id)));
+  let dayPct=0,cumAct=0,cumPlan=0;
+  leafNodes.forEach(function(node){
+    const qtyPlan=+node.qtyPlan||0,bobot=+node.bobot||0,dl=node.dailyLogs||[];
+    const todayLog=dl.find(l=>l.date===date);
+    const todayQty=todayLog&&todayLog.qty!=null?+todayLog.qty:0;
+    if(qtyPlan>0&&todayQty>0)dayPct+=(bobot/100)*(todayQty/qtyPlan);
+    const totalQty=Math.min(qtyPlan||999999,dl.filter(l=>l.date<=date).reduce((s,l)=>s+(l.qty!=null?+l.qty:0),0));
+    if(qtyPlan>0)cumAct+=(bobot/100)*(totalQty/qtyPlan);
+    if(weekNum&&node.weeklyPlan&&node.weeklyPlan[weekNum]){
+      cumPlan+=(bobot/100)*((+node.weeklyPlan[weekNum].cumPlan||+node.weeklyPlan[weekNum].wPlan||0)/100);
+    }else{
+      const _wp=node.weeklyPlan||{};
+      const _prev=Object.keys(_wp).map(Number).filter(k=>k>0&&k<weekNum).sort((a,b)=>b-a);
+      if(_prev.length)cumPlan+=(bobot/100)*((+_wp[_prev[0]].cumPlan||+_wp[_prev[0]].wPlan||0)/100);
+    }
+  });
+  const variance=cumAct-cumPlan;
+  const pc=v=>(v*100).toFixed(2)+'%';
+
+  const kontribOf=function(node){
+    const qtyPlan=+node.qtyPlan||0,bobot=+node.bobot||0;
+    if(!qtyPlan)return (bobot/100)*(+node.cumActual||0)/100;
+    const totalQty=Math.min(qtyPlan,(node.dailyLogs||[]).filter(l=>l.date<=date).reduce((s,l)=>s+(l.qty!=null?+l.qty:0),0));
+    return (bobot/100)*(totalQty/qtyPlan);
+  };
+  const tdB='padding:5px 8px;border:1px solid #cbd5e1;font-size:10px';
+  const tdR=tdB+';text-align:right';
+  const tdC=tdB+';text-align:center';
+  const nodeRow=function(num,node,indent){
+    const qtyPlan=+node.qtyPlan||0,bobot=+node.bobot||0,dl=node.dailyLogs||[];
+    const sat=safeStr(node.qtySatuan||node.satuan)||'';
+    const todayLog=dl.find(l=>l.date===date)||{};
+    const todayQty=todayLog.qty!=null?+todayLog.qty:0;
+    const cumQty=Math.min(qtyPlan||999999,dl.filter(l=>l.date<=date).reduce((s,l)=>s+(l.qty!=null?+l.qty:0),0));
+    const pct=qtyPlan>0?Math.min(100,cumQty/qtyPlan*100):(+node.cumActual||0);
+    const kontrib=kontribOf(node);
+    return `<tr><td style="${tdB};padding-left:${indent}px;white-space:nowrap">${num}</td>`
+      +`<td style="${tdB}">${safeStr(node.name)}</td>`
+      +`<td style="${tdR}">${bobot.toFixed(2)}%</td>`
+      +`<td style="${tdR}">${qtyPlan?qtyPlan:'\u2014'}</td>`
+      +`<td style="${tdR};font-weight:700">${todayQty>0?'+'+(Math.round(todayQty*100)/100):'\u2014'}</td>`
+      +`<td style="${tdR}">${qtyPlan?Math.round(cumQty*100)/100:'\u2014'}</td>`
+      +`<td style="${tdR}">${pct.toFixed(1)}%</td>`
+      +`<td style="${tdR}">${(kontrib*100).toFixed(2)}%</td>`
+      +`<td style="${tdC}">${sat||'\u2014'}</td></tr>`;
+  };
+
+  let rows='';
+  cats.forEach(function(cat,ci){
+    const catLeaves=all.filter(w=>(w.type==='item'&&all.some(x=>x.type==='subcat'&&x.parentId===cat.id&&x.id===w.parentId))||(w.type==='subcat'&&w.parentId===cat.id&&!all.some(x=>x.type==='item'&&x.parentId===w.id)));
+    const catKon=catLeaves.reduce((s,n)=>s+kontribOf(n),0);
+    rows+=`<tr style="background:#e2e8f0"><td style="${tdB};font-weight:700">${String.fromCharCode(65+ci)}</td><td style="${tdB};font-weight:700">${safeStr(cat.name)}</td><td colspan="5" style="${tdB}"></td><td style="${tdR};font-weight:700">${(catKon*100).toFixed(2)}%</td><td style="${tdB}"></td></tr>`;
+    all.filter(w=>w.type==='subcat'&&w.parentId===cat.id).sort((a,b)=>a.order-b.order).forEach(function(sub,si){
+      const subItems=all.filter(w=>w.type==='item'&&w.parentId===sub.id).sort((a,b)=>a.order-b.order);
+      if(subItems.length===0){
+        rows+=nodeRow(`${ci+1}.${si+1}`,sub,14);
+      }else{
+        const subKon=subItems.reduce((s,x)=>s+kontribOf(x),0);
+        rows+=`<tr style="background:#f1f5f9"><td style="${tdB};font-weight:600">${ci+1}.${si+1}</td><td style="${tdB};font-weight:600">${safeStr(sub.name)}</td><td colspan="5" style="${tdB}"></td><td style="${tdR};font-weight:600">${(subKon*100).toFixed(2)}%</td><td style="${tdB}"></td></tr>`;
+        subItems.forEach(function(item,ii){rows+=nodeRow(`${ci+1}.${si+1}.${ii+1}`,item,26);});
+      }
+    });
+  });
+  if(!rows)rows=`<tr><td colspan="9" style="${tdC};padding:20px">Belum ada WBS / data harian</td></tr>`;
+
+  const signRoles=['Disiapkan','Diperiksa','Disetujui'];
+  const sign=`<div style="display:flex;justify-content:space-between;margin-top:34px;gap:24px">`
+    +signRoles.map(function(r){return `<div style="flex:1;text-align:center"><div style="font-size:10px;color:#475569;margin-bottom:46px">${r}</div><div style="border-top:1px solid #334155;padding-top:4px;font-size:10px;color:#64748b">(&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</div></div>`;}).join('')
+    +`</div>`;
+
+  const kpis=[['Progress Hari Ini',pc(dayPct)],['Kumulatif Aktual',pc(cumAct)],['Kumulatif Rencana',pc(cumPlan)],['Deviasi',(variance>=0?'+':'')+pc(variance)]];
+  const heads=['#','Item Pekerjaan','Bobot','Qty Plan','Hari Ini','Qty Cum.','% Selesai','Kontribusi','Satuan'];
+
+  // ── Manpower, HSE, Time Lost, Cuaca untuk tanggal ini ──
+  const mp=(typeof MPLOGS!=='undefined'?MPLOGS:[]).find(m=>String(m.projId)===String(projId)&&m.date===date)||{};
+  const accAll=(typeof ACCLOGS!=='undefined'?ACCLOGS:[]).filter(a=>String(a.projId)===String(projId)&&a.date===date);
+  const accSum=k=>accAll.reduce((q,a)=>q+(+a[k]||0),0);
+  const accNotes=accAll.map(a=>safeStr(a.notes)).filter(Boolean).join('; ');
+  const mpRoles=[['SPV',+mp.spv||0],['Mandor',+mp.mandor||0],['Installer',+mp.installer||0],['Tukang',+mp.tukang||0],['Helper',+mp.helper||0],['Safety',+mp.safety||0]];
+  const mpTotal=+mp.total||mpRoles.reduce((q,r)=>q+r[1],0);
+  const mhAct=+mp.mhActual||0;
+  const tlTotal=(+mp.timeLost||0)+accSum('timeLost');
+  const tlReason=safeStr(mp.timeLostReason||'')||accNotes;
+  const weather=safeStr((proj&&proj.weather)||'')||'\u2014';
+  const hseItems=[['Fatality',accSum('fatality')],['LTI',accSum('lti')],['Minor Injury',accSum('minorInjury')],['Med. Treatment',accSum('medTreatment')],['Property Damage',accSum('propertyDamage')],['Fire',accSum('fire')],['Traffic',accSum('traffic')],['Environment',accSum('environment')],['Near-Miss',accSum('nearMiss')]];
+  const hseNonZero=hseItems.filter(h=>h[1]>0);
+  const _bb='border-bottom:1px solid #eef2f7';
+  const mpTableRows=mpRoles.map(r=>`<tr><td style="padding:3px 8px;${_bb};font-size:10px">${r[0]}</td><td style="padding:3px 8px;${_bb};font-size:10px;text-align:right;font-weight:600">${r[1]}</td></tr>`).join('');
+  const hseHtml=hseNonZero.length
+    ? hseNonZero.map(h=>`<div>${h[0]}: <b style="color:#b91c1c">${h[1]}</b></div>`).join('')
+    : `<div style="color:#16a34a;font-weight:700">Nihil insiden hari ini</div>`;
+  const infoBlock=`
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      <div style="flex:1;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden">
+        <div style="background:#334155;color:#fff;font-size:9px;font-weight:700;padding:5px 8px;text-transform:uppercase;letter-spacing:.5px">Manpower Hari Ini</div>
+        <table style="width:100%;border-collapse:collapse">
+          ${mpTableRows}
+          <tr style="background:#f1f5f9"><td style="padding:4px 8px;font-size:10px;font-weight:700">TOTAL PEKERJA</td><td style="padding:4px 8px;font-size:10px;font-weight:700;text-align:right">${mpTotal}</td></tr>
+          <tr><td style="padding:3px 8px;font-size:10px">Man-Hours Aktual</td><td style="padding:3px 8px;font-size:10px;text-align:right;font-weight:600">${mhAct} jam</td></tr>
+        </table>
+      </div>
+      <div style="flex:1;border:1px solid #cbd5e1;border-radius:6px;overflow:hidden">
+        <div style="background:#334155;color:#fff;font-size:9px;font-weight:700;padding:5px 8px;text-transform:uppercase;letter-spacing:.5px">HSE &amp; Kondisi Hari Ini</div>
+        <div style="padding:8px;font-size:10px;line-height:1.7">
+          <div><b>Cuaca:</b> ${weather}</div>
+          <div><b>Time Lost:</b> ${tlTotal>0?tlTotal+' jam':'0 jam'}${tlReason?` <span style="color:#64748b">(${tlReason})</span>`:''}</div>
+          <div style="margin-top:5px;border-top:1px solid #eef2f7;padding-top:5px;margin-bottom:2px"><b>Status HSE:</b></div>
+          ${hseHtml}
+        </div>
+      </div>
+    </div>`;
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Daily Report ${fmtD(date)}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;color-adjust:exact}
+    body{font-family:Arial,Helvetica,sans-serif;color:#1e293b;background:#fff;padding:0 13mm}
+    table{width:100%;border-collapse:collapse}
+    .pdf-wrap{width:100%;border-collapse:collapse}
+    .pdf-wrap>thead>tr>td,.pdf-wrap>tfoot>tr>td{padding:0}
+    .pdf-wrap>tbody>tr>td{padding:0;vertical-align:top}
+    @page{size:A4 portrait;margin:0}
+    @media screen{body{padding-top:12mm;padding-bottom:12mm}}
+    @media print{
+      .pdf-wrap>thead>tr>td{padding-top:14mm}
+      .pdf-wrap>tfoot>tr>td{padding-bottom:14mm}
+      thead{display:table-header-group}
+      tfoot{display:table-footer-group}
+    }
+  </style></head><body>
+    <table class="pdf-wrap"><thead><tr><td></td></tr></thead><tbody><tr><td>
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #334155;padding-bottom:10px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:16px">${clientLogoHtml}${atwLogoHtml}</div>
+      <div style="text-align:right">
+        <div style="font-size:16px;font-weight:800;color:#334155">LAPORAN HARIAN PROGRESS</div>
+        <div style="font-size:11px;color:#64748b">${projLabel}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:24px;font-size:11px;margin-bottom:12px">
+      <div><b>Tanggal:</b> ${fmtD(date)}</div>
+      <div><b>Minggu:</b> ${weekNum?('W'+String(weekNum).padStart(2,'0')):'\u2014'}</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:14px">
+      ${kpis.map(function(k){return `<div style="flex:1;border:1px solid #cbd5e1;border-radius:6px;padding:8px 10px"><div style="font-size:9px;color:#64748b;text-transform:uppercase;letter-spacing:.5px">${k[0]}</div><div style="font-size:15px;font-weight:800;color:#334155">${k[1]}</div></div>`;}).join('')}
+    </div>
+    ${infoBlock}
+    <table>
+      <thead><tr style="background:#334155;color:#fff">
+        ${heads.map(function(h,i){return `<th style="padding:6px 8px;border:1px solid #334155;font-size:9px;text-transform:uppercase;letter-spacing:.4px;text-align:${i===0||i===1?'left':(i===8?'center':'right')}">${h}</th>`;}).join('')}
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    ${sign}
+    <div style="margin-top:16px;font-size:9px;color:#94a3b8;text-align:right">Dicetak: ${fmtD(new Date().toISOString().slice(0,10))} \u00b7 ATW Solar Project Performance Dashboard</div>
+    </td></tr></tbody><tfoot><tr><td></td></tr></tfoot></table>
+  </body></html>`;
+}

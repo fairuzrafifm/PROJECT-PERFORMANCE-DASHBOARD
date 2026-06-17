@@ -27,6 +27,7 @@ var _DOC_KATEGORI = [
 ];
 
 var _editDocId = null;  // ID dokumen yang sedang diedit (null = tambah baru)
+var _editDocLogs = [];  // riwayat (logs) dokumen yg sedang diedit
 
 // ── SAFE SHOW HELPER (jika show() belum ada di utils.js) ──────────
 if (typeof show !== 'function') {
@@ -57,6 +58,7 @@ function mapDocument(r) {
     approvedBy:  r.approved_by  || '',
     catatan:     r.catatan      || '',
     linkDoc:     r.link_doc     || '',
+    logs:        Array.isArray(r.logs) ? r.logs : [],
   };
 }
 
@@ -75,6 +77,7 @@ function unmapDocument(d) {
     approved_by:  d.approvedBy  || null,
     catatan:      d.catatan     || null,
     link_doc:     d.linkDoc     || null,
+    logs:         Array.isArray(d.logs) ? d.logs : [],
   };
 }
 
@@ -407,7 +410,7 @@ function renderDocs() {
       '<td style="font-family:var(--fm);font-size:10px;color:var(--tx);white-space:nowrap">' + safeStr(d.nomorDoc || '—') + '</td>' +
       '<td><span style="background:' + katColor.bg + ';color:' + katColor.c + ';border:1px solid ' + katColor.bd + ';border-radius:5px;padding:2px 8px;font-size:9px;font-weight:600;white-space:nowrap">' + safeStr(d.kategori || '—') + '</span></td>' +
       '<td style="text-align:center"><span style="font-size:9px;font-family:var(--fm);background:var(--sf2);color:var(--mt);padding:2px 6px;border-radius:4px">' + safeStr(d.revisi || '—') + '</span></td>' +
-      '<td style="font-size:10px;white-space:nowrap;color:var(--mt)">' + _fmtDocDate(d.tglDoc) + '</td>' +
+      '<td style="font-size:10px;white-space:nowrap;color:var(--mt)">' + _fmtDocDate(_docProcDate(d)) + '</td>' +
       '<td>' + _docBadge(d.status) + '</td>' +
       '<td style="font-size:10px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + safeStr(d.submittedBy||'') + '">' + (d.submittedBy ? '<span style="color:var(--tx)">' + safeStr(d.submittedBy) + '</span>' : '<span style="color:var(--bd)">—</span>') + '</td>' +
       '<td style="font-size:10px;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + safeStr(d.approvedBy||'') + '">' + (d.approvedBy ? '<span style="color:var(--gn)">' + safeStr(d.approvedBy) + '</span>' : '<span style="color:var(--bd)">—</span>') + '</td>' +
@@ -443,6 +446,61 @@ function renderDocs() {
 // ================================================================
 //  OPEN MODAL (add / edit)
 // ================================================================
+function _docLogColor(ev){ return ev==='Submit'?'var(--bl)':ev==='Feedback'?'var(--yw)':'var(--pu)'; }
+
+function _docProcDate(d){
+  var logs=(d && Array.isArray(d.logs))?d.logs.filter(function(l){return l && l.date;}):[];
+  if(logs.length){
+    logs.sort(function(a,b){return String(a.date).localeCompare(String(b.date));});
+    return logs[logs.length-1].date;  // tanggal diproses terakhir (Submit/Feedback)
+  }
+  return d ? d.tglDoc : null;
+}
+
+function _renderDocLogs(){
+  var box=document.getElementById('docLogList'); if(!box)return;
+  var logs=Array.isArray(_editDocLogs)?_editDocLogs:[];
+  if(!logs.length){ box.innerHTML='<div style="font-size:10px;color:var(--mt)">Belum ada riwayat. Catat Submit / Feedback / Rev di bawah.</div>'; return; }
+  box.innerHTML=logs.slice().sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''));}).map(function(l){
+    var c=_docLogColor(l.event);
+    var stat=l.status?(' \u2192 <span style="font-weight:700;color:'+(((_DOC_STATUS_CFG||{})[l.status]||{}).c||'var(--tx)')+'">'+safeStr(l.status)+'</span>'):'';
+    var rev=l.rev?('<span style="font-size:9px;color:var(--mt);background:var(--sf);border:1px solid var(--bd);border-radius:4px;padding:1px 6px;white-space:nowrap">'+safeStr(l.rev)+'</span>'):'';
+    return '<div style="display:flex;align-items:center;gap:8px;background:var(--sf2);border:1px solid var(--bd);border-left:3px solid '+c+';border-radius:7px;padding:6px 9px">'
+      +'<span style="font-size:10px;font-weight:700;color:'+c+';white-space:nowrap">'+safeStr(l.event)+stat+'</span>'
+      +rev
+      +'<span style="font-size:10px;color:var(--tx);font-family:var(--fm);white-space:nowrap">'+(safeStr(l.date)||'\u2014')+'</span>'
+      +'<span style="flex:1;min-width:0;font-size:10px;color:var(--mt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+safeStr(l.note||'')+'</span>'
+      +(l.by?'<span style="font-size:9px;color:var(--mt);white-space:nowrap">oleh '+safeStr(l.by)+'</span>':'')
+      +'<button class="btn" type="button" onclick="removeDocLog(\''+l.id+'\')" style="padding:1px 6px;font-size:11px;line-height:1;flex-shrink:0">\u00d7</button>'
+      +'</div>';
+  }).join('');
+}
+
+function addDocLog(){
+  var ev=(document.getElementById('dLogEvent')?.value || 'Submit');
+  var rev=(document.getElementById('dLogRev')?.value || '').trim();
+  var date=(document.getElementById('dLogDate')?.value || '');
+  var status=(document.getElementById('dLogStatus')?.value || '');
+  var note=(document.getElementById('dLogNote')?.value || '').trim();
+  var by=(document.getElementById('dLogBy')?.value || '').trim();
+  if(!date){ toast('Pilih tanggal','error'); return; }
+  if(!Array.isArray(_editDocLogs))_editDocLogs=[];
+  _editDocLogs.push({ id:(typeof genId==='function'?genId():'dlog_'+Date.now()), event:ev, rev:rev, date:date, status:(ev==='Feedback'?status:''), note:note, by:by, ts:new Date().toISOString() });
+  try{ if(by) localStorage.setItem('atw_doc_by',by); }catch(e){}
+  // sinkron field utama: status ikut feedback terakhir, revisi ikut submit terbaru
+  if(ev==='Feedback' && status) _sv('docModalStatus', status);
+  if(ev==='Submit' && rev) _sv('docModalRevisi', rev);
+  _sv('dLogNote','');
+  _renderDocLogs();
+}
+
+function removeDocLog(id){
+  if(!Array.isArray(_editDocLogs))return;
+  var i=_editDocLogs.findIndex(function(x){return String(x.id)===String(id);});
+  if(i>=0)_editDocLogs.splice(i,1);
+  _renderDocLogs();
+}
+
 function openDocModal(id) {
   id = id || null;
   _editDocId = id;
@@ -491,6 +549,18 @@ function openDocModal(id) {
     _sv('docModalLink',      '');
   }
 
+  // Riwayat dokumen
+  _editDocLogs = (d && Array.isArray(d.logs)) ? d.logs.slice() : [];
+  _renderDocLogs();
+  _sv('dLogEvent', 'Submit');
+  _sv('dLogRev', (d && d.revisi) ? d.revisi : 'Rev 0');
+  _sv('dLogDate', new Date().toISOString().slice(0, 10));
+  _sv('dLogStatus', 'On Review');
+  _sv('dLogNote', '');
+  var _db = ''; try { _db = localStorage.getItem('atw_doc_by') || ''; } catch (e) {}
+  if (!_db && typeof window !== 'undefined' && window._meName) _db = window._meName;
+  _sv('dLogBy', _db);
+
   show('ov-addDoc');
 }
 
@@ -521,6 +591,7 @@ async function saveDoc() {
     approvedBy:  (document.getElementById('docModalApproveBy')?.value || '').trim(),
     catatan:     (document.getElementById('docModalCatatan')?.value   || '').trim(),
     linkDoc:     (document.getElementById('docModalLink')?.value      || '').trim(),
+    logs:        (Array.isArray(_editDocLogs) ? _editDocLogs : []),
   };
   if (!d.tglDoc) d.tglDoc = null;
 
@@ -611,7 +682,7 @@ function exportDocsPDF() {
       '<td style="font-family:var(--fm);font-size:10px">' + safeStr(d.nomorDoc || '—') + '</td>' +
       '<td>' + safeStr(d.kategori || '—') + '</td>' +
       '<td style="text-align:center">' + safeStr(d.revisi || '—') + '</td>' +
-      '<td style="white-space:nowrap">' + _fmtDocDate(d.tglDoc) + '</td>' +
+      '<td style="white-space:nowrap">' + _fmtDocDate(_docProcDate(d)) + '</td>' +
       '<td>' + _pBadge(d.status) + '</td>' +
       '<td>' + safeStr(d.submittedBy || '—') + '</td>' +
       '<td>' + safeStr(d.approvedBy  || '—') + '</td>' +

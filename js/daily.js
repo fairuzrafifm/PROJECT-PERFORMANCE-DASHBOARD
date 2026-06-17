@@ -160,25 +160,49 @@ function _drNodeRow(num,node,date,indent,isDeep){
     +`<td style="padding:7px 10px;font-family:var(--fb);font-size:11px;color:var(--tx)">${safeStr(node.name)}</td>`
     +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--mt)">${bobot.toFixed(2)}%</td>`
     +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--tx)">${noQty?'\u2014':`${qtyPlan}`}</td>`
-    +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:11.5px;font-weight:700;color:${hasToday?'var(--gn)':'var(--mt)'}">${hasToday?`+${todayQty}`:'\u2014'}</td>`
-    +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--tx)">${noQty?'\u2014':`${cumQty}`}</td>`
+    +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:11.5px;font-weight:700;color:${hasToday?'var(--gn)':'var(--mt)'}">${hasToday?`+${Math.round(todayQty*100)/100}`:'\u2014'}</td>`
+    +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--tx)">${noQty?'\u2014':`${Math.round(cumQty*100)/100}`}</td>`
     +`<td style="padding:7px 14px 7px 0">${pctCell}</td>`
     +`<td style="padding:7px 14px 7px 0;text-align:right;font-family:var(--fm);font-size:10.5px;color:var(--tx)">${(kontrib*100).toFixed(2)}%</td>`
     +`<td style="padding:7px 8px;text-align:center;font-family:var(--fb);font-size:10px;color:var(--mt)">${sat?`<span style="background:var(--sf2);padding:1px 6px;border-radius:4px;border:1px solid var(--bd)">${sat}</span>`:'\u2014'}</td>`
     +'</tr>';
 }
+function _drAttr(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+function _drNavBar(prefix,cats){
+  let opts='<option value="all">\u2014 Semua Kategori \u2014</option>';
+  cats.forEach((c,i)=>{opts+=`<option value="${c.id}">${String.fromCharCode(65+i)}. ${safeStr(c.name)}</option>`;});
+  return `<div style="display:flex;gap:8px;flex-wrap:wrap;background:var(--sf);padding:2px 0 9px;margin-bottom:9px;border-bottom:1px solid var(--bd)">
+    <select class="fi" id="${prefix}NavCat" onchange="drDrillFilter('${prefix}',true)" style="flex:1;min-width:150px;border-color:var(--bl)">${opts}</select>
+    <select class="fi" id="${prefix}NavSub" onchange="drDrillFilter('${prefix}',false)" style="flex:1;min-width:150px"><option value="all">\u2014 Semua Subkategori \u2014</option></select>
+  </div>`;
+}
+function drDrillFilter(prefix,catChanged){
+  const catSel=($(prefix+'NavCat')?.value)||'all';
+  const body=$(prefix+'Body');if(!body)return;
+  const grps=body.querySelectorAll('.drg');
+  if(catChanged){
+    let subOpts='<option value="all">\u2014 Semua Subkategori \u2014</option>';
+    grps.forEach(g=>{ if(catSel==='all'||g.getAttribute('data-cat')===catSel){ g.querySelectorAll('.drs').forEach(sb=>{ const id=sb.getAttribute('data-sub'),nm=sb.getAttribute('data-subname')||''; if(id)subOpts+=`<option value="${id}">${nm}</option>`; }); } });
+    const ss=$(prefix+'NavSub'); if(ss){ss.innerHTML=subOpts;ss.value='all';}
+  }
+  const subSel=($(prefix+'NavSub')?.value)||'all';
+  grps.forEach(g=>{ const cm=(catSel==='all'||g.getAttribute('data-cat')===catSel); g.style.display=cm?'':'none'; if(cm)g.querySelectorAll('.drs').forEach(sb=>{sb.style.display=(subSel==='all'||sb.getAttribute('data-sub')===subSel)?'':'none';}); });
+}
+
 function renderDrQtySetupForm(){
   const projId=$('drSetupProj')?.value;if(!projId){$('drQtySetupForm').innerHTML='';return;}
   const all=WBS.filter(w=>String(w.projId)===String(projId));
   const cats=all.filter(w=>w.type==='cat').sort((a,b)=>a.order-b.order);
   const leafNodes=all.filter(w=>(w.type==='item')||(w.type==='subcat'&&!all.some(x=>x.type==='item'&&x.parentId===w.id)));
   if(!leafNodes.length){$('drQtySetupForm').innerHTML='<div style="text-align:center;color:var(--mt);font-size:12px;padding:20px">Belum ada item WBS</div>';return;}
-  let html='';
+  let html=_drNavBar('drQtySetup',cats)+'<div id="drQtySetupBody" style="max-height:50vh;overflow-y:auto;padding-right:4px">';
   cats.forEach((cat,ci)=>{
+    html+=`<div class="drg" data-cat="${cat.id}">`;
     html+=`<div style="font-family:var(--fd);font-size:12px;letter-spacing:1px;color:var(--tx);margin:10px 0 4px;padding:6px 10px;background:rgba(124,140,240,.07);border-radius:6px">${String.fromCharCode(65+ci)}. ${safeStr(cat.name)}</div>`;
     all.filter(w=>w.type==='subcat'&&w.parentId===cat.id).sort((a,b)=>a.order-b.order).forEach((sub,si)=>{
       const subItems=all.filter(w=>w.type==='item'&&w.parentId===sub.id);
       const nodes=subItems.length?subItems:[sub];
+      html+=`<div class="drs" data-sub="${sub.id}" data-subname="${_drAttr((ci+1)+'.'+(si+1)+' '+(sub.name||''))}">`;
       if(subItems.length)html+=`<div style="font-size:11px;color:var(--tx);padding:3px 10px;font-weight:600">${ci+1}.${si+1} ${safeStr(sub.name)}</div>`;
       nodes.forEach((node,ii)=>{
         const label=subItems.length?`${ci+1}.${si+1}.${ii+1} ${safeStr(node.name)}`:`${ci+1}.${si+1} ${safeStr(node.name)}`;
@@ -198,9 +222,13 @@ function renderDrQtySetupForm(){
           </div>
         </div>`;
       });
+      html+=`</div>`;
     });
+    html+=`</div>`;
   });
+  html+='</div>';
   $('drQtySetupForm').innerHTML=html;
+  if(cats.length){const _s=$('drQtySetupNavCat');if(_s)_s.value=cats[0].id;drDrillFilter('drQtySetup',true);}
 }
 function saveDrQtySetup(){
   const projId=$('drSetupProj').value;
@@ -224,12 +252,14 @@ function renderDrInputForm(){
   const cats=all.filter(w=>w.type==='cat').sort((a,b)=>a.order-b.order);
   const leafNodes=all.filter(w=>(w.type==='item')||(w.type==='subcat'&&!all.some(x=>x.type==='item'&&x.parentId===w.id)));
   if(!leafNodes.length){$('drInputForm').innerHTML='<div style="text-align:center;color:var(--mt);padding:20px">Setup WBS & Qty Plan terlebih dahulu</div>';return;}
-  let html='';
+  let html=_drNavBar('drInput',cats)+'<div id="drInputBody" style="max-height:50vh;overflow-y:auto;padding-right:4px">';
   cats.forEach((cat,ci)=>{
+    html+=`<div class="drg" data-cat="${cat.id}">`;
     html+=`<div style="font-family:var(--fd);font-size:12px;letter-spacing:1px;color:var(--tx);margin:10px 0 4px;padding:6px 10px;background:rgba(124,140,240,.07);border-radius:6px">${String.fromCharCode(65+ci)}. ${safeStr(cat.name)}</div>`;
     all.filter(w=>w.type==='subcat'&&w.parentId===cat.id).sort((a,b)=>a.order-b.order).forEach((sub,si)=>{
       const subItems=all.filter(w=>w.type==='item'&&w.parentId===sub.id);
       const nodes=subItems.length?subItems:[sub];
+      html+=`<div class="drs" data-sub="${sub.id}" data-subname="${_drAttr((ci+1)+'.'+(si+1)+' '+(sub.name||''))}">`;
       if(subItems.length)html+=`<div style="font-size:11px;color:var(--tx);padding:3px 10px;font-weight:600">${ci+1}.${si+1} ${safeStr(sub.name)}</div>`;
       nodes.forEach((node,ii)=>{
         const label=subItems.length?`${ci+1}.${si+1}.${ii+1} ${safeStr(node.name)}`:`${ci+1}.${si+1} ${safeStr(node.name)}`;
@@ -242,7 +272,7 @@ function renderDrInputForm(){
             <span style="font-size:11px">${label}</span>
             <span style="font-size:9px;color:var(--mt);font-family:var(--fm);margin-left:6px">bobot:${(+node.bobot||0).toFixed(2)}%</span>
             ${qtyPlan?`<span style="font-size:9px;color:var(--mt);font-family:var(--fm);margin-left:4px">plan:${qtyPlan} ${node.qtySatuan||''}</span>`:''}
-            <span style="font-size:9px;color:var(--mt);font-family:var(--fm);margin-left:4px">cum:${cumQty} ${node.qtySatuan||''} (${pct.toFixed(1)}%)</span>
+            <span style="font-size:9px;color:var(--mt);font-family:var(--fm);margin-left:4px">cum:${Math.round(cumQty*100)/100} ${node.qtySatuan||''} (${pct.toFixed(1)}%)</span>
           </div>
           <div>
             <label style="font-size:9px;color:var(--mt);display:block;font-weight:600">Qty Hari Ini${node.qtySatuan?' ('+node.qtySatuan+')':''}</label>
@@ -259,9 +289,13 @@ function renderDrInputForm(){
           </div>
         </div>`;
       });
+      html+=`</div>`;
     });
+    html+=`</div>`;
   });
+  html+='</div>';
   $('drInputForm').innerHTML=html;updateDrPreview();
+  if(cats.length){const _s=$('drInputNavCat');if(_s)_s.value=cats[0].id;drDrillFilter('drInput',true);}
 }
 function updateDrPreview(){
   const projId=$('drInputProj')?.value;const date=$('drInputDate')?.value||new Date().toISOString().slice(0,10);

@@ -37,6 +37,7 @@ function getAllCosts(){
       rabItemId:p.rabItemId||null,
       rabKatId:p.rabKatId||null,
       type:'procurement',
+      _hasIR:(Array.isArray(p.logs)&&p.logs.some(l=>l&&l.event==='IR (Item Receive)')),
       kategori:p.kategori||'Material',
       deskripsi:p.item+(p.supplier?` (${p.supplier})`:''),
       amount:+p.harga||0,

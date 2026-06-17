@@ -207,7 +207,7 @@ function renderProjStatusCards(){
   // Analisis Diagnosa per kartu (skor/CPI/serapan/flag) + urutkan paling perlu perhatian di atas
   const _pa={};
   filtered.forEach(p=>{ try{ _pa[p.id]=(typeof analyzeProject==='function')?analyzeProject(p.id):null; }catch(e){ _pa[p.id]=null; } });
-  filtered.sort((a,b)=>{ const sa=_pa[a.id]?_pa[a.id].score:999, sb=_pa[b.id]?_pa[b.id].score:999; return sa-sb; });
+  filtered.sort((a,b)=>{ const sa=(_pa[a.id]&&_pa[a.id].score!=null)?_pa[a.id].score:999, sb=(_pa[b.id]&&_pa[b.id].score!=null)?_pa[b.id].score:999; return sa-sb; });
   const _logoFallback='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
   const statusCls={'On Track':'on','Delayed':'del','Critical':'crit','Planning':'plan','Done':'done'};
   const barClr={'On Track':'linear-gradient(90deg,var(--gn),#6fe7b8)','Delayed':'linear-gradient(90deg,var(--yw),#fae3a3)','Critical':'linear-gradient(90deg,var(--rd),#f4707a)','Planning':'linear-gradient(90deg,var(--bl),#a9b4f5)','Done':'linear-gradient(90deg,var(--pu),#a78bfa)'};
@@ -235,7 +235,7 @@ function renderProjStatusCards(){
     const _hOver=(_a&&_a.eacOver!=null&&_a.eacOver>0)?_a.eacOver:0;
     const _hDelay=(_a&&_a.fcDelay!=null&&_a.fcDelay>0)?_a.fcDelay:0;
     const _chip=(lbl,val,clr,tip)=>`<span title="${tip||''}" style="display:inline-flex;gap:4px;align-items:center;font-size:9.5px;background:var(--sf2);border:1px solid var(--bd);border-radius:6px;padding:2px 7px;color:var(--mt);white-space:nowrap;cursor:${tip?'help':'default'}">${lbl} <b style="color:${clr};font-weight:700">${val}</b></span>`;
-    let _diag=_chip('CPI',_hcpi,_cpiClr,'CPI = efisiensi biaya. >1 = hemat, <1 = boros (Earned Value / biaya nyata).')+_chip('Serapan',_hserap,'var(--tx)','Serapan = persentase anggaran RAB yang sudah terpakai (biaya nyata / total RAB).');
+    let _diag=_chip('CPI',_hcpi,_cpiClr,'CPI = efisiensi biaya. >1 = hemat, <1 = boros. Earned Value / biaya barang yang sudah IR (Item Receive) + OPEX. PO yang belum diterima tidak dihitung.')+_chip('Serapan',_hserap,'var(--tx)','Serapan = persentase anggaran RAB yang sudah terpakai (biaya nyata / total RAB).');
     if(_hOver)_diag+=_chip('<span style="color:var(--rd)">Over</span>',(typeof fmtRpShort==='function'?fmtRpShort(_hOver):_hOver),'var(--rd)','Proyeksi biaya akhir (EAC) melebihi RAB sebesar ini.');
     if(_hDelay)_diag+=_chip('<span style="color:var(--yw)">Telat</span>','~'+_hDelay+' hr','var(--yw)','Proyeksi keterlambatan berdasarkan tren progres saat ini.');
     const _diagStrip=_a?`<div style="display:flex;gap:5px;flex-wrap:wrap;margin:0 0 12px">${_diag}</div>`:'';
@@ -360,9 +360,10 @@ function renderDetail(id){
   const _costProc=_costsP.filter(c=>c.type==='procurement').reduce((s,c)=>s+(+c.amount||0),0);
   const _costOpex=_costsP.filter(c=>c.type!=='procurement').reduce((s,c)=>s+(+c.amount||0),0);
   const _costReal=_costProc+_costOpex;
+  const _costEarned=_costsP.filter(c=>c._src!=='procurement'||c._hasIR).reduce((s,c)=>s+(+c.amount||0),0);
   const _serapPct=_rabBudget>0?Math.round(_costReal/_rabBudget*1000)/10:0;
   const _ev=_rabBudget*((+p.actual||0)/100);                 // earned value = progres fisik × budget
-  const _cpi=_costReal>0?Math.round(_ev/_costReal*100)/100:null; // CPI = EV / biaya aktual
+  const _cpi=_costEarned>0?Math.round(_ev/_costEarned*100)/100:null; // CPI = EV / biaya yang sudah diterima (On Site/Done)
   const _cpiClr=_cpi===null?'var(--mt)':(_cpi>=1?'var(--gn)':_cpi>=0.85?'var(--yw)':'var(--rd)');
   // ── Forecast / Estimasi (jadwal via SPI, biaya via CPI/EAC) ──
   const _spiNum=_cp>0?(p.actual/_cp):null;
@@ -443,7 +444,7 @@ function renderDetail(id){
       <div class="metric"><div class="mv" style="color:${typeof rem==='number'&&rem<30?'var(--rd)':'var(--yw)'}">${rem}${typeof rem==='number'?' hr':''}</div><div class="ml">Sisa Hari</div></div>
     </div>
     <div class="detail-summary">
-      ${_an?`<span class="dsum-chip"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${_an.health.c}"></span>Kesehatan <b style="color:${_an.health.c}">${_an.health.t} · ${_an.score}/100</b></span>`:''}
+      ${_an?`<span class="dsum-chip"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${_an.health.c}"></span>Kesehatan <b style="color:${_an.health.c}">${_an.health.t} · ${_an.score==null?'\u2014':_an.score}/100</b></span>`:''}
       <span class="dsum-chip">Action terbuka <b>${_actOpen}</b>${_actOvd?` <span style="color:var(--rd)">· ${_actOvd} overdue</span>`:''}</span>
       ${_an&&_an.findings&&_an.findings.filter(f=>f.sev==='crit').length?`<span class="dsum-chip"><span style="color:var(--rd)">${_an.findings.filter(f=>f.sev==='crit').length} temuan kritis</span></span>`:''}
     </div>

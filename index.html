@@ -1459,7 +1459,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
           </select>
           <input class="fi" style="width:160px;padding:4px 9px;font-size:11px" id="procSearch" placeholder="Cari item..." oninput="renderProc()">
         </div>
-        <button class="btn bgn btn-sm" onclick="exportProcExcel()" title="Export procurement (sesuai filter) ke Excel"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Excel</button>
+        <button class="btn bg btn-sm" onclick="exportProcExcel()" title="Export procurement (sesuai filter) ke Excel"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Excel</button>
         <button class="btn bg btn-sm" onclick="openModal('addProc')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Item</button>
       </div>
       <div class="krow" style="grid-template-columns:repeat(6,1fr)">
@@ -1611,6 +1611,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
           <input type="date" class="fi" style="width:auto" id="drDate" onchange="renderDailyReport()">
           <button class="btn btn-sm edit-only" style="border-color:var(--bl);color:var(--bl)" onclick="openModal('drInput')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Input Harian</button>
           <button class="btn btn-sm" style="border-color:var(--bl);color:var(--bl)" onclick="openModal('drQtySetup')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Setup Qty Plan</button>
+          <button class="btn btn-sm" style="border-color:#475569;color:var(--tx)" onclick="generateDailyReportPDF()" title="Cetak Laporan Harian (PDF)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Cetak PDF</button>
           <div id="drWeekBadge" style="margin-left:auto;font-size:11px;font-family:var(--fm);background:rgba(124,140,240,.1);color:var(--or);padding:3px 10px;border-radius:20px;display:none"></div>
         </div>
       </div>
@@ -1800,6 +1801,20 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <div style="font-size:10px;color:var(--mt);margin-top:3px">URL akan ditampilkan sebagai tautan di tabel. Pastikan link bisa diakses tim.</div>
   </div>
   <div class="fg"><label class="fl">Catatan / Remarks</label><input class="fi" id="docModalCatatan" placeholder="Keterangan tambahan (opsional)"></div>
+  <div class="fg" style="border-top:1px solid var(--bd);padding-top:11px;margin-top:5px">
+    <label class="fl">Riwayat Submit / Feedback / Revisi</label>
+    <div id="docLogList" style="display:flex;flex-direction:column;gap:5px;margin-bottom:7px"></div>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      <select class="fi" id="dLogEvent" style="width:auto;flex-shrink:0"><option>Submit</option><option>Feedback</option></select>
+      <input class="fi" id="dLogRev" list="docRevList" placeholder="Rev" title="Revisi terkait" style="width:72px;flex-shrink:0">
+      <input class="fi" type="date" id="dLogDate" style="width:auto;flex-shrink:0">
+      <select class="fi" id="dLogStatus" title="Status hasil (untuk Feedback)" style="width:auto;flex-shrink:0"><option>On Review</option><option>Approved</option><option>Approved with Note</option><option>Rejected</option></select>
+      <input class="fi" id="dLogNote" placeholder="catatan feedback (opsional)" style="flex:1;min-width:120px">
+      <input class="fi" id="dLogBy" placeholder="oleh" title="Dicatat oleh" style="width:100px;flex-shrink:0">
+      <button class="btn bp" type="button" onclick="addDocLog()" style="flex-shrink:0">+</button>
+    </div>
+    <div style="font-size:9px;color:var(--mt);margin-top:5px">Catat tiap <b>Submit</b> &amp; <b>Feedback</b>. Status pada "Feedback" otomatis memperbarui status dokumen; Rev pada "Submit" memperbarui revisi dokumen.</div>
+  </div>
   <div class="mfoot">
     <button class="btn brd edit-only" id="btnDelDoc" onclick="delDoc()" style="margin-right:auto;display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Hapus</button>
     <button class="btn" onclick="cm('addDoc')">Batal</button>

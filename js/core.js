@@ -1276,9 +1276,18 @@ window.addEventListener('load', function _initLazyLoad() {
       _log('loadProjectData(' + pid + ') OK ' + (Date.now()-t0) + 'ms' +
            ' | WBS:' + WBS.filter(function(w){ return String(w.projId)===pid; }).length);
 
-      // Re-render hanya jika ini proyek aktif saat ini
+      // Re-render penuh utk proyek aktif; selain itu refresh komponen yang menampilkan
+      // Plan lintas-proyek (sidebar + kartu status tab aktif), karena nilai Plan tiap
+      // proyek baru benar setelah SCURVE-nya selesai dimuat.
       var curSel = (typeof selId !== 'undefined') ? String(selId) : null;
-      if (curSel === pid && typeof render === 'function') render();
+      if (curSel === pid && typeof render === 'function') { render(); }
+      else {
+        if (typeof renderSB === 'function') renderSB();
+        if (typeof activeTab !== 'undefined') {
+          if (activeTab === 'overview' && typeof renderProjStatusCards === 'function') { try { renderProjStatusCards(); } catch(e){} }
+          else if (activeTab === 'projects' && typeof renderProjTab === 'function') { try { renderProjTab(); } catch(e){} }
+        }
+      }
 
     } catch(err) {
       _loading.delete(pid);
