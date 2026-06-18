@@ -772,7 +772,7 @@ select.fi{cursor:pointer}
    Mengurangi memori GPU & compositing. (sticky header .tbl thead th tetap
    dipromosikan karena load-bearing untuk kemulusan sticky) */
 /* GPU-accelerate modals */
-.ov .modal{transform:translateZ(0);will-change:transform}
+/* .ov .modal: translateZ/will-change DIHAPUS — memaksa layer GPU permanen yang di-raster sekali, bikin teks modal tampak blur di layar HiDPI. Animasi su tetap jalan tanpa ini. */
 
 .gantt-container{display:flex;width:100%;overflow:hidden;border:1px solid var(--bd);border-radius:6px}
 .gantt-left-panel{width:460px;flex-shrink:0;border-right:2px solid var(--bd);background:var(--sf)}
@@ -1146,6 +1146,9 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
         <div class="sbar-dd-item" onclick="exportPDF();toggleSbarDD('ddReport')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 13h1a1 1 0 0 1 0 2H9v-2zm4 0h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1h-1v-3zm4 0v3"/></svg> PDF</div>
         <div class="sbar-dd-item" onclick="openModal('weeklyReport');toggleSbarDD('ddReport')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg> Weekly Report</div>
         <div class="sbar-dd-item" onclick="openModal('mpReport');toggleSbarDD('ddReport')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><path d="M21 21v-2a4 4 0 0 0-3-3.85"/></svg> MP Report</div>
+        <div class="sbar-dd-sep"></div>
+        <div class="sbar-dd-item" onclick="generateClientPPT();toggleSbarDD('ddReport')" title="Executive summary 1 proyek (PowerPoint)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><polyline points="7 11 10 8 13 11 17 7"/></svg> PPT Client (per-proyek)</div>
+        <div class="sbar-dd-item" onclick="generateManagementPPT();toggleSbarDD('ddReport')" title="Ringkasan portfolio semua proyek (PowerPoint)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="3" y1="20" x2="21" y2="20"/></svg> PPT Portfolio (manajemen)</div>
         <div class="sbar-dd-sep"></div>
         <div class="sbar-dd-item" onclick="copyShareUrl();toggleSbarDD('ddReport')" id="btnShareUrl" style="display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Share Link</div>
       </div>
@@ -3046,6 +3049,8 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <script src="js/scurve.js"></script>
 <script src="js/daily.js"></script>
 <script src="js/reports.js"></script>
+<script src="js/pptassets.js"></script>
+<script src="js/pptreport.js"></script>
 <script src="js/gantt.js"></script>
 <script src="js/documents.js"></script>
 <script src="js/diagnosa.js"></script>
