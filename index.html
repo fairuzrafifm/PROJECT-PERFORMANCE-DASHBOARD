@@ -1988,8 +1988,12 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   </div>
 
   <div class="f2">
-    <div class="fg"><label class="fl">Manhours Actual (jam)</label><input class="fi" type="number" id="mpMhAct" placeholder="480" min="0"></div>
-    <div class="fg"><label class="fl">Time Lost (jam)</label><input class="fi" type="number" id="mpTL" placeholder="0" min="0"></div>
+    <div class="fg"><label class="fl">Jam Kerja / Hari (jam)</label><input class="fi" type="number" id="mpWorkHours" value="8" min="0" step="0.5" oninput="recalcMpManhours()"></div>
+    <div class="fg"><label class="fl">Time Lost (jam)</label><input class="fi" type="number" id="mpTL" placeholder="0" min="0" step="0.5" oninput="recalcMpManhours()"></div>
+  </div>
+  <div class="fg"><label class="fl">Manhours Actual (otomatis)</label>
+    <input class="fi" type="number" id="mpMhAct" min="0" readonly style="background:var(--sf2);font-weight:700">
+    <div style="font-size:11px;color:var(--mt);margin-top:3px">= (Jam Kerja \u2212 Time Lost) \u00d7 Total Pekerja</div>
   </div>
   <div class="fg"><label class="fl">Penyebab Time Lost</label>
     <select class="fi" id="mpTLReason">
