@@ -715,7 +715,12 @@ function mapManpower(r) {
     id: r.id, projId: r.proj_id, date: r.date,
     activities: r.activities || [], spv: r.spv, mandor: r.mandor,
     installer: r.installer, tukang: r.tukang, helper: r.helper,
-    safety: r.safety, total: r.total
+    safety: r.safety, total: r.total,
+    mhActual: r.mh_actual || 0,
+    timeLost: r.time_lost || 0,
+    timeLostReason: r.time_lost_reason || '',
+    workHours: (r.work_hours != null ? r.work_hours : 8),
+    notes: r.notes || ''
   };
 }
 function unmapManpower(m) {
@@ -724,7 +729,12 @@ function unmapManpower(m) {
     activities: m.activities || [],
     spv: m.spv || 0, mandor: m.mandor || 0, installer: m.installer || 0,
     tukang: m.tukang || 0, helper: m.helper || 0,
-    safety: m.safety || 0, total: m.total || 0
+    safety: m.safety || 0, total: m.total || 0,
+    mh_actual: m.mhActual || 0,
+    time_lost: m.timeLost || 0,
+    time_lost_reason: m.timeLostReason || '',
+    work_hours: (m.workHours != null ? m.workHours : 8),
+    notes: m.notes || ''
   };
 }
 

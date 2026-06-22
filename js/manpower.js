@@ -485,11 +485,26 @@ function addMpActivityRow(existing, wbsChoices){
       const tot=['mpa-spv','mpa-mandor','mpa-installer','mpa-tukang','mpa-helper','mpa-safety']
         .reduce((s,cls)=>s+(+row.querySelector('.'+cls)?.value||0),0);
       row.querySelector('.mpa-rowtot').textContent=tot;
+      updateMpActSummary();
     });
   });
 
   container.appendChild(row);
   updateMpActSummary();
+}
+
+// Auto-hitung Manhours = (Jam Kerja/Hari − Time Lost) × Total Pekerja hari itu
+function recalcMpManhours(){
+  const rows=document.querySelectorAll('#mpActivityRows .mp-act-row');
+  let workers=0;
+  rows.forEach(row=>{
+    workers+=['mpa-spv','mpa-mandor','mpa-installer','mpa-tukang','mpa-helper','mpa-safety']
+      .reduce((s,cls)=>s+(+row.querySelector('.'+cls)?.value||0),0);
+  });
+  const whRaw=gv('mpWorkHours');const workHours=(whRaw===''||whRaw==null||isNaN(+whRaw))?8:+whRaw;
+  const tl=+gv('mpTL')||0;
+  const mh=Math.max(0,(workHours-tl))*workers;
+  sv('mpMhAct',Math.round(mh*100)/100);
 }
 
 function updateMpActSummary(){
@@ -510,6 +525,7 @@ function updateMpActSummary(){
   sv('mpSpv',totals.spv);sv('mpMandor',totals.mandor);sv('mpInstaller',totals.installer);
   sv('mpTukang',totals.tukang);sv('mpHelper',totals.helper);sv('mpSafety',totals.safety);
   sv('mpTot',grandTot);
+  recalcMpManhours();
 
   // Tampilkan summary bar
   const bar=$('mpTotSummary');
@@ -589,13 +605,17 @@ function saveMp(){
 
   // ── Build entry ───────────────────────────────────────────
   const editId=$('mpProj').dataset?.editId||'';
+  const workHours=(function(){const r=gv('mpWorkHours');return (r===''||r==null||isNaN(+r))?8:+r;})();
+  const timeLost=+gv('mpTL')||0;
+  const mhActual=Math.round(Math.max(0,(workHours-timeLost))*tot*100)/100; // (jam kerja − time lost) × total pekerja
   const entry={
     id:editId||genId(),
     projId:String(projId),
     date,
     spv,mandor,installer:inst,tukang,helper,safety,total:tot,
-    mhActual:+gv('mpMhAct')||0,
-    timeLost:+gv('mpTL')||0,
+    workHours,
+    mhActual,
+    timeLost,
     timeLostReason:gv('mpTLReason')||'',
     notes:gv('mpNotes')||'',
     activities

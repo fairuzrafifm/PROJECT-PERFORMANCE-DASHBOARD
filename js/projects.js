@@ -935,7 +935,7 @@ function openModal(type,id=null){
     if(selId)$('mpProj').value=selId;
     sv('mpDate',new Date().toISOString().slice(0,10));
     sv('mpSpv',0);sv('mpMandor',0);sv('mpInstaller',0);sv('mpTukang',0);sv('mpHelper',0);sv('mpSafety',0);sv('mpTot',0);
-    sv('mpMhAct','');sv('mpTL','0');sv('mpTLReason','');sv('mpNotes','');
+    sv('mpMhAct','');sv('mpTL','0');sv('mpTLReason','');sv('mpNotes','');sv('mpWorkHours','8');
     // Jika edit (id diberikan), load existing data
     if(id){
       const ex=MPLOGS.find(m=>m.id===id);
@@ -944,6 +944,7 @@ function openModal(type,id=null){
         sv('mpSpv',ex.spv||0);sv('mpMandor',ex.mandor||0);sv('mpInstaller',ex.installer||0);
         sv('mpTukang',ex.tukang||0);sv('mpHelper',ex.helper||0);sv('mpSafety',ex.safety||0);
         calcMpTot();sv('mpMhAct',ex.mhActual||0);sv('mpTL',ex.timeLost||0);
+        sv('mpWorkHours',ex.workHours!=null?ex.workHours:8);
         sv('mpTLReason',ex.timeLostReason||'');sv('mpNotes',ex.notes||'');
         $('mpProj').dataset.editId=id;
       }
@@ -952,6 +953,7 @@ function openModal(type,id=null){
     }
     fillMpPlan();
     renderMpActivityRows();
+    recalcMpManhours();
     show('ov-inputMp');
   }
   if(type==='addAccident'){

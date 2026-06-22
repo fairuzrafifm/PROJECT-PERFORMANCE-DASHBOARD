@@ -69,15 +69,88 @@
     var rows = SC.filter(function (d) { return String(d.projId) === String(projId); }).sort(function (a, b) { return (+a.week) - (+b.week); });
     if (!rows.length) return null;
     var lastAct = rows.filter(function (d) { return num(d.wAct) > 0 || d.cAct != null; }).reduce(function (m, d) { return Math.max(m, +d.week); }, 0);
-    var labels = [], plan = [], actual = [], cp = 0, ca = 0;
+    var weeks = [], labels = [], plan = [], actual = [], actualFull = [], cp = 0, ca = 0;
     rows.forEach(function (d) {
       cp += num(d.wPlan);
+      weeks.push(+d.week);
       labels.push('W' + String(d.week).padStart(2, '0'));
       plan.push(Math.round(((d.cPlan != null) ? num(d.cPlan) : cp) * 10) / 10);
-      if (+d.week <= lastAct) { ca += num(d.wAct); if (d.cAct != null) ca = num(d.cAct); actual.push(Math.round(ca * 10) / 10); }
-      else actual.push(null);
+      if (+d.week <= lastAct) { ca += num(d.wAct); if (d.cAct != null) ca = num(d.cAct); }
+      actualFull.push(+d.week <= lastAct ? Math.round(ca * 10) / 10 : null);
+      actual.push(+d.week <= lastAct ? Math.round(ca * 10) / 10 : null);
     });
-    return { labels: labels, plan: plan, actual: actual, lastAct: lastAct };
+    return { weeks: weeks, labels: labels, plan: plan, actual: actual, actualFull: actualFull, lastAct: lastAct };
+  }
+
+  // ── Minggu: helper as-of ───────────────────────────────────────
+  function _gwn(projId, date) { try { return (typeof getWbsWeekNum === 'function') ? getWbsWeekNum(projId, date) : null; } catch (e) { return null; } }
+  function availableWeeks(projId) {
+    var ws = [];
+    var SC = (typeof SCURVE !== 'undefined') ? SCURVE : [];
+    SC.filter(function (d) { return String(d.projId) === String(projId); }).forEach(function (d) { ws.push(+d.week); });
+    [(typeof MPLOGS !== 'undefined') ? MPLOGS : [], (typeof ACCLOGS !== 'undefined') ? ACCLOGS : []].forEach(function (arr) {
+      arr.filter(function (x) { return String(x.projId) === String(projId); }).forEach(function (x) { var w = _gwn(projId, x.date); if (w) ws.push(w); });
+    });
+    var uniq = {}; ws.forEach(function (w) { if (w > 0) uniq[w] = 1; });
+    return Object.keys(uniq).map(Number).sort(function (a, b) { return a - b; });
+  }
+  // nilai progress as-of minggu w (w null = terkini/semua)
+  function asOf(projId, w, fallbackA) {
+    var sc = scurveData(projId);
+    if (!sc) return { week: w, plan: fallbackA ? num(fallbackA.cp) : 0, actual: fallbackA ? num(fallbackA.act) : 0, variance: fallbackA ? num(fallbackA.variance) : 0, spi: fallbackA ? fallbackA.spi : null, label: w ? 'W' + String(w).padStart(2, '0') : 'Terkini' };
+    if (w == null) {
+      var pl = sc.plan[sc.plan.length - 1], ac = sc.actualFull[sc.lastAct ? sc.weeks.indexOf(sc.lastAct) : sc.actualFull.length - 1];
+      if (ac == null) ac = sc.actualFull.filter(function (x) { return x != null; }).pop();
+      var v = num(ac) - num(pl);
+      return { week: null, plan: num(pl), actual: num(ac), variance: v, spi: pl > 0 ? num(ac) / num(pl) : null, label: 'Terkini', sc: sc };
+    }
+    // index minggu ≤ w terbesar
+    var idx = -1; for (var i = 0; i < sc.weeks.length; i++) { if (sc.weeks[i] <= w) idx = i; }
+    if (idx < 0) idx = 0;
+    var planN = sc.plan[idx];
+    var actIdx = Math.min(idx, sc.weeks.indexOf(sc.lastAct) >= 0 ? sc.weeks.indexOf(sc.lastAct) : idx);
+    var actN = sc.actualFull[actIdx]; if (actN == null) { for (var j = actIdx; j >= 0; j--) { if (sc.actualFull[j] != null) { actN = sc.actualFull[j]; break; } } }
+    actN = num(actN);
+    return { week: w, plan: num(planN), actual: actN, variance: actN - num(planN), spi: planN > 0 ? actN / num(planN) : null, label: 'W' + String(w).padStart(2, '0'), sc: sc, idx: idx };
+  }
+
+  // ── Data: Manpower (as-of minggu) ──────────────────────────────
+  function manpowerData(projId, w) {
+    var MP = ((typeof MPLOGS !== 'undefined') ? MPLOGS : []).filter(function (m) { return String(m.projId) === String(projId); })
+      .map(function (m) { return { m: m, w: _gwn(projId, m.date), date: m.date }; });
+    var scope = w == null ? MP : MP.filter(function (x) { return x.w != null && x.w <= w; });
+    var sum = function (f) { return scope.reduce(function (s, x) { return s + (num(x.m[f])); }, 0); };
+    var byWeek = {}; scope.forEach(function (x) { if (x.w) byWeek[x.w] = (byWeek[x.w] || 0) + num(x.m.total); });
+    var peak = scope.reduce(function (mx, x) { return Math.max(mx, num(x.m.total)); }, 0);
+    var days = scope.length, mandays = sum('total');
+    return {
+      days: days, mandays: mandays, avg: days ? Math.round(mandays / days) : 0, peak: peak,
+      comp: { Installer: sum('installer'), Tukang: sum('tukang'), Helper: sum('helper'), 'Safety Man': sum('safety') },
+      byWeek: byWeek, mh: sum('mhActual'),
+      latest: scope.length ? num(scope[scope.length - 1].m.total) : 0
+    };
+  }
+
+  // ── Data: Safety/HSE (as-of minggu) ────────────────────────────
+  var SAFE_CATS = [
+    { k: 'fatality', t: 'Fatality', c: '7A1620' }, { k: 'lti', t: 'Lost Time Injury', c: 'D9534F' },
+    { k: 'medTreatment', t: 'Medical Treatment', c: 'E0773A' }, { k: 'minorInjury', t: 'Minor / First Aid', c: 'E0A93B' },
+    { k: 'nearMiss', t: 'Near Miss', c: '2C7FB8' }, { k: 'propertyDamage', t: 'Property Damage', c: '8B6FB0' },
+    { k: 'fire', t: 'Fire', c: 'C0392B' }, { k: 'traffic', t: 'Traffic', c: '6B7896' }, { k: 'environment', t: 'Environment', c: '2BA67A' }
+  ];
+  function safetyData(projId, w) {
+    var AC = ((typeof ACCLOGS !== 'undefined') ? ACCLOGS : []).filter(function (a) { return String(a.projId) === String(projId); })
+      .map(function (a) { return { a: a, w: _gwn(projId, a.date), date: a.date }; });
+    var scope = w == null ? AC : AC.filter(function (x) { return x.w != null && x.w <= w; });
+    var sum = function (f) { return scope.reduce(function (s, x) { return s + num(x.a[f]); }, 0); };
+    var cats = {}; SAFE_CATS.forEach(function (c) { cats[c.k] = sum(c.k); });
+    var recordable = cats.fatality + cats.lti + cats.medTreatment;
+    var totalInc = recordable + cats.minorInjury + cats.propertyDamage + cats.fire + cats.traffic + cats.environment;
+    // hari sejak insiden recordable terakhir
+    var lastRec = null;
+    scope.forEach(function (x) { if ((num(x.a.fatality) + num(x.a.lti) + num(x.a.medTreatment)) > 0 && x.date) { var d = new Date(x.date); if (!lastRec || d > lastRec) lastRec = d; } });
+    var daysSince = lastRec ? Math.floor((new Date() - lastRec) / 86400000) : null;
+    return { cats: cats, timeLost: sum('timeLost'), recordable: recordable, totalInc: totalInc, nearMiss: cats.nearMiss, daysSince: daysSince, hasData: scope.length > 0 };
   }
 
   // ── Data: progress WBS per kategori ────────────────────────────
@@ -272,14 +345,14 @@
   // ===============================================================
   //  CLIENT DECK (tanpa CPI/biaya, + procurement)
   // ===============================================================
-  function buildClientDeck(proj) {
+  function buildClientDeck(proj, asOfWeek) {
     var a = (typeof analyzeProject === 'function') ? analyzeProject(proj.id) : null;
-    var act = a ? num(a.act) : num(proj.actual);
-    var plan = a ? num(a.cp) : num(proj.plan);
-    var variance = a ? num(a.variance) : (act - plan);
-    var spi = a ? a.spi : (plan > 0 ? act / plan : null);
+    var ao = asOf(proj.id, (asOfWeek == null ? null : asOfWeek), a);
+    var act = num(ao.actual), plan = num(ao.plan), variance = num(ao.variance), spi = ao.spi;
     var accent = statusColor(proj.status);
     var today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+    var periodLabel = (asOfWeek == null) ? ('Terkini \u00b7 ' + today) : ('s/d Minggu ' + ao.label + ' \u00b7 ' + today);
+    var subPctLabel = (asOfWeek == null) ? 'kumulatif terkini' : ('kumulatif s/d ' + ao.label);
     var TAG = 'DISIAPKAN UNTUK CLIENT';
 
     // 1. Cover
@@ -288,16 +361,16 @@
       kicker: 'LAPORAN PROGRESS PROYEK',
       title: proj.nama || 'Proyek',
       subtitle: (proj.kode ? proj.kode + '   \u00b7   ' : '') + (proj.lokasi || ''),
-      meta: 'Client       : ' + (proj.client || '\u2014') + '\nPeriode    : ' + today + '\nStatus      : ' + (proj.status || '\u2014')
+      meta: 'Client       : ' + (proj.client || '\u2014') + '\nPeriode    : ' + periodLabel + '\nStatus      : ' + (proj.status || '\u2014')
     });
 
     // 2. Ringkasan Eksekutif (TANPA CPI)
     var s2 = P_.addSlide(); s2.background = { color: C.white };
-    header(s2, 'Ringkasan Eksekutif', 'Status progres proyek per ' + today, TAG);
+    header(s2, 'Ringkasan Eksekutif', 'Status progres proyek ' + periodLabel, TAG);
     statusPill(s2, PW - MX - 2.0, 0.66, proj.status || '\u2014', accent);
     var cw = (PW - MX * 2 - 0.4 * 3) / 4, cy = 1.95, ch = 1.7;
-    kpiCard(s2, MX + (cw + 0.4) * 0, cy, cw, ch, pct1(act), 'Progress Aktual', 'kumulatif terkini', accent);
-    kpiCard(s2, MX + (cw + 0.4) * 1, cy, cw, ch, pct1(plan), 'Rencana', 'target saat ini', C.blue);
+    kpiCard(s2, MX + (cw + 0.4) * 0, cy, cw, ch, pct1(act), 'Progress Aktual', subPctLabel, accent);
+    kpiCard(s2, MX + (cw + 0.4) * 1, cy, cw, ch, pct1(plan), 'Rencana', (asOfWeek == null ? 'target saat ini' : 'target ' + ao.label), C.blue);
     kpiCard(s2, MX + (cw + 0.4) * 2, cy, cw, ch, (variance >= 0 ? '+' : '') + (Math.round(variance * 10) / 10) + '%', 'Deviasi', variance >= 0 ? 'di atas rencana' : 'di bawah rencana', variance >= -3 ? C.good : variance >= -10 ? C.warn : C.crit);
     kpiCard(s2, MX + (cw + 0.4) * 3, cy, cw, ch, f2(spi), 'SPI (Jadwal)', '< 1 = tertinggal', spiColor(spi));
     // banner status (jadwal saja, tanpa biaya)
@@ -311,12 +384,13 @@
 
     // 3. Kurva-S Progress + Bacaan Kunci
     var s3 = P_.addSlide(); s3.background = { color: C.white };
-    header(s3, 'Kurva-S Progress', 'Rencana kumulatif vs aktual kumulatif (%)', TAG);
+    header(s3, 'Kurva-S Progress', 'Rencana kumulatif vs aktual kumulatif (%) \u00b7 ' + (asOfWeek == null ? 'terkini' : 'as-of ' + ao.label), TAG);
     var sc = scurveData(proj.id);
     if (sc) {
+      var actSeries = (asOfWeek == null) ? sc.actual : sc.weeks.map(function (wk, i) { return wk <= asOfWeek ? sc.actualFull[i] : null; });
       s3.addChart(P_.ChartType.line, [
         { name: 'Rencana', labels: sc.labels, values: sc.plan },
-        { name: 'Aktual', labels: sc.labels, values: sc.actual }
+        { name: 'Aktual', labels: sc.labels, values: actSeries }
       ], {
         x: MX, y: 1.85, w: PW - MX * 2 - 3.3, h: 4.5, chartColors: [C.sky, accent], lineSize: 2.5, lineSmooth: true,
         showLegend: true, legendPos: 'b', legendFontSize: 11, legendColor: C.ink2,
@@ -402,7 +476,76 @@
     } else { s5.addText('Belum ada data procurement untuk proyek ini.', { x: MX, y: 3, w: PW - MX * 2, h: 1, fontFace: BODY, fontSize: 14, color: C.mute, align: 'center' }); }
     cornerAccent(s5); footer(s5, 5);
 
-    // 6. Status & Peringatan (tanpa item biaya)
+    // 6. Status Manpower
+    var sMP = P_.addSlide(); sMP.background = { color: C.white };
+    header(sMP, 'Status Manpower', 'Tenaga kerja & mandays ' + periodLabel, TAG);
+    var mp = manpowerData(proj.id, asOfWeek);
+    if (mp.days) {
+      var cwm = (PW - MX * 2 - 0.4 * 3) / 4;
+      kpiCard(sMP, MX + (cwm + 0.4) * 0, 1.85, cwm, 1.35, mp.mandays.toLocaleString('id-ID'), 'Total Mandays', mp.days + ' hari kerja', C.blue);
+      kpiCard(sMP, MX + (cwm + 0.4) * 1, 1.85, cwm, 1.35, String(mp.avg), 'Rata-rata / Hari', 'pekerja per hari', C.sky);
+      kpiCard(sMP, MX + (cwm + 0.4) * 2, 1.85, cwm, 1.35, String(mp.peak), 'Puncak Pekerja', 'tertinggi harian', C.navy);
+      kpiCard(sMP, MX + (cwm + 0.4) * 3, 1.85, cwm, 1.35, (mp.comp['Safety Man'] || 0).toLocaleString('id-ID'), 'Mandays Safety', 'petugas K3', C.good);
+      // komposisi donut
+      sMP.addText('KOMPOSISI TENAGA KERJA', { x: MX, y: 3.5, w: 5, h: 0.3, fontFace: HEAD, fontSize: 11, bold: true, color: C.navy, charSpacing: 1 });
+      var compLabels = [], compVals = [];
+      Object.keys(mp.comp).forEach(function (k) { if (mp.comp[k] > 0) { compLabels.push(k); compVals.push(mp.comp[k]); } });
+      if (compVals.length) {
+        sMP.addChart(P_.ChartType.doughnut, [{ name: 'Komposisi', labels: compLabels, values: compVals }], {
+          x: MX, y: 3.8, w: 3.4, h: 2.5, holeSize: 52, showLegend: true, legendPos: 'r', legendFontSize: 10, legendColor: C.ink2,
+          chartColors: [C.blue, C.sky, C.gold, C.good, C.violet], dataBorder: { pt: 2, color: 'FFFFFF' }, showTitle: false, showValue: true, dataLabelColor: 'FFFFFF', dataLabelFontSize: 9, dataLabelFontBold: true
+        });
+      }
+      // tren mandays per minggu
+      var wkKeys = Object.keys(mp.byWeek).map(Number).sort(function (x, y) { return x - y; });
+      sMP.addText('MANDAYS PER MINGGU', { x: 6.7, y: 3.5, w: 5, h: 0.3, fontFace: HEAD, fontSize: 11, bold: true, color: C.navy, charSpacing: 1 });
+      if (wkKeys.length) {
+        sMP.addChart(P_.ChartType.bar, [{ name: 'Mandays', labels: wkKeys.map(function (w) { return 'W' + String(w).padStart(2, '0'); }), values: wkKeys.map(function (w) { return mp.byWeek[w]; }) }], {
+          x: 6.7, y: 3.8, w: PW - MX - 6.7, h: 2.5, barDir: 'col', chartColors: [C.blue], showLegend: false, showTitle: false,
+          catAxisLabelColor: C.ink2, catAxisLabelFontSize: 9, valAxisLabelColor: C.mute, valAxisLabelFontSize: 8, valGridLine: { color: 'EEF3F8', size: 1 }, barGapWidthPct: 40,
+          showValue: true, dataLabelColor: '1E2A38', dataLabelFontSize: 8, dataLabelPosition: 'outEnd'
+        });
+      }
+    } else { sMP.addText('Belum ada data manpower untuk periode ini.', { x: MX, y: 3, w: PW - MX * 2, h: 1, fontFace: BODY, fontSize: 14, color: C.mute, align: 'center' }); }
+    cornerAccent(sMP); footer(sMP, 6);
+
+    // 7. Status Safety (HSE)
+    var sSF = P_.addSlide(); sSF.background = { color: C.white };
+    header(sSF, 'Status Safety (HSE)', 'Kinerja keselamatan kerja ' + periodLabel, TAG);
+    var sf = safetyData(proj.id, asOfWeek);
+    var cwf = (PW - MX * 2 - 0.4 * 3) / 4;
+    kpiCard(sSF, MX + (cwf + 0.4) * 0, 1.85, cwf, 1.35, String(sf.cats.fatality || 0), 'Fatality', sf.cats.fatality ? 'PERHATIAN SERIUS' : 'nihil \u2014 baik', sf.cats.fatality ? C.crit : C.good);
+    kpiCard(sSF, MX + (cwf + 0.4) * 1, 1.85, cwf, 1.35, String(sf.recordable), 'Recordable Cases', 'Fatality+LTI+Medis', sf.recordable ? C.warn : C.good);
+    kpiCard(sSF, MX + (cwf + 0.4) * 2, 1.85, cwf, 1.35, String(sf.nearMiss), 'Near Miss', 'indikator dini', C.blue);
+    kpiCard(sSF, MX + (cwf + 0.4) * 3, 1.85, cwf, 1.35, sf.daysSince == null ? '\u2014' : String(sf.daysSince), 'Hari Tanpa LTI', sf.daysSince == null ? 'belum ada insiden' : 'sejak insiden terakhir', sf.daysSince == null || sf.daysSince > 30 ? C.good : C.warn);
+    // breakdown kategori (bar) atau banner nihil
+    if (sf.totalInc > 0 || sf.nearMiss > 0) {
+      sSF.addText('RINCIAN KEJADIAN', { x: MX, y: 3.5, w: 6, h: 0.3, fontFace: HEAD, fontSize: 11, bold: true, color: C.navy, charSpacing: 1 });
+      var rows3 = SAFE_CATS.filter(function (c) { return (sf.cats[c.k] || 0) > 0; });
+      if (!rows3.length) rows3 = [{ k: 'nearMiss', t: 'Near Miss', c: '2C7FB8' }];
+      var py3 = 3.9, barX3 = MX + 2.6, barMaxW3 = 4.4, maxV3 = Math.max.apply(null, rows3.map(function (c) { return sf.cats[c.k] || 0; }).concat([1]));
+      rows3.slice(0, 7).forEach(function (c) {
+        var v = sf.cats[c.k] || 0;
+        sSF.addText(c.t, { x: MX, y: py3 - 0.02, w: 2.4, h: 0.3, fontFace: BODY, fontSize: 9.5, color: C.ink2, valign: 'middle' });
+        sSF.addShape(P_.ShapeType.roundRect, { x: barX3, y: py3 + 0.02, w: barMaxW3, h: 0.24, rectRadius: 0.04, fill: { color: 'EFF4F8' }, line: { type: 'none' } });
+        sSF.addShape(P_.ShapeType.roundRect, { x: barX3, y: py3 + 0.02, w: Math.max(0.04, barMaxW3 * v / maxV3), h: 0.24, rectRadius: 0.04, fill: { color: c.c }, line: { type: 'none' } });
+        sSF.addText(String(v), { x: barX3 + barMaxW3 + 0.12, y: py3 - 0.02, w: 0.6, h: 0.3, fontFace: BODY, fontSize: 10, bold: true, color: C.ink, valign: 'middle' });
+        py3 += 0.4;
+      });
+      // panel ringkas kanan
+      var ox3 = MX + 8.0, ow3 = PW - MX - ox3;
+      sSF.addShape(P_.ShapeType.roundRect, { x: ox3, y: 3.85, w: ow3, h: 2.5, rectRadius: 0.06, fill: { color: C.bg2 }, line: { color: C.line, width: 1 } });
+      sSF.addText([
+        { text: 'Total kejadian: ', options: { fontSize: 10.5, color: C.mute } }, { text: String(sf.totalInc) + '\n', options: { fontSize: 10.5, bold: true, color: C.ink } },
+        { text: 'Near miss: ', options: { fontSize: 10.5, color: C.mute } }, { text: String(sf.nearMiss) + '\n', options: { fontSize: 10.5, bold: true, color: C.ink } },
+        { text: 'Hari hilang (time lost): ', options: { fontSize: 10.5, color: C.mute } }, { text: String(sf.timeLost), options: { fontSize: 10.5, bold: true, color: sf.timeLost ? C.crit : C.ink } }
+      ], { x: ox3 + 0.22, y: 4.05, w: ow3 - 0.44, h: 2.1, fontFace: BODY, valign: 'top', align: 'left', lineSpacingMultiple: 1.4 });
+    } else {
+      banner(sSF, MX, 3.7, PW - MX * 2, 1.5, 'ZERO INCIDENT \u2014 NIHIL KECELAKAAN', 'Tidak ada kejadian keselamatan tercatat pada periode ini. Pertahankan penerapan prosedur K3 dan toolbox meeting rutin.', C.good);
+    }
+    cornerAccent(sSF); footer(sSF, 7);
+
+    // 8. Status & Peringatan (tanpa item biaya)
     var s6 = P_.addSlide(); s6.background = { color: C.white };
     header(s6, 'Status & Peringatan', 'Hal yang memerlukan tindakan', TAG);
     var alerts = [];
@@ -411,6 +554,8 @@
     if (a && a.procOverdue > 0) alerts.push({ sev: 'KRITIS', c: C.crit, t: a.procOverdue + ' Item Procurement Overdue', d: 'Sejumlah PO melewati due date. Menahan pemasangan \u2014 percepat IR material kritis.' });
     if (a && a.recent7 === 0 && act > 0 && act < 99) alerts.push({ sev: 'WASPADA', c: C.warn, t: 'Tidak Ada Aktivitas Manpower 7 Hari', d: 'Tidak ada mandays tercatat minggu terakhir. Pastikan tenaga kerja terjadwal.' });
     if (a && a.issHigh > 0) alerts.push({ sev: 'WASPADA', c: C.warn, t: a.issHigh + ' Issue Prioritas Tinggi', d: 'Tetapkan PIC & target closing; angkat di rapat koordinasi.' });
+    var _sfa = safetyData(proj.id, asOfWeek);
+    if (_sfa.recordable > 0) alerts.push({ sev: 'KRITIS', c: C.crit, t: _sfa.recordable + ' Insiden HSE Recordable', d: 'Terdapat kejadian keselamatan tercatat. Investigasi & tindakan korektif segera; perkuat toolbox meeting.' });
     if (!alerts.length) alerts.push({ sev: 'INFO', c: C.good, t: 'Tidak Ada Peringatan Kritis', d: 'Proyek berjalan sesuai rencana. Pertahankan ritme & monitoring rutin.' });
     var ay = 1.95, half = (PW - MX * 2 - 0.4) / 2;
     alerts.slice(0, 4).forEach(function (al, i) {
@@ -421,9 +566,9 @@
       s6.addText(al.t, { x: ax + 0.28, y: yy + 0.66, w: half - 0.5, h: 0.34, fontFace: HEAD, fontSize: 13.5, bold: true, color: C.navy, align: 'left', valign: 'middle' });
       s6.addText(al.d, { x: ax + 0.28, y: yy + 1.0, w: half - 0.5, h: 0.5, fontFace: BODY, fontSize: 10, color: C.ink2, align: 'left', valign: 'top', lineSpacingMultiple: 1.02 });
     });
-    cornerAccent(s6); footer(s6, 6);
+    cornerAccent(s6); footer(s6, 8);
 
-    // 7. Rencana Tindak Lanjut
+    // 9. Rencana Tindak Lanjut
     var s7 = P_.addSlide(); s7.background = { color: C.white };
     header(s7, 'Rencana Tindak Lanjut', 'Prioritas tindakan untuk mengejar kurva rencana', TAG);
     var recs = (a && a.recs) ? a.recs.slice(0, 4) : [];
@@ -437,9 +582,9 @@
       s7.addText(String(i + 1), { x: MX + 0.18, y: yy + rh / 2 - 0.28, w: 0.62, h: 0.56, fontFace: HEAD, fontSize: 18, bold: true, color: 'FFFFFF', align: 'center', valign: 'middle' });
       s7.addText(r, { x: MX + 1.1, y: yy, w: PW - MX * 2 - 1.3, h: rh, fontFace: BODY, fontSize: 12.5, color: C.ink, align: 'left', valign: 'middle', lineSpacingMultiple: 1.05 });
     });
-    cornerAccent(s7); footer(s7, 7);
+    cornerAccent(s7); footer(s7, 9);
 
-    // 8. Closing
+    // 10. Closing
     var s8 = P_.addSlide(); s8.background = { color: C.navy };
     s8.addShape(P_.ShapeType.parallelogram, { x: -1, y: -1, w: 4.0, h: PH + 2, fill: { color: C.blueDk }, line: { type: 'none' } });
     s8.addShape(P_.ShapeType.parallelogram, { x: 1.2, y: 2.2, w: 0.55, h: 3.0, fill: { color: C.gold }, line: { type: 'none' } });
@@ -586,17 +731,56 @@
   function newDeck() { var p = new window.PptxGenJS(); p.layout = 'LAYOUT_WIDE'; p.author = 'ATW Solar Dashboard'; p.company = 'ATW Solar Indonesia'; return p; }
   function safeName(s) { return String(s || 'report').replace(/[^a-zA-Z0-9_\- ]/g, '').trim().replace(/\s+/g, '_').slice(0, 50); }
 
-  window.generateClientPPT = function () {
+  function _doClientDeck(proj, week) {
+    withLib(function () {
+      if (typeof window.__apBegin === 'function') window.__apBegin();
+      P_ = newDeck(); buildClientDeck(proj, week);
+      if (typeof window.__apEnd === 'function') window.__apEnd();
+      var suffix = (week == null ? new Date().toISOString().slice(0, 10) : 'W' + String(week).padStart(2, '0'));
+      P_.writeFile({ fileName: 'Report_' + safeName(proj.kode || proj.nama) + '_' + suffix + '.pptx' }).then(function () { _toast('\u2713 PPT Client tersimpan'); });
+    });
+  }
+
+  // Modal pemilih minggu (self-contained, inline-styled)
+  function showWeekModal(proj, weeks, onPick) {
+    var old = document.getElementById('pptWeekModal'); if (old) old.remove();
+    var ov = document.createElement('div'); ov.id = 'pptWeekModal';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(10,26,46,.55);display:flex;align-items:center;justify-content:center;font-family:Segoe UI,system-ui,sans-serif';
+    var opts = '<option value="all">Semua \u2014 kumulatif terkini</option>' +
+      weeks.map(function (w) { return '<option value="' + w + '">Minggu W' + String(w).padStart(2, '0') + '</option>'; }).join('');
+    ov.innerHTML =
+      '<div style="background:#fff;border-radius:14px;width:420px;max-width:92vw;box-shadow:0 20px 60px rgba(10,26,46,.4);overflow:hidden">' +
+      '<div style="background:#14304D;padding:18px 22px;color:#fff">' +
+      '<div style="font-size:11px;letter-spacing:2px;color:#5AA0D0;font-weight:700">EXPORT PPT \u00b7 CLIENT</div>' +
+      '<div style="font-size:17px;font-weight:700;margin-top:3px">' + (proj.nama || 'Proyek') + '</div></div>' +
+      '<div style="padding:22px">' +
+      '<label style="font-size:13px;color:#34465A;font-weight:600">Minggu yang ditampilkan</label>' +
+      '<select id="pptWeekSel" style="width:100%;margin-top:8px;padding:10px 12px;border:1px solid #DCE5EE;border-radius:9px;font-size:14px;color:#1E2A38;background:#F4F8FB">' + opts + '</select>' +
+      '<div style="font-size:11.5px;color:#7A8896;margin-top:9px;line-height:1.4">Progres, kurva-S, manpower & safety akan ditampilkan sesuai minggu terpilih (as-of).</div>' +
+      '<div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">' +
+      '<button id="pptWkCancel" style="padding:9px 16px;border:1px solid #DCE5EE;background:#fff;border-radius:9px;font-size:13px;color:#34465A;cursor:pointer;font-weight:600">Batal</button>' +
+      '<button id="pptWkGo" style="padding:9px 20px;border:none;background:#2C7FB8;border-radius:9px;font-size:13px;color:#fff;cursor:pointer;font-weight:700">Generate PPT</button>' +
+      '</div></div></div>';
+    document.body.appendChild(ov);
+    var sel = ov.querySelector('#pptWeekSel');
+    if (weeks.length) sel.value = String(weeks[weeks.length - 1]); // default minggu terakhir
+    var close = function () { ov.remove(); };
+    ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+    ov.querySelector('#pptWkCancel').addEventListener('click', close);
+    ov.querySelector('#pptWkGo').addEventListener('click', function () {
+      var v = sel.value; close(); onPick(v === 'all' ? null : +v);
+    });
+  }
+
+  window.generateClientPPT = function (week) {
     var P2 = (typeof P !== 'undefined') ? P : [];
     if (!P2.length) { _toast('Belum ada proyek.'); return; }
     var proj = P2.find(function (x) { return String(x.id) === String(typeof selId !== 'undefined' ? selId : ''); });
     if (!proj) { _toast('Pilih/buka satu proyek dulu (klik kartu proyek), lalu export PPT Client.'); return; }
-    withLib(function () {
-      if (typeof window.__apBegin === 'function') window.__apBegin();
-      P_ = newDeck(); buildClientDeck(proj);
-      if (typeof window.__apEnd === 'function') window.__apEnd();
-      P_.writeFile({ fileName: 'Report_' + safeName(proj.kode || proj.nama) + '_' + new Date().toISOString().slice(0, 10) + '.pptx' }).then(function () { _toast('\u2713 PPT Client tersimpan'); });
-    });
+    if (arguments.length > 0) { return _doClientDeck(proj, week); } // programatik (minggu tertentu / null)
+    var weeks = availableWeeks(proj.id);
+    if (!weeks.length) { _doClientDeck(proj, null); return; } // tidak ada data minggu → langsung terkini
+    showWeekModal(proj, weeks, function (w) { _doClientDeck(proj, w); });
   };
   window.generateManagementPPT = function () {
     var P2 = (typeof P !== 'undefined') ? P : [];
