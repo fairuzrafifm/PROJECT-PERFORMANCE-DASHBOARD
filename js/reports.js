@@ -859,6 +859,15 @@ function buildWeeklyReportHTML(projId,week,recoveryMode){
     }
     return +(node.cumActual||0); // item tanpa qty/dailyLogs: tak bisa direkonstruksi historis
   };
+  // Item "carry-over": belum selesai aktual (<100%) tetapi tidak ada plan ke depan
+  // (plan-nya sudah habis di minggu lampau). Tetap dimasukkan dgn target = sisa ke 100%.
+  const _carryOver=(node)=>{
+    if(_cumActAt(node)>=100)return false;
+    const wpAll=node.weeklyPlan||{};
+    let hasPast=false,hasFuture=false;
+    Object.keys(wpAll).forEach(k=>{const w=+k,v=+(wpAll[k].wPlan||0);if(v>0){if(w<=week)hasPast=true;if(w>=week+1)hasFuture=true;}});
+    return hasPast&&!hasFuture;
+  };
   let nwRow=0;
   cats.forEach((cat,ci)=>{
     const catLeaves=[];
@@ -868,11 +877,13 @@ function buildWeeklyReportHTML(projId,week,recoveryMode){
         const wp=sub.weeklyPlan&&sub.weeklyPlan[week+1];
         const done=_cumActAt(sub)>=100;
         if(wp&&+(wp.wPlan||0)>0&&!done)catLeaves.push({node:sub,wp,subName:null});
+        else if(!done&&_carryOver(sub))catLeaves.push({node:sub,wp:null,subName:null,carry:true});
       } else {
         subItems.forEach(item=>{
           const wp=item.weeklyPlan&&item.weeklyPlan[week+1];
           const done=_cumActAt(item)>=100;
           if(wp&&+(wp.wPlan||0)>0&&!done)catLeaves.push({node:item,wp,subName:sub.name});
+          else if(!done&&_carryOver(item))catLeaves.push({node:item,wp:null,subName:sub.name,carry:true});
         });
       }
     });
@@ -883,7 +894,7 @@ function buildWeeklyReportHTML(projId,week,recoveryMode){
       <td colspan="5" style="padding:5px 8px;border:1px solid #1e293b;font-weight:700;font-size:8.5px;color:#fff;letter-spacing:.5px;background:#1e293b">${cat.name.toUpperCase()}</td>
     </tr>`;
     let lastSub=null;
-    catLeaves.forEach(({node,wp,subName})=>{
+    catLeaves.forEach(({node,wp,subName,carry})=>{
       // Sub-header subcategory (mis. agar 'Mobilization' jelas di bawah subcat apa)
       if(subName && subName!==lastSub){
         html+=`<tr style="background:#cbd5e1;-webkit-print-color-adjust:exact;print-color-adjust:exact">
@@ -893,32 +904,43 @@ function buildWeeklyReportHTML(projId,week,recoveryMode){
         lastSub=subName;
       } else if(!subName){ lastSub=null; }
       nwRow++;
-      // Target disesuaikan dgn aktual: plan kumulatif s/d minggu depan - aktual kumulatif saat ini
-      const _wpAll=node.weeklyPlan||{};
-      let _cumPlanNext=+(wp.cumPlan||0);
-      if(!(_cumPlanNext>0)){_cumPlanNext=0;for(let _w=1;_w<=week+1;_w++){if(_wpAll[_w])_cumPlanNext+=(+(_wpAll[_w].wPlan)||0);}}
       const _cumAct=_cumActAt(node);
-      const _planW=+(wp.wPlan||0);
-      let _adjTarget;
-      if(recoveryMode==='spread'){
-        let _finishW=week+1;
-        Object.keys(_wpAll).forEach(_k=>{const _kn=+_k;if(_kn>_finishW&&((+(_wpAll[_k].wPlan)||0)>0||(+(_wpAll[_k].cumPlan)||0)>0))_finishW=_kn;});
-        const _remW=Math.max(1,_finishW-week);
-        const _deficit=(_cumPlanNext-_planW)-_cumAct;
-        _adjTarget=Math.max(0,_planW+_deficit/_remW);
+      let _adjTarget,_planW,_rencana,_subLabel;
+      if(carry){
+        // Pekerjaan tertinggal: target = sisa untuk selesai (100% - aktual)
+        _planW=0;
+        _adjTarget=Math.max(0,100-_cumAct);
+        _rencana=(node.weeklyPlan&&Object.keys(node.weeklyPlan).length)?'Penyelesaian sisa pekerjaan (carry-over)':'';
+        _subLabel=`sisa \u2192 100% \u00b7 aktual ${_cumAct.toFixed(1)}%`;
       } else {
-        _adjTarget=Math.max(0,_cumPlanNext-_cumAct);
+        // Target disesuaikan dgn aktual: plan kumulatif s/d minggu depan - aktual kumulatif saat ini
+        const _wpAll=node.weeklyPlan||{};
+        let _cumPlanNext=+(wp.cumPlan||0);
+        if(!(_cumPlanNext>0)){_cumPlanNext=0;for(let _w=1;_w<=week+1;_w++){if(_wpAll[_w])_cumPlanNext+=(+(_wpAll[_w].wPlan)||0);}}
+        _planW=+(wp.wPlan||0);
+        if(recoveryMode==='spread'){
+          let _finishW=week+1;
+          Object.keys(_wpAll).forEach(_k=>{const _kn=+_k;if(_kn>_finishW&&((+(_wpAll[_k].wPlan)||0)>0||(+(_wpAll[_k].cumPlan)||0)>0))_finishW=_kn;});
+          const _remW=Math.max(1,_finishW-week);
+          const _deficit=(_cumPlanNext-_planW)-_cumAct;
+          _adjTarget=Math.max(0,_planW+_deficit/_remW);
+        } else {
+          _adjTarget=Math.max(0,_cumPlanNext-_cumAct);
+        }
+        _rencana=wp.rencana||'';
+        _subLabel=`plan ${_planW.toFixed(1)}%`;
       }
       const _diff=_adjTarget-_planW;
-      const _adjClr=_diff>0.05?'#b91c1c':(_diff<-0.05?'#16a34a':'#334155');
+      const _adjClr=carry?'#b91c1c':(_diff>0.05?'#b91c1c':(_diff<-0.05?'#16a34a':'#334155'));
       const qty=+node.qtyPlan?Math.round(+node.qtyPlan*(_adjTarget/100)):'';
+      const _tag=carry?` <span style="font-size:6.5px;font-weight:700;color:#b91c1c;border:1px solid #b91c1c;border-radius:3px;padding:0 3px;letter-spacing:.3px;vertical-align:1px">CARRY-OVER</span>`:'';
       html+=`<tr>
         <td style="${tdc}">${nwRow}</td>
-        <td style="${td};padding-left:${subName?24:16}px">${node.name}</td>
+        <td style="${td};padding-left:${subName?24:16}px">${node.name}${_tag}</td>
         <td style="${tdc}">${qty}</td>
         <td style="${tdc}">${node.qtySatuan||''}</td>
-        <td style="${tdc};font-weight:700;color:${_adjClr}">${_adjTarget.toFixed(1)}%<div style="font-size:7px;color:#94a3b8;font-weight:400">plan ${_planW.toFixed(1)}%</div></td>
-        <td style="${td};color:#374151">${wp.rencana||''}</td>
+        <td style="${tdc};font-weight:700;color:${_adjClr}">${_adjTarget.toFixed(1)}%<div style="font-size:7px;color:#94a3b8;font-weight:400">${_subLabel}</div></td>
+        <td style="${td};color:#374151">${_rencana}</td>
       </tr>`;
     });
   });
@@ -929,7 +951,7 @@ function buildWeeklyReportHTML(projId,week,recoveryMode){
   const _modeNote=recoveryMode==='spread'
     ? 'Mode <b>Realistis</b>: defisit disebar rata ke sisa minggu sampai item selesai (target = plan mingguan + defisit\u00f7sisa minggu).'
     : 'Mode <b>Agresif</b>: seluruh defisit dikejar minggu depan (= plan kumulatif s/d minggu depan \u2212 aktual saat ini).';
-  html+=`<div style="font-size:8px;color:#64748b;margin:-6px 0 10px">Target % \u2014 ${_modeNote} <span style="color:#b91c1c">Merah</span> = perlu mengejar, <span style="color:#16a34a">hijau</span> = di depan rencana.</div>`;
+  html+=`<div style="font-size:8px;color:#64748b;margin:-6px 0 10px">Target % \u2014 ${_modeNote} <span style="color:#b91c1c">Merah</span> = perlu mengejar, <span style="color:#16a34a">hijau</span> = di depan rencana. <b style="color:#b91c1c">CARRY-OVER</b> = pekerjaan belum selesai (aktual &lt;100%) walau plan sudah habis; target = sisa untuk selesai.</div>`;
 
   // SIGNATURE
   html+=`<table style="${ts};margin-top:8px">
