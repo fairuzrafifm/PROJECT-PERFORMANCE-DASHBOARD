@@ -154,7 +154,7 @@
   }
 
   // ── Data: progress WBS per kategori ────────────────────────────
-  function wbsByCategory(projId) {
+  function wbsByCategory(projId, asOfWeek) {
     var W = (typeof WBS !== 'undefined') ? WBS : [];
     var all = W.filter(function (w) { return String(w.projId) === String(projId); });
     if (!all.length) return [];
@@ -162,6 +162,16 @@
     all.forEach(function (w) { (byParent[w.parentId] = byParent[w.parentId] || []).push(w); });
     var kids = function (id) { return all.filter(function (w) { return String(w.parentId) === String(id); }); };
     var cats = all.filter(function (w) { return w.type === 'cat'; }).sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+    // Aktual per item disesuaikan dgn minggu terpilih (as-of). Bila asOfWeek null → nilai live.
+    var _itemPct = function (item) {
+      if (asOfWeek == null) return num(item.cumActual);
+      if (num(item.qtyPlan) > 0) {
+        var q = (item.dailyLogs || []).filter(function (l) { return +l.week <= asOfWeek; })
+          .reduce(function (s, l) { return s + (l.qty != null ? num(l.qty) : 0); }, 0);
+        return Math.min(100, q / num(item.qtyPlan) * 100);
+      }
+      return num(item.cumActual); // tanpa qty/dailyLogs: tak bisa direkonstruksi historis
+    };
     return cats.map(function (cat) {
       // kumpulkan seluruh item daun di bawah kategori (lewat subcat)
       var items = [];
@@ -170,7 +180,7 @@
       // bila kategori langsung punya item
       if (!items.length) items = all.filter(function (w) { return w.type === 'item' && String(w.parentId) === String(cat.id); });
       var bobot = items.reduce(function (s, x) { return s + num(x.bobot); }, 0);
-      var pct = bobot > 0 ? items.reduce(function (s, x) { return s + num(x.bobot) * num(x.cumActual); }, 0) / bobot : 0;
+      var pct = bobot > 0 ? items.reduce(function (s, x) { return s + num(x.bobot) * _itemPct(x); }, 0) / bobot : 0;
       return { name: cat.name || cat.nama || '\u2014', bobot: Math.round(bobot * 10) / 10, pct: Math.round(pct * 10) / 10 };
     });
   }
@@ -418,8 +428,8 @@
 
     // 4. Progress per Kategori (WBS)
     var s4 = P_.addSlide(); s4.background = { color: C.white };
-    header(s4, 'Progress per Kategori', 'Capaian pekerjaan menurut kategori WBS', TAG);
-    var cats = wbsByCategory(proj.id);
+    header(s4, 'Progress per Kategori', 'Capaian pekerjaan menurut kategori WBS \u00b7 ' + (asOfWeek == null ? 'terkini' : 'as-of ' + ao.label), TAG);
+    var cats = wbsByCategory(proj.id, asOfWeek);
     if (cats.length) {
       var hdr = ['Kategori Pekerjaan', 'Bobot', '% Selesai', 'Status'];
       var rows = [hdr.map(function (h, i) { return { text: h, options: { bold: true, color: 'FFFFFF', fill: { color: C.navy }, fontSize: 11.5, align: i === 0 ? 'left' : 'center', valign: 'middle', fontFace: BODY } }; })];
