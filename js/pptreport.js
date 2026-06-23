@@ -188,17 +188,40 @@
 
   // ── Data: ringkasan procurement ────────────────────────────────
   var PROC_ORDER = ['Waiting Approval', 'PO Issued', 'On Production', 'In Transit', 'On Site', 'Done'];
-  function procSummary(projId) {
+  // Minggu material "tiba" (dari tanggal on-site atau log IR/Item Receive) — utk rekonstruksi as-of
+  function _procArrivedWeek(projId, i) {
+    var dates = [];
+    if (i.onsiteDate) dates.push(i.onsiteDate);
+    (Array.isArray(i.logs) ? i.logs : []).forEach(function (l) { if (l && /IR|receive|terima/i.test(l.event || '') && l.date) dates.push(l.date); });
+    var ws = dates.map(function (d) { return _gwn(projId, d); }).filter(function (w) { return w != null; });
+    return ws.length ? Math.min.apply(null, ws) : null;
+  }
+  function procSummary(projId, asOfWeek) {
     var PR = (typeof PROC !== 'undefined') ? PROC : [];
     var items = PR.filter(function (i) { return String(i.projId) === String(projId); });
     var byStatus = {}; PROC_ORDER.forEach(function (s) { byStatus[s] = 0; });
     var today = new Date(); today.setHours(0, 0, 0, 0);
     var open = 0, done = 0, onsite = 0, overdue = 0, overdueItems = [];
     items.forEach(function (i) {
-      var st = i.status || 'Waiting Approval'; if (byStatus[st] == null) byStatus[st] = 0; byStatus[st]++;
-      var isOpen = st !== 'On Site' && st !== 'Done';
-      if (st === 'Done' || st === 'On Site') { done += (st === 'Done' ? 1 : 0); onsite += (st === 'On Site' ? 1 : 0); }
-      if (isOpen) { open++; if (i.due) { var d = new Date(i.due); d.setHours(0, 0, 0, 0); if (!isNaN(d.getTime()) && d < today) { overdue++; overdueItems.push({ name: i.nama || i.item || i.name || 'Item', due: i.due }); } } }
+      var st, arrived, duePassed;
+      if (asOfWeek == null) {
+        // Terkini — pakai status & tanggal live
+        st = i.status || 'Waiting Approval';
+        arrived = (st === 'On Site' || st === 'Done');
+        if (i.due) { var d0 = new Date(i.due); d0.setHours(0, 0, 0, 0); duePassed = !isNaN(d0.getTime()) && d0 < today; }
+      } else {
+        // As-of minggu N — rekonstruksi dari tanggal
+        var aw = _procArrivedWeek(projId, i);
+        arrived = (aw != null && aw <= asOfWeek);
+        if (arrived) { st = (i.status === 'Done') ? 'Done' : 'On Site'; }
+        else { var cur = i.status || 'Waiting Approval'; st = (cur === 'On Site' || cur === 'Done') ? 'In Transit' : cur; }
+        var dw = i.due ? _gwn(projId, i.due) : null;
+        duePassed = !!i.due && (dw == null || dw <= asOfWeek);
+      }
+      if (byStatus[st] == null) byStatus[st] = 0; byStatus[st]++;
+      if (st === 'Done') done++; else if (st === 'On Site') onsite++;
+      var isOpen = !arrived;
+      if (isOpen) { open++; if (duePassed) { overdue++; overdueItems.push({ name: i.nama || i.item || i.name || 'Item', due: i.due }); } }
     });
     overdueItems.sort(function (a, b) { return new Date(a.due) - new Date(b.due); });
     return { total: items.length, byStatus: byStatus, open: open, done: done, onsite: onsite, overdue: overdue, overdueItems: overdueItems };
@@ -448,8 +471,8 @@
 
     // 5. Status Procurement (NEW, pengganti slide biaya)
     var s5 = P_.addSlide(); s5.background = { color: C.white };
-    header(s5, 'Status Procurement', 'Pengadaan & ketersediaan material', TAG);
-    var pr = procSummary(proj.id);
+    header(s5, 'Status Procurement', 'Pengadaan & ketersediaan material \u00b7 ' + (asOfWeek == null ? 'terkini' : 'as-of ' + ao.label), TAG);
+    var pr = procSummary(proj.id, asOfWeek);
     if (pr.total) {
       // KPI atas
       var cw5 = (PW - MX * 2 - 0.4 * 3) / 4;
