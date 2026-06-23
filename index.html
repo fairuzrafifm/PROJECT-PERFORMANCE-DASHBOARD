@@ -2099,6 +2099,9 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <div class="fg"><label class="fl">Supplier</label><input class="fi" id="pSup" placeholder="PT Solar Utama"></div>
     <div class="fg"><label class="fl">Status</label><select class="fi" id="pStat" onchange="toggleProcCost(this.value)"><option>Waiting Approval</option><option>PO Issued</option><option>On Production</option><option>In Transit</option><option>On Site</option><option>Done</option></select></div>
   </div>
+  <div class="fg"><label class="fl">Tanggal Aktual On-Site</label><input class="fi" type="date" id="pOnsite">
+    <div style="font-size:11px;color:var(--mt);margin-top:3px">Isi saat material tiba di lokasi \u2014 selisih vs Due Date dipakai melacak percepatan/keterlambatan.</div>
+  </div>
 
   <!-- RAB Link Section -->
   <div id="pRabLinkWrap" style="background:rgba(124,140,240,.06);border:1px solid rgba(124,140,240,.2);border-radius:8px;padding:10px 12px;margin-bottom:10px">
