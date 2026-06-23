@@ -748,7 +748,11 @@ select.fi{cursor:pointer}
 .pdf-header-date{margin-left:auto;font-size:11px;color:#64748b;text-align:right}
 /* ── PERFORMANCE OPTIMIZATIONS ── */
 /* GPU compositing layers only where beneficial */
-.hdr,.sbar,.tabs{transform:translateZ(0)}
+.hdr,.sbar{transform:translateZ(0)}
+/* Bar tab: jangan di-promote jadi layer GPU tanpa z-index (bikin sebagian tab
+   tidak bisa diklik karena konten .layout ter-cat di atasnya). Pakai stacking
+   eksplisit agar bar tab selalu paling atas & menerima klik. */
+.tabs{position:relative;z-index:60;transform:none}
 .tbl thead th{transform:translateZ(0)}
 /* Faster hover transitions */
 .pi,.btn,.tab,.kpi,.psc{transition:background .08s}

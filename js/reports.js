@@ -867,12 +867,12 @@ function buildWeeklyReportHTML(projId,week,recoveryMode){
       if(subItems.length===0){
         const wp=sub.weeklyPlan&&sub.weeklyPlan[week+1];
         const done=_cumActAt(sub)>=100;
-        if(wp&&+(wp.wPlan||0)>0&&!done)catLeaves.push({node:sub,wp});
+        if(wp&&+(wp.wPlan||0)>0&&!done)catLeaves.push({node:sub,wp,subName:null});
       } else {
         subItems.forEach(item=>{
           const wp=item.weeklyPlan&&item.weeklyPlan[week+1];
           const done=_cumActAt(item)>=100;
-          if(wp&&+(wp.wPlan||0)>0&&!done)catLeaves.push({node:item,wp});
+          if(wp&&+(wp.wPlan||0)>0&&!done)catLeaves.push({node:item,wp,subName:sub.name});
         });
       }
     });
@@ -882,7 +882,16 @@ function buildWeeklyReportHTML(projId,week,recoveryMode){
       <td style="${tdc};background:#1e293b;color:#fff;font-weight:700;font-size:8.5px">${String.fromCharCode(65+ci)}</td>
       <td colspan="5" style="padding:5px 8px;border:1px solid #1e293b;font-weight:700;font-size:8.5px;color:#fff;letter-spacing:.5px;background:#1e293b">${cat.name.toUpperCase()}</td>
     </tr>`;
-    catLeaves.forEach(({node,wp})=>{
+    let lastSub=null;
+    catLeaves.forEach(({node,wp,subName})=>{
+      // Sub-header subcategory (mis. agar 'Mobilization' jelas di bawah subcat apa)
+      if(subName && subName!==lastSub){
+        html+=`<tr style="background:#cbd5e1;-webkit-print-color-adjust:exact;print-color-adjust:exact">
+          <td style="${tdc};background:#cbd5e1;color:#475569;font-weight:700;font-size:8px"></td>
+          <td colspan="5" style="padding:3px 8px 3px 14px;border:1px solid #94a3b8;font-weight:700;font-size:8px;color:#334155;letter-spacing:.3px;background:#cbd5e1">\u21B3 ${subName.toUpperCase()}</td>
+        </tr>`;
+        lastSub=subName;
+      } else if(!subName){ lastSub=null; }
       nwRow++;
       // Target disesuaikan dgn aktual: plan kumulatif s/d minggu depan - aktual kumulatif saat ini
       const _wpAll=node.weeklyPlan||{};
@@ -905,7 +914,7 @@ function buildWeeklyReportHTML(projId,week,recoveryMode){
       const qty=+node.qtyPlan?Math.round(+node.qtyPlan*(_adjTarget/100)):'';
       html+=`<tr>
         <td style="${tdc}">${nwRow}</td>
-        <td style="${td};padding-left:16px">${node.name}</td>
+        <td style="${td};padding-left:${subName?24:16}px">${node.name}</td>
         <td style="${tdc}">${qty}</td>
         <td style="${tdc}">${node.qtySatuan||''}</td>
         <td style="${tdc};font-weight:700;color:${_adjClr}">${_adjTarget.toFixed(1)}%<div style="font-size:7px;color:#94a3b8;font-weight:400">plan ${_planW.toFixed(1)}%</div></td>
