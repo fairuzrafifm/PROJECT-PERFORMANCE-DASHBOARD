@@ -847,9 +847,12 @@ function buildWeeklyReportHTML(projId,week,recoveryMode){
   }
 
   // SECTION 6: WORKPLAN NEXT WEEK
-  html+=`<div style="background:#374151;color:#fff;text-align:center;padding:5px;font-weight:700;font-size:11px;margin-bottom:0">WORKPLAN NEXT WEEK (W${String(week+1).padStart(2,'0')})</div>
-  <table style="${ts};margin-bottom:10px">
-    <tr><th style="${th}">#</th><th style="${th}">Item Pekerjaan</th><th style="${th};width:70px">Target Qty</th><th style="${th};width:55px">Satuan</th><th style="${th};width:60px">Target %</th><th style="${th}">Rencana Aktivitas</th></tr>`;
+  const _wpTh=`background:#334155;color:#fff;font-weight:700;padding:6px 7px;border:1px solid #334155;text-align:center;font-size:8.5px;text-transform:uppercase;letter-spacing:.4px;-webkit-print-color-adjust:exact;print-color-adjust:exact`;
+  const _wpTd=`padding:5px 8px;border:1px solid #e5e9f0;vertical-align:middle;color:#1e293b;font-size:9.5px`;
+  const _wpTdc=`padding:5px 6px;border:1px solid #e5e9f0;text-align:center;vertical-align:middle;color:#475569;font-size:9.5px`;
+  html+=`<div style="background:#1e293b;color:#fff;text-align:center;padding:7px;font-weight:700;font-size:11px;letter-spacing:1.2px;border-radius:5px 5px 0 0;-webkit-print-color-adjust:exact;print-color-adjust:exact">WORKPLAN NEXT WEEK \u00b7 W${String(week+1).padStart(2,'0')}</div>
+  <table style="border:1px solid #cbd5e1;border-collapse:collapse;width:100%;font-size:9.5px;margin-bottom:9px">
+    <tr><th style="${_wpTh};width:34px">#</th><th style="${_wpTh};text-align:left">Item Pekerjaan</th><th style="${_wpTh};width:66px">Target Qty</th><th style="${_wpTh};width:52px">Satuan</th><th style="${_wpTh};width:62px">Target %</th><th style="${_wpTh};text-align:left">Rencana Aktivitas</th></tr>`;
   // Aktual kumulatif per item DIHITUNG SAMPAI minggu laporan (bukan nilai live sekarang),
   // supaya laporan minggu lampau mencerminkan kondisi pada waktunya.
   const _cumActAt=(node)=>{
@@ -890,16 +893,16 @@ function buildWeeklyReportHTML(projId,week,recoveryMode){
     if(!catLeaves.length)return;
     // Header kategori — biru gelap
     html+=`<tr style="background:#1e293b;-webkit-print-color-adjust:exact;print-color-adjust:exact">
-      <td style="${tdc};background:#1e293b;color:#fff;font-weight:700;font-size:8.5px">${String.fromCharCode(65+ci)}</td>
-      <td colspan="5" style="padding:5px 8px;border:1px solid #1e293b;font-weight:700;font-size:8.5px;color:#fff;letter-spacing:.5px;background:#1e293b">${cat.name.toUpperCase()}</td>
+      <td style="padding:5px 6px;border:1px solid #1e293b;text-align:center;background:#1e293b;color:#fff;font-weight:700;font-size:9px">${String.fromCharCode(65+ci)}</td>
+      <td colspan="5" style="padding:5px 8px;border:1px solid #1e293b;font-weight:700;font-size:9px;color:#fff;letter-spacing:.7px;background:#1e293b">${cat.name.toUpperCase()}</td>
     </tr>`;
     let lastSub=null;
     catLeaves.forEach(({node,wp,subName,carry})=>{
       // Sub-header subcategory (mis. agar 'Mobilization' jelas di bawah subcat apa)
       if(subName && subName!==lastSub){
-        html+=`<tr style="background:#cbd5e1;-webkit-print-color-adjust:exact;print-color-adjust:exact">
-          <td style="${tdc};background:#cbd5e1;color:#475569;font-weight:700;font-size:8px"></td>
-          <td colspan="5" style="padding:3px 8px 3px 14px;border:1px solid #94a3b8;font-weight:700;font-size:8px;color:#334155;letter-spacing:.3px;background:#cbd5e1">\u21B3 ${subName.toUpperCase()}</td>
+        html+=`<tr style="background:#eef2f7;-webkit-print-color-adjust:exact;print-color-adjust:exact">
+          <td style="border:1px solid #dbe3ec;background:#eef2f7"></td>
+          <td colspan="5" style="padding:3px 8px 3px 16px;border:1px solid #dbe3ec;border-left:3px solid #64748b;font-weight:700;font-size:7.5px;color:#475569;letter-spacing:.6px;background:#eef2f7;text-transform:uppercase">${subName}</td>
         </tr>`;
         lastSub=subName;
       } else if(!subName){ lastSub=null; }
@@ -934,24 +937,22 @@ function buildWeeklyReportHTML(projId,week,recoveryMode){
       const _adjClr=carry?'#b91c1c':(_diff>0.05?'#b91c1c':(_diff<-0.05?'#16a34a':'#334155'));
       const qty=+node.qtyPlan?Math.round(+node.qtyPlan*(_adjTarget/100)):'';
       const _tag=carry?` <span style="font-size:6.5px;font-weight:700;color:#b91c1c;border:1px solid #b91c1c;border-radius:3px;padding:0 3px;letter-spacing:.3px;vertical-align:1px">CARRY-OVER</span>`:'';
-      html+=`<tr>
-        <td style="${tdc}">${nwRow}</td>
-        <td style="${td};padding-left:${subName?24:16}px">${node.name}${_tag}</td>
-        <td style="${tdc}">${qty}</td>
-        <td style="${tdc}">${node.qtySatuan||''}</td>
-        <td style="${tdc};font-weight:700;color:${_adjClr}">${_adjTarget.toFixed(1)}%<div style="font-size:7px;color:#94a3b8;font-weight:400">${_subLabel}</div></td>
-        <td style="${td};color:#374151">${_rencana}</td>
+      const _zebra=(nwRow%2===0)?'background:#f8fafc;':'';
+      html+=`<tr style="${_zebra}-webkit-print-color-adjust:exact;print-color-adjust:exact">
+        <td style="${_wpTdc};color:#94a3b8;font-size:9px;white-space:nowrap">${nwRow}</td>
+        <td style="${_wpTd};padding-left:${subName?26:14}px;font-weight:500">${node.name}${_tag}</td>
+        <td style="${_wpTdc};font-family:'Courier New',monospace;font-size:9px;color:#1e293b">${qty}</td>
+        <td style="${_wpTdc};color:#64748b;font-size:9px">${node.qtySatuan||''}</td>
+        <td style="${_wpTdc};font-weight:700;color:${_adjClr};font-size:10px">${_adjTarget.toFixed(1)}%<div style="font-size:6.5px;color:#94a3b8;font-weight:400;margin-top:1px">${_subLabel}</div></td>
+        <td style="${_wpTd};color:#475569;font-size:9px">${_rencana}</td>
       </tr>`;
     });
   });
-  // Minimal 3 baris kosong di akhir
-  const minBlank=Math.max(3,5-nwRow);
-  for(let i=0;i<minBlank;i++){html+=`<tr><td style="${tdc}">${nwRow+i+1}</td><td style="${td}"></td><td style="${tdc}"></td><td style="${tdc}"></td><td style="${tdc}"></td><td style="${td}"></td></tr>`;}
   html+=`</table>`;
   const _modeNote=recoveryMode==='spread'
     ? 'Mode <b>Realistis</b>: defisit disebar rata ke sisa minggu sampai item selesai (target = plan mingguan + defisit\u00f7sisa minggu).'
     : 'Mode <b>Agresif</b>: seluruh defisit dikejar minggu depan (= plan kumulatif s/d minggu depan \u2212 aktual saat ini).';
-  html+=`<div style="font-size:8px;color:#64748b;margin:-6px 0 10px">Target % \u2014 ${_modeNote} <span style="color:#b91c1c">Merah</span> = perlu mengejar, <span style="color:#16a34a">hijau</span> = di depan rencana. <b style="color:#b91c1c">CARRY-OVER</b> = pekerjaan belum selesai (aktual &lt;100%) walau plan sudah habis; target = sisa untuk selesai.</div>`;
+  html+=`<div style="font-size:7.5px;color:#64748b;line-height:1.5;background:#f8fafc;border:1px solid #e5e9f0;border-radius:4px;padding:6px 9px;margin:0 0 10px"><b style="color:#475569">Keterangan Target %</b> \u2014 ${_modeNote} <span style="color:#b91c1c;font-weight:700">Merah</span> = perlu mengejar, <span style="color:#16a34a;font-weight:700">hijau</span> = di depan rencana. <b style="color:#b91c1c">CARRY-OVER</b> = pekerjaan belum selesai (aktual &lt;100%) walau plan sudah habis; target = sisa untuk selesai.</div>`;
 
   // SIGNATURE
   html+=`<table style="${ts};margin-top:8px">
