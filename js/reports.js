@@ -847,7 +847,7 @@ function buildWeeklyReportHTML(projId,week,recoveryMode){
   }
 
   // SECTION 6: WORKPLAN NEXT WEEK
-  const _wpTh=`background:#334155;color:#fff;font-weight:700;padding:6px 7px;border:1px solid #334155;text-align:center;font-size:8.5px;text-transform:uppercase;letter-spacing:.4px;-webkit-print-color-adjust:exact;print-color-adjust:exact`;
+  const _wpTh=`background:#334155;color:#fff;font-weight:700;padding:6px 7px;border:1px solid #64748b;text-align:center;font-size:8.5px;text-transform:uppercase;letter-spacing:.4px;-webkit-print-color-adjust:exact;print-color-adjust:exact`;
   const _wpTd=`padding:5px 8px;border:1px solid #e5e9f0;vertical-align:middle;color:#1e293b;font-size:9.5px`;
   const _wpTdc=`padding:5px 6px;border:1px solid #e5e9f0;text-align:center;vertical-align:middle;color:#475569;font-size:9.5px`;
   html+=`<div style="background:#1e293b;color:#fff;text-align:center;padding:7px;font-weight:700;font-size:11px;letter-spacing:1.2px;border-radius:5px 5px 0 0;-webkit-print-color-adjust:exact;print-color-adjust:exact">WORKPLAN NEXT WEEK \u00b7 W${String(week+1).padStart(2,'0')}</div>
