@@ -760,6 +760,7 @@ function saveProc(){
     qty:gv('pQty'),
     satuan:gv('pSat'),
     due:gv('pDue'),
+    onsiteDate:gv('pOnsite')||'',
     supplier:(gv('pSup')||'').trim(),
     status:gv('pStat'),
     notes:(gv('pNotes')||'').trim(),

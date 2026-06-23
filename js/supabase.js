@@ -695,6 +695,7 @@ function mapProcurement(r) {
     harga: r.harga, status: r.status, notes: r.notes,
     rabKatId: r.rab_kat_id, rabItemId: r.rab_item_id,
     link: r.link || '',
+    onsiteDate: r.onsite_date || '',
     logs: Array.isArray(r.logs) ? r.logs : []
   };
 }
@@ -706,6 +707,7 @@ function unmapProcurement(p) {
     notes: p.notes, rab_kat_id: p.rabKatId || null,
     rab_item_id: p.rabItemId || null,
     link: p.link || null,
+    onsite_date: p.onsiteDate || null,
     logs: Array.isArray(p.logs) ? p.logs : []
   };
 }

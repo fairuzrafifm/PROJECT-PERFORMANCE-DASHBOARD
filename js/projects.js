@@ -744,13 +744,27 @@ function renderProc(){
         else if(isWarning){dueColor='var(--yw)';dueLabel=`<span style="background:rgba(245,196,82,.15);color:var(--yw);font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px;font-weight:600"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"/><circle cx=\"12\" cy=\"17\" r=\".5\" fill=\"currentColor\"/><line x1=\"12\" y1=\"9\" x2=\"12\" y2=\"13\"/></svg> ${daysLeft}H</span>`;}
       }
       const rowBg=isOverdue?'rgba(244,112,122,.04)':isWarning?'rgba(245,196,82,.04)':'';
+      // Selisih aktual on-site vs due date (lacak percepatan/keterlambatan)
+      let onsiteLine='';
+      if(i.onsiteDate){
+        const _od=parseLocalDate(i.onsiteDate);_od.setHours(0,0,0,0);
+        const _odStr=String(i.onsiteDate).slice(5);
+        if(dueDate){
+          const _vd=Math.round((dueDate-_od)/86400000); // + = lebih cepat dari due
+          const _c=_vd>0?'var(--gn)':(_vd===0?'var(--mt)':'var(--rd)');
+          const _lbl=_vd>0?`${_vd}h lebih cepat`:(_vd===0?'tepat waktu':`${Math.abs(_vd)}h terlambat`);
+          onsiteLine=`<div style="font-size:8.5px;color:${_c};margin-top:1px;font-weight:600">\u2713 on-site ${_odStr} \u00b7 ${_lbl}</div>`;
+        } else {
+          onsiteLine=`<div style="font-size:8.5px;color:var(--gn);margin-top:1px;font-weight:600">\u2713 on-site ${_odStr}</div>`;
+        }
+      }
       return`<tr style="background:${rowBg}">
       <td style="font-family:var(--fm);font-size:10px;color:var(--mt)">${pr?.kode||'\u2014'}</td>
       <td style="font-weight:500">${item}</td>
       <td style="color:var(--mt)">${kat}</td>
       <td style="font-family:var(--fm)">${qty} ${sat}</td>
       <td style="color:var(--mt)">${sup}</td>
-      <td style="font-family:var(--fm);font-size:10px;color:${dueColor};white-space:nowrap">${due}${dueLabel}</td>
+      <td style="font-family:var(--fm);font-size:10px;color:${dueColor};white-space:nowrap">${due}${dueLabel}${onsiteLine}</td>
       <td><span style="color:${sc[stat]||'var(--mt)'};font-weight:600;font-size:10px">${stat}</span></td>
       <td style="font-family:var(--fm);color:var(--tx);white-space:nowrap;font-size:11px">${i.harga&&+i.harga>0?'Rp '+Number(i.harga).toLocaleString('id-ID'):'—'}</td>
       <td style="white-space:nowrap">
@@ -991,7 +1005,7 @@ function openModal(type,id=null){
     const pr=id?PROC.find(x=>String(x.id)===String(id)):null;
     sv('pProj',pr?.projId||(selId||''));sv('pKat',pr?.kategori||'Material');
     sv('pItem',pr?.item||'');sv('pQty',pr?.qty||'');sv('pSat',pr?.satuan||'');
-    sv('pDue',pr?.due||'');sv('pSup',pr?.supplier||'');sv('pStat',pr?.status||'Waiting Approval');sv('pNotes',pr?.notes||'');
+    sv('pDue',pr?.due||'');sv('pOnsite',pr?.onsiteDate||'');sv('pSup',pr?.supplier||'');sv('pStat',pr?.status||'Waiting Approval');sv('pNotes',pr?.notes||'');
     if($('pHarga'))$('pHarga').value=pr?.harga||'';
     toggleProcCost(pr?.status||'Waiting Approval');
     // Reset kategori visibility dulu
