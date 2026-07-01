@@ -1169,12 +1169,22 @@ function _wrItemRowNew(num,node,week,th,td,tdc,isGn){
 // DAILY REPORT PDF — print-to-PDF (pola sama dgn laporan lain, Arial/grayscale)
 // Satu tanggal terpilih + blok tanda tangan.
 // ============================================================
-function generateDailyReportPDF(){
+async function generateDailyReportPDF(){
   const projId=($('drProjSel')&&$('drProjSel').value)||(typeof selId!=='undefined'&&selId)||(P[0]&&P[0].id);
   const date=($('drDate')&&$('drDate').value)||new Date().toISOString().slice(0,10);
   if(!projId){toast('Pilih project dulu');return;}
   const proj=P.find(p=>String(p.id)===String(projId));
-  const fullHtml=buildDailyReportHTML(projId,date,proj);
+  // Cuaca live untuk tanggal laporan (Open-Meteo). Timeout 4s agar tak menunda lama.
+  let wxText='';
+  try{
+    if(typeof weatherForDate==='function'&&proj){
+      wxText=await Promise.race([
+        weatherForDate(proj.lat,proj.lon,date),
+        new Promise(r=>setTimeout(()=>r(''),4000))
+      ]);
+    }
+  }catch(e){ wxText=''; }
+  const fullHtml=buildDailyReportHTML(projId,date,proj,wxText);
 
   const iframe=document.createElement('iframe');
   iframe.id='drReportFrame';
@@ -1199,7 +1209,7 @@ function generateDailyReportPDF(){
   },120);
 }
 
-function buildDailyReportHTML(projId,date,proj){
+function buildDailyReportHTML(projId,date,proj,weatherText){
   const fmtD=d=>d?String(d).split('-').reverse().join('/'):'-';
   const weekNum=(typeof getWbsWeekNum==='function')?getWbsWeekNum(projId,date):0;
   let logo='';try{logo=localStorage.getItem('atw_dash_logo')||'';}catch(e){}
@@ -1297,7 +1307,7 @@ function buildDailyReportHTML(projId,date,proj){
   const mhAct=+mp.mhActual||0;
   const tlTotal=(+mp.timeLost||0)+accSum('timeLost');
   const tlReason=safeStr(mp.timeLostReason||'')||accNotes;
-  const weather=safeStr((proj&&proj.weather)||'')||'\u2014';
+  const weather=safeStr(weatherText||(proj&&proj.weather)||'')||'\u2014';
   const hseItems=[['Fatality',accSum('fatality')],['LTI',accSum('lti')],['Minor Injury',accSum('minorInjury')],['Med. Treatment',accSum('medTreatment')],['Property Damage',accSum('propertyDamage')],['Fire',accSum('fire')],['Traffic',accSum('traffic')],['Environment',accSum('environment')],['Near-Miss',accSum('nearMiss')]];
   const hseNonZero=hseItems.filter(h=>h[1]>0);
   const _bb='border-bottom:1px solid #eef2f7';

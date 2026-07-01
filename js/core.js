@@ -331,12 +331,34 @@ function toggleSidebar(){
   }
 })();
 
+/* ── Sidebar klik delegasi (robust, fase-capture) ──────────────────────
+   Pada tab tertentu (mis. Manpower) klik kartu proyek di sidebar kadang
+   tidak terdaftar lewat onclick inline — kemungkinan ada listener fase-capture
+   lain yang menghentikan propagasi event. Listener capture di document ini
+   dipasang paling awal sehingga SELALU menangkap klik kartu .pi lebih dulu,
+   apa pun tab yang aktif. (onclick inline tetap dipertahankan sbg cadangan;
+   guard _lastSel mencegah selProj terpanggil ganda.) */
+(function(){
+  var _lastSel={id:null,t:0};
+  document.addEventListener('click',function(e){
+    var card=e.target&&e.target.closest?e.target.closest('.pi'):null;
+    if(!card)return;
+    var id=card.getAttribute('data-pid');
+    if(!id)return;
+    var now=Date.now();
+    if(_lastSel.id===id&&(now-_lastSel.t)<250)return; // cegah panggil ganda (capture + onclick inline)
+    _lastSel={id:id,t:now};
+    console.log('[ATW] sidebar klik → selProj('+id+') | activeTab='+(window.activeTab||'?'));
+    if(typeof selProj==='function'){try{selProj(id);}catch(err){console.warn('[ATW] selProj error:',err);}}
+  },true);
+})();
+
 function renderSB(){
   $('pcount').textContent=P.length;
   const sc={'On Track':'p-on','Delayed':'p-del','Critical':'p-crit','Planning':'p-plan','Done':'p-done'};
   const bc={'On Track':'var(--gn)','Delayed':'var(--yw)','Critical':'var(--rd)','Planning':'var(--bl)','Done':'var(--pu)'};
   $('projList').innerHTML=P.map(p=>`
-    <div class="pi ${p.id===selId?'active':''}" onclick="selProj('${p.id}')">
+    <div class="pi ${p.id===selId?'active':''}" data-pid="${p.id}" onclick="selProj('${p.id}')">
       <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
         ${p.logo?`<div style="width:32px;height:32px;background:var(--sf2);border:1px solid var(--bd);border-radius:6px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;padding:3px">
           <img src="${p.logo}" style="max-width:26px;max-height:26px;object-fit:contain" onerror="this.parentElement.style.display='none'">
@@ -382,9 +404,16 @@ function selProj(id){
   _syncAllProjSelectors(selId);
   renderSB();
   renderDetail(selId);
-  // Jika sedang di tab WBS atau Daily, langsung render
-  if(activeTab==='wbs')renderWBS();
-  else if(activeTab==='daily')renderDailyReport();
+  // Render ulang tab yang sedang aktif agar klik kartu proyek di sidebar SELALU berefek.
+  // Sebelumnya hanya WBS & Daily yang ditangani, sehingga di tab Manpower/Procurement/Cost/Issues
+  // klik kartu hanya menyetel selId + sinkron dropdown filter tanpa me-refresh tampilan → terasa "tak bisa diklik".
+  if(activeTab==='wbs'){ if(typeof renderWBS==='function')renderWBS(); }
+  else if(activeTab==='daily'){ if(typeof renderDailyReport==='function')renderDailyReport(); }
+  else if(activeTab==='manpower'){ if(typeof renderMP==='function')renderMP(); }
+  else if(activeTab==='procurement'){ if(typeof renderProc==='function')renderProc(); }
+  else if(activeTab==='cost'){ if(typeof renderCost==='function')renderCost(); if(typeof renderRab==='function')renderRab(); }
+  else if(activeTab==='issues'){ if(typeof renderIssues==='function')renderIssues(); }
+  else if(activeTab==='overview'){ if(typeof renderOV==='function')renderOV(); }
 }
 
 function _syncAllProjSelectors(id){
@@ -1094,16 +1123,100 @@ window.addEventListener('load', function _initLazyLoad() {
       .concat(newItems);
   }
 
+  // ── Refresh overview (infografis) ter-debounce ─────────────
+  // Saat banyak proyek dimuat beruntun (fase 2 + background), kumpulkan jadi 1 render
+  // ~250ms setelah load terakhir → data overview ikut terisi TANPA animasi restart berkali2.
+  var _ovRefreshT = null;
+  function _ovRefreshDebounced() {
+    if (_ovRefreshT) clearTimeout(_ovRefreshT);
+    _ovRefreshT = setTimeout(function(){
+      _ovRefreshT = null;
+      if (typeof renderOV === 'function') { try { renderOV(); } catch(e){} }
+    }, 250);
+  }
+
+  // ── ANTI-PATAH: tahan paint overview selama bulk-load ──────────────────────
+  // Sejak halaman dimuat sampai SELURUH proyek selesai dimuat, JANGAN paint #ovDash.
+  // Tanpa ini, overview ter-render berkali-kali (cache→parsial→penuh) & animasi entrance
+  // terpotong tiap proyek selesai → "patah-patah". Kita bungkus renderOV (global dari
+  // projects.js) agar no-op selama _ovInitialBulk; #ovDash tetap skeleton. Setelah bulk
+  // selesai, _ovFinalRender() memanggil sekali → satu animasi bersih dgn data lengkap.
+  // Seluruh logika ini ada DI SATU FILE (core.js) agar tak bergantung versi projects.js.
+  window._ovInitialBulk = true;   // aktif sejak page-load (mencakup render cache/Phase1)
+  console.log('[ATW] core.js v13 dimuat — fix klik sidebar (delegasi capture) + anti-patah overview');
+  if (typeof window.renderOV === 'function' && !window.__ovWrapped) {
+    window.__ovWrapped = true;
+    var _origRenderOV = window.renderOV;
+    window.renderOV = function() {
+      if (window._ovInitialBulk) return;   // diam selama bulk → skeleton bertahan
+      return _origRenderOV.apply(this, arguments);
+    };
+  }
+
+  // Picu animasi entrance overview secara kokoh — independen projects.js.
+  function _ovInjectAnimCss() {
+    if (document.getElementById('ovAnimCss')) return;
+    var s = document.createElement('style');
+    s.id = 'ovAnimCss';
+    s.textContent =
+      '@keyframes ovRise{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none}}' +
+      '#ovDash.ov-enter .ov-card{animation:ovRise .55s cubic-bezier(.22,1,.36,1) both}' +
+      '#ovDash.ov-enter .ov-kstrip .ov-card:nth-child(2){animation-delay:.04s}' +
+      '#ovDash.ov-enter .ov-kstrip .ov-card:nth-child(3){animation-delay:.08s}' +
+      '#ovDash.ov-enter .ov-kstrip .ov-card:nth-child(4){animation-delay:.12s}' +
+      '#ovDash.ov-enter .ov-kstrip .ov-card:nth-child(5){animation-delay:.16s}' +
+      '#ovDash.ov-enter .ov-kstrip .ov-card:nth-child(6){animation-delay:.20s}' +
+      '#ovDash.ov-enter .ov-r:nth-of-type(2) .ov-card{animation-delay:.16s}' +
+      '#ovDash.ov-enter .ov-r:nth-of-type(3) .ov-card{animation-delay:.24s}' +
+      '#ovDash.ov-enter .ov-r:nth-of-type(4) .ov-card{animation-delay:.32s}';
+    document.head.appendChild(s);
+  }
+
+  function _ovPlayAnim() {
+    _ovInjectAnimCss();
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){   // tunggu markup ter-paint
+      var d = document.getElementById('ovDash');
+      if (!d) { console.warn('[ATW] #ovDash tidak ada'); return; }
+      // 1) Animasi entrance kartu (CSS) — DIJAMIN terlihat, tak bergantung markup SVG
+      d.classList.remove('ov-enter'); void d.offsetWidth; d.classList.add('ov-enter');
+      // 2) Animasi gauge/donut/angka (JS) — bila elemen & fungsi tersedia
+      var arcs = d.querySelectorAll('.ov-arc').length,
+          needles = d.querySelectorAll('.ov-needle').length,
+          counts = d.querySelectorAll('.ov-count').length,
+          hasSkel = !!d.querySelector('.ov-skel');
+      console.log('[ATW] diag animasi → arc:'+arcs+' needle:'+needles+' count:'+counts+' skeleton-tersisa:'+hasSkel+' _ovAnimate:'+(typeof window._ovAnimate));
+      if (typeof window._ovAnimate === 'function') {
+        try { window._ovAnimate(d); } catch(e){ console.warn('[ATW] _ovAnimate error', e); }
+      }
+    });});
+  }
+
   // ═══════════════════════════════════════════════════════════
   // PHASE 1 — ganti loadFromSupabase sepenuhnya
   // ═══════════════════════════════════════════════════════════
   var _phase1Promise = null;
+  var _bulkActive = false;      // true selama load penuh (Phase1+2+background) berlangsung
+  var _fullyLoadedAt = 0;       // timestamp load penuh terakhir
 
   window.loadFromSupabase = function() {
     if (_phase1Promise) {
       _log('Dedup: Phase 1 sedang berjalan');
       return _phase1Promise;
     }
+    // Cegah RELOAD berulang saat login. autoLoadOnStart dipanggil 3x (checkSession/_loginSuccess/
+    // returning-user) → tanpa guard ini tiap panggilan memuat ulang penuh & me-rebuild+animasi lagi,
+    // sehingga animasi entrance siklus-1 ditimpa siklus-2 & 3 → "tidak ada motion".
+    if (_bulkActive) { _log('Skip: bulk-load masih berjalan'); return Promise.resolve(); }
+    if (_fullyLoadedAt && (Date.now() - _fullyLoadedAt) < 8000) {
+      _log('Skip: data baru saja dimuat penuh — tak perlu reload (jaga animasi)');
+      return Promise.resolve();
+    }
+    _bulkActive = true;
+    window._ovInitialBulk = true;   // mulai bulk-load → tahan render overview sampai semua data masuk (anti patah)
+    clearTimeout(window.__ovBulkFb);
+    window.__ovBulkFb = setTimeout(function(){   // pengaman: jangan nyangkut skeleton bila bulk gagal/lambat
+      if (window._ovInitialBulk) { try { _ovFinalRender(); } catch(e){} }
+    }, 9000);
     _phase1Promise = _doPhase1().finally(function(){ _phase1Promise = null; });
     return _phase1Promise;
   };
@@ -1279,12 +1392,19 @@ window.addEventListener('load', function _initLazyLoad() {
       // Re-render penuh utk proyek aktif; selain itu refresh komponen yang menampilkan
       // Plan lintas-proyek (sidebar + kartu status tab aktif), karena nilai Plan tiap
       // proyek baru benar setelah SCURVE-nya selesai dimuat.
+      window._ovReady = true;   // data sekunder proyek sudah mulai masuk → overview boleh paint data nyata
       var curSel = (typeof selId !== 'undefined') ? String(selId) : null;
-      if (curSel === pid && typeof render === 'function') { render(); }
-      else {
-        if (typeof renderSB === 'function') renderSB();
+      if (window._ovInitialBulk) {
+        // Bulk-load awal (login): JANGAN render overview tiap proyek — itu yang bikin infografis
+        // di-rebuild di tengah animasi → motion patah. Cukup perbarui sidebar; overview dirender
+        // SEKALI di akhir _backgroundLoadAll (satu animasi bersih, data sudah lengkap).
+        if (typeof renderSB === 'function') { try { renderSB(); } catch(e){} }
+      } else {
+        // Load on-demand (mis. buka proyek setelah login): segarkan seperti biasa, ter-debounce.
+        if (curSel === pid && typeof render === 'function') { render(); }
+        else if (typeof renderSB === 'function') { renderSB(); }
         if (typeof activeTab !== 'undefined') {
-          if (activeTab === 'overview' && typeof renderProjStatusCards === 'function') { try { renderProjStatusCards(); } catch(e){} }
+          if (activeTab === 'overview') { _ovRefreshDebounced(); }
           else if (activeTab === 'projects' && typeof renderProjTab === 'function') { try { renderProjTab(); } catch(e){} }
         }
       }
@@ -1300,19 +1420,34 @@ window.addEventListener('load', function _initLazyLoad() {
   // ═══════════════════════════════════════════════════════════
   function _wait(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
 
+  // Render overview SEKALI setelah seluruh bulk-load selesai → satu animasi entrance bersih,
+  // data sudah lengkap, tanpa rebuild di tengah animasi.
+  function _ovFinalRender() {
+    clearTimeout(window.__ovBulkFb);
+    _bulkActive = false;
+    _fullyLoadedAt = Date.now();
+    if (!window._ovInitialBulk) return;   // idempotent: hanya jalan sekali per siklus load
+    window._ovInitialBulk = false;
+    window._ovReady = true;
+    console.log('[ATW] v12 — render final + animasi entrance ✓ (activeTab=' + (typeof activeTab!=='undefined'?activeTab:'?') + ')');
+    if (typeof render === 'function') { try { render(); } catch(e){} }
+    if (typeof activeTab === 'undefined' || activeTab === 'overview') { _ovPlayAnim(); }
+  }
+
   async function _backgroundLoadAll() {
-    if (!Array.isArray(P) || !P.length) return;
+    if (!Array.isArray(P) || !P.length) { _ovFinalRender(); return; }
     var remaining = P.filter(function(p){
       var pid = String(p.id);
       return !_loaded.has(pid) && !_loading.has(pid);
     });
-    if (!remaining.length) return;
+    if (!remaining.length) { _ovFinalRender(); return; }
     _log('Background: ' + remaining.length + ' proyek tersisa');
     for (var i = 0; i < remaining.length; i++) {
       await _wait(400);
       await window.loadProjectData(remaining[i].id);
     }
     _log('Background selesai — semua ' + P.length + ' proyek loaded ✓');
+    _ovFinalRender();
   }
 
   // ═══════════════════════════════════════════════════════════

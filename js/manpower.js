@@ -342,7 +342,16 @@ function toggleMpActDetail(rowId){
 function delMpLog(id){
   showConfirm('Hapus log ini?',()=>{_doDelMpLog(id);});return;}
 function _doDelMpLog(id){
+  var _m=MPLOGS.find(m=>m.id===id);
   MPLOGS=MPLOGS.filter(m=>m.id!==id);
+  if(_m&&_m.projId!=null&&_m.date){
+    var _dn=function(d){return String(d==null?'':d).slice(0,10);}; // samakan ke 'YYYY-MM-DD' walau ada bagian waktu
+    var _mp=String(_m.projId),_md=_dn(_m.date);
+    var _match=function(a){return String(a.projId)===_mp&&_dn(a.date)===_md;};
+    var _delAcc=ACCLOGS.filter(_match);
+    ACCLOGS=ACCLOGS.filter(function(a){return !_match(a);});
+    _delAcc.forEach(function(a){try{if(typeof window._sbPersist==='function')window._sbPersist('accident','delete',{id:a.id});else if(typeof addPendingDeleteAcc==='function')addPendingDeleteAcc(a.id);}catch(e){}});
+  }
   dirty();renderMP();updateTimeLostKPI();toast('Log dihapus','warn')
 }
 
@@ -637,6 +646,20 @@ function saveMp(){
   const pi=P.findIndex(p=>String(p.id)===String(projId));
   if(pi>=0) P[pi].mpActual=tot;
 
+  // ── HSE / Insiden: upsert ACCLOGS per project+tanggal ──────
+  try{
+    var _nm=+gv('mpNM')||0,_min=+gv('mpMin')||0,_med=+gv('mpMed')||0,_lti=+gv('mpLti')||0,_fat=+gv('mpFat')||0;
+    var _accTot=_nm+_min+_med+_lti+_fat;
+    var _ai=ACCLOGS.findIndex(a=>String(a.projId)===String(projId)&&a.date===date);
+    if(_ai>=0){
+      var _a=ACCLOGS[_ai];_a.nearMiss=_nm;_a.minorInjury=_min;_a.medTreatment=_med;_a.lti=_lti;_a.fatality=_fat;
+      window._mpAccEntry=_a;
+    } else if(_accTot>0){
+      var _ne={id:genId(),projId:String(projId),date:date,fatality:_fat,lti:_lti,minorInjury:_min,medTreatment:_med,propertyDamage:0,fire:0,traffic:0,environment:0,nearMiss:_nm,timeLost:0,notes:''};
+      ACCLOGS.push(_ne);window._mpAccEntry=_ne;
+    } else { window._mpAccEntry=null; }
+  }catch(e){window._mpAccEntry=null;}
+
   dirty();
   cm('inputMp');
   render();
@@ -732,10 +755,6 @@ function delAccLog(){
   toast('Accident log dihapus','warn')
 }
 
-function saveWeather(){
-  P.forEach(p=>{const el=$('wf_'+p.id);if(el)p.weather=el.value;});
-  dirty();cm('editWeather');if(activeTab==='overview')renderOV();else renderSB();toast('Cuaca diupdate ✓')
-}
 
 function saveIss(){
   const uraian=gv('iUraian').trim();if(!uraian){toast('Uraian wajib diisi','error');return;}

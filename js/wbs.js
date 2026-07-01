@@ -1325,6 +1325,7 @@ function resyncScurveFromWbs(){
 
 var _wbsScTimer=null;
 function renderWbsSCurve(projId){
+  window._wbsScProj=projId; // simpan utk repaint saat ganti tema
   // Debounce: panggilan beruntun (sync WBS, daily, resync, render) dikumpulkan jadi 1 gambar
   clearTimeout(_wbsScTimer);
   _wbsScTimer=setTimeout(function(){ _renderWbsSCurveNow(projId); }, 120);
@@ -1403,17 +1404,20 @@ function _renderWbsSCurveNow(projId){
     if(window._wbsChart)window._wbsChart.destroy();
     const light=document.documentElement.classList.contains('light');
     const GRID=light?'rgba(20,30,70,.06)':'rgba(140,150,200,.10)';const TICK=light?'#697296':'#8b93bd';
+    // Resolve warna dari variabel tema (Chart.js menggambar ke canvas → tak paham var(--x))
+    const _cs=getComputedStyle(document.documentElement),_cv=n=>((_cs.getPropertyValue(n)||'').trim());
+    const C_BL=_cv('--bl')||'#7c8cf0',C_GN=_cv('--gn')||'#3ddc97',C_SF=_cv('--sf')||'#1f2540',C_TX=_cv('--tx')||'#e7eaf6',C_MT=_cv('--mt')||'#8b93bd';
     const maxBar=Math.max(...data.map(d=>Math.max(+d.wPlan||0,+d.wAct||0)),1)*1.4;
     try{Chart.defaults.font.family="'DM Sans',sans-serif";}catch(e){}
     window._wbsChart=new Chart(ctx,{
       data:{labels:data.map(d=>'W'+String(d.week).padStart(2,'0')),datasets:[
         {type:'bar',data:data.map(d=>+(+d.wPlan||0).toFixed(2)),backgroundColor:'rgba(169,180,245,.30)',borderWidth:0,borderRadius:{topLeft:2,topRight:2},categoryPercentage:0.72,barPercentage:0.6,yAxisID:'yB',order:3},
         {type:'bar',data:data.map(d=>+(+d.wAct||0).toFixed(2)),backgroundColor:'rgba(61,220,151,.40)',borderWidth:0,borderRadius:{topLeft:2,topRight:2},categoryPercentage:0.72,barPercentage:0.6,yAxisID:'yB',order:2},
-        {type:'line',data:data.map(d=>+(+d.cPlan||0).toFixed(2)),borderColor:'#7c8cf0',backgroundColor:'rgba(124,140,240,.12)',borderWidth:1.8,pointRadius:0,pointHoverRadius:4,pointBackgroundColor:'#7c8cf0',pointHitRadius:14,fill:true,tension:0.35,yAxisID:'yC',order:1},
-        {type:'line',data:data.map(d=>(+d.cAct>0||+d.wAct>0)?+(+d.cAct||0).toFixed(2):null),borderColor:'#3ddc97',borderDash:[6,4],borderWidth:1.8,pointRadius:0,pointHoverRadius:4,pointBackgroundColor:'#3ddc97',pointHitRadius:14,fill:false,tension:0.35,spanGaps:false,yAxisID:'yC',order:0}
+        {type:'line',data:data.map(d=>+(+d.cPlan||0).toFixed(2)),borderColor:C_BL,backgroundColor:'rgba(124,140,240,.12)',borderWidth:1.8,pointRadius:0,pointHoverRadius:4,pointBackgroundColor:C_BL,pointHitRadius:14,fill:true,tension:0.35,yAxisID:'yC',order:1},
+        {type:'line',data:data.map(d=>(+d.cAct>0||+d.wAct>0)?+(+d.cAct||0).toFixed(2):null),borderColor:C_GN,borderDash:[6,4],borderWidth:1.8,pointRadius:0,pointHoverRadius:4,pointBackgroundColor:C_GN,pointHitRadius:14,fill:false,tension:0.35,spanGaps:false,yAxisID:'yC',order:0}
       ]},
       options:{responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:'index',intersect:false},
-        plugins:{legend:{display:false},tooltip:{backgroundColor:'#1f2540',titleColor:'#e7eaf6',bodyColor:'#8b93bd',borderColor:'rgba(255,255,255,.08)',borderWidth:1,padding:10,cornerRadius:8,
+        plugins:{legend:{display:false},tooltip:{backgroundColor:C_SF,titleColor:C_TX,bodyColor:C_MT,borderColor:'rgba(255,255,255,.08)',borderWidth:1,padding:10,cornerRadius:8,
           callbacks:{title:i=>'Minggu '+i[0].label,label:i=>{if(i.raw===null)return null;return ' '+['W.Plan','W.Actual','Cum.Plan','Cum.Actual'][i.datasetIndex]+': '+(+i.raw).toFixed(2)+'%';}}}},
         scales:{
           x:{grid:{display:false},ticks:{color:TICK,font:{size:10},maxRotation:0},border:{display:false}},
@@ -1454,3 +1458,20 @@ if (_origSaveEditWbs) {
   };
 }
 
+
+// ── Repaint chart S-curve WBS saat tema diganti ──────────────────────────────
+// toggleTheme() hanya menukar class 'light'; chart Chart.js (canvas) tak ikut
+// berubah otomatis. Observer ini menggambar ulang bila chart sedang tampil.
+(function(){
+  if(window._wbsThemeObs||typeof MutationObserver==='undefined')return;
+  window._wbsThemeObs=true;
+  var wasLight=document.documentElement.classList.contains('light');
+  var obs=new MutationObserver(function(){
+    var isLight=document.documentElement.classList.contains('light');
+    if(isLight===wasLight)return; wasLight=isLight;
+    if(window._wbsChart&&window._wbsScProj!=null&&typeof renderWbsSCurve==='function'){
+      try{renderWbsSCurve(window._wbsScProj);}catch(e){}
+    }
+  });
+  obs.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+})();

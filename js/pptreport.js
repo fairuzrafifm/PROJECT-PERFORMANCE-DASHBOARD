@@ -63,6 +63,23 @@
     });
   }
 
+  // ── Lazy-load aset foto (pptassets.js dimuat saat dibutuhkan) ──
+  // Tidak pernah reject: _asset() sudah null-safe, jadi bila gagal
+  // PPT tetap dibuat tanpa foto (graceful degradation).
+  var _assetsPromise = null;
+  function loadAssets() {
+    if (window.ATW_PPT_ASSETS) return Promise.resolve();
+    if (_assetsPromise) return _assetsPromise;
+    _assetsPromise = new Promise(function (resolve) {
+      var s = document.createElement('script');
+      s.src = 'js/pptassets.js';
+      s.onload = function () { resolve(); };
+      s.onerror = function () { _assetsPromise = null; console.warn('pptassets.js gagal dimuat — PPT dibuat tanpa foto.'); resolve(); };
+      document.head.appendChild(s);
+    });
+    return _assetsPromise;
+  }
+
   // ── Data: S-curve kumulatif ────────────────────────────────────
   function scurveData(projId) {
     var SC = (typeof SCURVE !== 'undefined') ? SCURVE : [];
@@ -758,7 +775,7 @@
   // ===============================================================
   function withLib(fn) {
     _toast('Menyiapkan engine PPT\u2026');
-    loadPptxLib().then(function () { try { fn(); } catch (e) { console.error(e); _toast('Gagal membuat PPT: ' + e.message); } })
+    Promise.all([loadPptxLib(), loadAssets()]).then(function () { try { fn(); } catch (e) { console.error(e); _toast('Gagal membuat PPT: ' + e.message); } })
       .catch(function (e) { console.error(e); _toast('Tidak dapat memuat library PPT. Cek koneksi internet.'); });
   }
   function newDeck() { var p = new window.PptxGenJS(); p.layout = 'LAYOUT_WIDE'; p.author = 'ATW Solar Dashboard'; p.company = 'ATW Solar Indonesia'; return p; }

@@ -145,6 +145,7 @@ async function loadFromSupabase() {
       }
     });
 
+    window._sbLoaded = true; window._sbLoadFailed = false;   // data Supabase sudah masuk → overview boleh render data live
     render();
     toast('Data berhasil dimuat ✓');
     if (typeof autoSnapshotWeekly === 'function') setTimeout(autoSnapshotWeekly, 1500);
@@ -153,6 +154,19 @@ async function loadFromSupabase() {
   } catch (err) {
     toast('Gagal load data: ' + err.message, 'error');
     console.error(err);
+    // Supabase gagal → izinkan overview tampil dari data cache yang ada (jangan biarkan kosong)
+    window._sbLoadFailed = true;
+  }
+  // ── Jaminan render overview (fix: data Supabase tak muncul sampai pindah tab) ──
+  // Data array (P/ISS/PROC/...) sudah ter-assign SEBELUM titik error apa pun di atas,
+  // jadi blok ini WAJIB jalan di jalur sukses MAUPUN bila ada error parsial (merge/parse).
+  // Double rAF memastikan ini render TERAKHIR yang menimpa render cache lokal (loadLocal).
+  if (typeof activeTab === 'undefined' || activeTab === 'overview') {
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        try { if (typeof renderOV === 'function') renderOV(); } catch (e) {}
+      });
+    });
   }
 }
 
@@ -656,6 +670,7 @@ function mapProject(r) {
     status: r.status, plan: r.plan, actual: r.actual,
     mpPlan: r.mp_plan, mdPlan: r.mp_plan, mhPlan: r.mh_plan,
     mpActual: r.mp_actual, weather: r.weather, notes: r.notes,
+    lat: r.lat, lon: r.lon,
     logo: r.logo, picPm: r.pic_pm, picSm: r.pic_sm,
     picEng: r.pic_eng, picProc: r.pic_proc, history: []
   };
@@ -667,6 +682,7 @@ function unmapProject(p) {
     status: p.status, plan: p.plan, actual: p.actual,
     mp_plan: p.mpPlan || p.mdPlan || 0, mh_plan: p.mhPlan || 0,
     mp_actual: p.mpActual || 0, weather: p.weather, notes: p.notes,
+    lat: p.lat ?? null, lon: p.lon ?? null,
     logo: p.logo, pic_pm: p.picPm, pic_sm: p.picSm,
     pic_eng: p.picEng, pic_proc: p.picProc
   };
@@ -961,6 +977,18 @@ window.addEventListener('load', function _initSyncEngine() {
     } catch (e) {}
   }
 
+  // Surface error dari operasi tulis Supabase yang tidak melempar exception
+  // (mis. delete/update diblok RLS → return {error}, bukan throw). Mencegah
+  // kelas bug "hilang dari UI, tetap di DB".
+  function _sbCheck(res, label) {
+    if (res && res.error) {
+      console.error('[' + label + ']', res.error);
+      if (typeof toast === 'function') toast('Gagal ' + label + ' di Supabase: ' + (res.error.message || res.error.code || res.error), 'error');
+      if (typeof _sbStatusErr === 'function') _sbStatusErr(res.error.message || String(res.error));
+    }
+    return res;
+  }
+
   // ── 3. CENTRAL SUPABASE PERSIST ─────────────────────────
   async function _sbPersist(type, action, data) {
     const client = (typeof _initSb === 'function') ? _initSb() : null;
@@ -971,7 +999,7 @@ window.addEventListener('load', function _initSyncEngine() {
         case 'project':
           if (action === 'save') await sbSaveProject(data);
           else if (action === 'delete')
-            await client.from('projects').delete().eq('id', data.id);
+            _sbCheck(await client.from('projects').delete().eq('id', data.id), 'hapus project');
           break;
 
         case 'history':
@@ -987,31 +1015,31 @@ window.addEventListener('load', function _initSyncEngine() {
         case 'procurement':
           if (action === 'save') await sbSaveProcurement(data);
           else if (action === 'delete')
-            await client.from('procurement').delete().eq('id', data.id);
+            _sbCheck(await client.from('procurement').delete().eq('id', data.id), 'hapus procurement');
           break;
 
         case 'cost':
           if (action === 'save') await sbSaveCost(data);
           else if (action === 'delete')
-            await client.from('costs').update({ _deleted: true }).eq('id', data.id);
+            _sbCheck(await client.from('costs').update({ _deleted: true }).eq('id', data.id), 'hapus cost');
           break;
 
         case 'manpower':
           if (action === 'save') await sbSaveManpower(data);
           else if (action === 'delete')
-            await client.from('manpower_logs').delete().eq('id', data.id);
+            _sbCheck(await client.from('manpower_logs').delete().eq('id', data.id), 'hapus manpower');
           break;
 
         case 'accident':
           if (action === 'save') await sbSaveAccident(data);
           else if (action === 'delete')
-            await client.from('accident_logs').delete().eq('id', data.id);
+            _sbCheck(await client.from('accident_logs').delete().eq('id', data.id), 'hapus accident');
           break;
 
         case 'wbs':
           if (action === 'save') await sbSaveWbs(data);
           else if (action === 'delete')
-            await client.from('wbs').delete().eq('id', data.id);
+            _sbCheck(await client.from('wbs').delete().eq('id', data.id), 'hapus WBS');
           break;
 
         case 'wbs_bulk':
@@ -1033,7 +1061,7 @@ window.addEventListener('load', function _initSyncEngine() {
             const sorted = [...data].sort((a, b) =>
               (typeOrder[a.type] ?? 0) - (typeOrder[b.type] ?? 0));
             for (const n of sorted) {
-              await client.from('wbs').delete().eq('id', n.id);
+              _sbCheck(await client.from('wbs').delete().eq('id', n.id), 'hapus WBS');
             }
           }
           break;
@@ -1041,13 +1069,13 @@ window.addEventListener('load', function _initSyncEngine() {
         case 'scurve':
           if (action === 'save') await sbSaveScurve(data);
           else if (action === 'delete')
-            await client.from('scurve').delete().eq('proj_id', data.projId).eq('week', data.week);
+            _sbCheck(await client.from('scurve').delete().eq('proj_id', data.projId).eq('week', data.week), 'hapus S-curve');
           break;
 
         case 'rab':
           if (action === 'save') await sbSaveRab(Array.isArray(data) ? data : [data]);
           else if (action === 'delete')
-            await client.from('rab').delete().eq('id', data.id);
+            _sbCheck(await client.from('rab').delete().eq('id', data.id), 'hapus RAB');
           break;
 
         case 'rab_bulk':
@@ -1085,14 +1113,18 @@ window.addEventListener('load', function _initSyncEngine() {
 
   // ── 4. OVERRIDE autoLoadOnStart → Supabase ───────────────
   window.autoLoadOnStart = async function () {
-    // Tampilkan cache lokal dulu (instant)
-    try {
-      if (typeof loadLocal === 'function' && loadLocal()) {
-        if (typeof loadLogosCache === 'function') loadLogosCache();
-        if (typeof P !== 'undefined' && P.length && !selId) selId = P[0]?.id || null;
-        if (typeof render === 'function') render();
-      }
-    } catch (e) {}
+    // Tampilkan cache lokal dulu (instant) — HANYA sebelum data Supabase pertama masuk.
+    // Tanpa guard ini, panggilan autoLoadOnStart berikutnya (checkSession/_loginSuccess/
+    // initAuth/returning-user) me-render cache lagi & MENIMPA tampilan Supabase → "data masih cache".
+    if (!window._sbLoaded) {
+      try {
+        if (typeof loadLocal === 'function' && loadLocal()) {
+          if (typeof loadLogosCache === 'function') loadLogosCache();
+          if (typeof P !== 'undefined' && P.length && !selId) selId = P[0]?.id || null;
+          if (typeof render === 'function') render();
+        }
+      } catch (e) {}
+    }
 
     // Update status bar
     const smsg = document.getElementById('smsg');
@@ -1135,10 +1167,22 @@ window.addEventListener('load', function _initSyncEngine() {
           mp_plan: proj.mpPlan || 0, mh_plan: proj.mhPlan || 0,
           notes: proj.notes || null, logo: proj.logo || null,
           weather: proj.weather || null,
+          lat: proj.lat ?? null, lon: proj.lon ?? null,
           pic_pm: proj.picPm || null, pic_sm: proj.picSm || null,
           pic_eng: proj.picEng || null, pic_proc: proj.picProc || null
         });
         if (typeof sbTrackTs === 'function') sbTrackTs('projects', prevId, new Date().toISOString());
+        // ── Koordinat (lat/lon): PATCH terpisah & ter-guard ──
+        // Dipisah agar bila kolom belum ada (MIGRATION_weather_coords.sql
+        // belum dijalankan), kegagalan di sini TIDAK membatalkan patch
+        // metadata di atas. Begitu migrasi jalan, koordinat ikut tersimpan.
+        try {
+          await _sbAtomicPatch('projects', prevId, {
+            lat: proj.lat ?? null, lon: proj.lon ?? null
+          });
+        } catch (eCoord) {
+          console.warn('[saveProj] koordinat belum tersimpan \u2014 jalankan MIGRATION_weather_coords.sql di Supabase.', eCoord && eCoord.message);
+        }
       } else {
         // INSERT new project — full upsert (record belum ada di DB)
         await sbSaveProject(proj);
@@ -1200,18 +1244,6 @@ window.addEventListener('load', function _initSyncEngine() {
     }
   };
 
-  // saveWeather: PATCH hanya field weather
-  const _orig_saveWeather = window.saveWeather;
-  window.saveWeather = async function () {
-    _orig_saveWeather.call(this);
-    try {
-      await Promise.all(P.map(p =>
-        _sbAtomicPatch('projects', p.id, { weather: p.weather || null })
-      ));
-      _sbStatusOk();
-    } catch(e) { _sbStatusErr(e.message); }
-  };
-
   // History edit/delete
   const _orig_saveHistEntry = window.saveHistEntry;
   window.saveHistEntry = async function () {
@@ -1255,13 +1287,28 @@ window.addEventListener('load', function _initSyncEngine() {
       await _sbPersist('manpower', 'save', entry);
       if (typeof sbTrackTs === 'function') sbTrackTs('manpower_logs', entry.id, new Date().toISOString());
     }
+    // HSE / accident yang ikut diinput di form harian
+    try {
+      if (window._mpAccEntry) {
+        await _sbPersist('accident', 'save', window._mpAccEntry);
+        if (typeof sbTrackTs === 'function') sbTrackTs('accident_logs', window._mpAccEntry.id, new Date().toISOString());
+        window._mpAccEntry = null;
+      }
+    } catch (e) { if (window.console) console.warn('acc persist:', e); }
   };
 
   const _orig_delMpLog = window.delMpLog;
-  window.delMpLog = async function (id) {
+  window.delMpLog = function (id) {
     const target = id || (typeof editMpId !== 'undefined' ? editMpId : null);
-    _orig_delMpLog.call(this, id);
-    if (target) await _sbPersist('manpower', 'delete', { id: target });
+    // Supabase delete HARUS di dalam callback konfirmasi — bukan langsung.
+    // (showConfirm berbasis callback; kalau di-await langsung, delete nembak
+    //  walau user klik Batal, dan accident-delete di _doDelMpLog jadi balapan.)
+    const _commit = async function () {
+      if (typeof _doDelMpLog === 'function') _doDelMpLog(id); // hapus lokal + accident
+      if (target) await _sbPersist('manpower', 'delete', { id: target });
+    };
+    if (typeof showConfirm === 'function') showConfirm('Hapus log ini?', _commit);
+    else _commit();
   };
 
   // ── 7. ACCIDENT ──────────────────────────────────────────

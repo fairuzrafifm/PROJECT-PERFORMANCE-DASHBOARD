@@ -63,108 +63,290 @@ function updateTimeLostKPI(){
   }
 }
 
-function renderOV(){
-  if(window.__apBegin)window.__apBegin();
-  const today=new Date().toISOString().slice(0,10);
-  const todayMp=MPLOGS.filter(m=>m.date===today);
-  const mhAct=todayMp.reduce((s,m)=>s+(+m.mhActual||0),0);
-  const mhPlan=P.reduce((s,p)=>s+(+p.mhPlan||0),0);
-  // Kartu KPI "Skor Portofolio" (rata-rata kesehatan) menggantikan Total Projects
-  (function(){
-    var ps=(typeof portfolioScore==='function')?portfolioScore():null;
-    var ov1=$('ov1'), sub=$('ov1sub');
-    if(!ps||!ps.n){ if(ov1){ov1.classList.remove('skel');ov1.textContent='\u2014';ov1.style.color='var(--mt)';} if(sub)sub.textContent='Belum ada proyek'; }
-    else { if(ov1)ov1.style.color=ps.color; _countUp(ov1,ps.avg,'/100',700); if(sub)sub.innerHTML=ps.n+' proyek aktif \u00b7 kesehatan keseluruhan'; }
-  })();
-  _countUp($('ov2'),mhAct,' jam',900);
-  $('ov2s').textContent='Plan: '+mhPlan+' jam | Var: '+(mhAct-mhPlan>=0?'+':'')+(mhAct-mhPlan);
-  $('ov2').style.color='var(--tx)';
-  $('ovOT').textContent=P.filter(p=>p.status==='On Track').length;
-  $('ovDL').textContent=P.filter(p=>p.status==='Delayed').length;
-  $('ovCR').textContent=P.filter(p=>p.status==='Critical').length;
-  _countUp($('ov4'),ISS.filter(i=>i.status!=='Closed').length,'',600);
-  const accTL=ACCLOGS.reduce((s,a)=>s+(+a.timeLost||0),0);
-  const mpTL=MPLOGS.reduce((s,m)=>s+(+m.timeLost||0),0);
-  const totTL=accTL+mpTL;
-  _countUp($('ov5'),totTL,' hr',750);
-  $('ov5').title=`Accident: ${accTL} hr + Weather/Lainnya: ${mpTL} hr`;
-  $('tlt').textContent=totTL+' hrs';
-  if($('tltAcc'))$('tltAcc').textContent=accTL+' hrs';
-  if($('tltMp'))$('tltMp').textContent=mpTL+' hrs';
-  // Show breakdown below time lost card
-  const ov5el=$('ov5').parentElement;
-  let ov5detail=ov5el.querySelector('.tl-detail');
-  if(!ov5detail){ov5detail=document.createElement('div');ov5detail.className='tl-detail';ov5detail.style.cssText='font-size:9px;color:var(--mt);margin-top:3px;line-height:1.5';ov5el.appendChild(ov5detail);}
-  ov5detail.innerHTML=`<span style="color:var(--mt)">Acc: ${accTL}hr</span> + <span style="color:var(--mt)">Weather: ${mpTL}hr</span>`;
-  // Total Cost KPI
-  if($('ov6')){
-    const allCosts=typeof getAllCosts==='function'?getAllCosts():[];
-    const totalCost=allCosts.reduce((s,c)=>s+(+c.amount||0),0);
-    const procCost=allCosts.filter(c=>c.type==='procurement').reduce((s,c)=>s+(+c.amount||0),0);
-    const opexCost=allCosts.filter(c=>c.type!=='procurement').reduce((s,c)=>s+(+c.amount||0),0);
-    _countUpRp($('ov6'),totalCost,900);
-    if($('ov6s'))$('ov6s').innerHTML=`<span style="color:var(--mt)">Proc: ${typeof fmtRpShort==='function'?fmtRpShort(procCost):'0'}</span> · <span style="color:var(--mt)">OPEX: ${typeof fmtRpShort==='function'?fmtRpShort(opexCost):'0'}</span>`;
+// ============ PORTFOLIO OVERVIEW — INFOGRAFIS (data live + SVG) ============
+// Warna ambil dari CSS var tema (otomatis ikut dark/light)
+var _OVC={ind:'var(--bl)',grn:'var(--gn)',red:'var(--rd)',amb:'var(--yw)',pur:'var(--pu)',blu:'var(--atb)',teal:'var(--att)',
+  tx:'var(--tx)',mut:'var(--mt)',bd:'var(--bd)',sf:'var(--sf)',sf2:'var(--sf2)'};
+function _ovIc(p,sz,col,sw){return '<svg viewBox="0 0 24 24" width="'+sz+'" height="'+sz+'" fill="none" stroke="'+(col||_OVC.mut)+'" stroke-width="'+(sw||1.7)+'" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
+var _OVI={pin:'<path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/>'};
+function _ovDonut(segs,cx,cy,r,sw,top,bot){var tot=segs.reduce(function(s,x){return s+x.v;},0)||1,off=0,a='',Cc=2*Math.PI*r;
+  segs.forEach(function(s){var len=s.v/tot*Cc;a+='<circle class="ov-arc" data-cc="'+Cc.toFixed(2)+'" data-len="'+len.toFixed(2)+'" cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+s.c+'" stroke-width="'+sw+'" stroke-dasharray="'+len.toFixed(2)+' '+(Cc-len).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')"/>';off+=len;});
+  if(top!=null)a+='<text x="'+cx+'" y="'+(cy-1)+'" text-anchor="middle" font-size="16" font-weight="700" fill="'+_OVC.tx+'">'+top+'</text>';
+  if(bot!=null)a+='<text x="'+cx+'" y="'+(cy+12)+'" text-anchor="middle" font-size="8" font-weight="600" fill="'+_OVC.mut+'">'+bot+'</text>';return a;}
+function _ovGauge(val,cx,cy,r,col,label){var segs=[[0,33,_OVC.red],[33,66,_OVC.amb],[66,100,_OVC.grn]],p='';
+  segs.forEach(function(s){var s0=Math.PI*(1-s[0]/100),s1=Math.PI*(1-s[1]/100),x0=cx+r*Math.cos(s0),y0=cy-r*Math.sin(s0),x1=cx+r*Math.cos(s1),y1=cy-r*Math.sin(s1);
+    p+='<path d="M '+x0.toFixed(1)+' '+y0.toFixed(1)+' A '+r+' '+r+' 0 0 1 '+x1.toFixed(1)+' '+y1.toFixed(1)+'" fill="none" stroke="'+s[2]+'" stroke-width="9" stroke-linecap="round"/>';});
+  var na=Math.PI*(1-Math.max(0,Math.min(100,val))/100),nx=cx+(r-3)*Math.cos(na),ny=cy-(r-3)*Math.sin(na);
+  p+='<line class="ov-needle" data-cx="'+cx+'" data-cy="'+cy+'" data-r="'+r+'" data-val="'+val+'" x1="'+cx+'" y1="'+cy+'" x2="'+nx.toFixed(1)+'" y2="'+ny.toFixed(1)+'" stroke="'+_OVC.tx+'" stroke-width="2.5" stroke-linecap="round"/><circle cx="'+cx+'" cy="'+cy+'" r="3" fill="'+_OVC.tx+'"/>';
+  p+='<text x="'+cx+'" y="'+(cy-12)+'" text-anchor="middle" font-size="18" font-weight="700" fill="'+col+'">'+val+'<tspan font-size="9" fill="'+_OVC.mut+'">/100</tspan></text>';
+  p+='<text x="'+cx+'" y="'+(cy-1)+'" text-anchor="middle" font-size="8" font-weight="700" fill="'+col+'" letter-spacing="1">'+label+'</text>';return p;}
+function _ovBars(data,x,y,w,h,max,ylab,grp){var n=data.length,gap=w/n,bw=gap*0.58,s='';
+  for(var i=0;i<=3;i++){var gy=y+h-(h*i/3),v=max*i/3;s+='<line x1="'+x+'" y1="'+gy.toFixed(1)+'" x2="'+(x+w)+'" y2="'+gy.toFixed(1)+'" stroke="'+_OVC.bd+'" stroke-width="0.5"/>';
+    if(ylab!==false)s+='<text x="'+(x-4)+'" y="'+(gy+2.5).toFixed(1)+'" text-anchor="end" font-size="6" fill="'+_OVC.mut+'">'+(typeof ylab==='function'?ylab(v):(max<=2?v.toFixed(1):Math.round(v)))+'</text>';}
+  s+='<line x1="'+x+'" y1="'+y+'" x2="'+x+'" y2="'+(y+h)+'" stroke="'+_OVC.mut+'" stroke-width="1.1"/><line x1="'+x+'" y1="'+(y+h)+'" x2="'+(x+w)+'" y2="'+(y+h)+'" stroke="'+_OVC.mut+'" stroke-width="1.1"/>';
+  data.forEach(function(d,i){var bh=max?(d.v/max)*h:0,bx=x+gap*i+(gap-bw)/2,by=y+h-bh;
+    s+='<rect class="ov-barv" data-by="'+(y+h).toFixed(1)+'" data-h="'+Math.max(0,bh).toFixed(1)+'" x="'+bx.toFixed(1)+'" y="'+by.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(0,bh).toFixed(1)+'" rx="2" fill="'+d.c+'"/>';
+    if(d.l){var lx=(grp&&grp>1)?(x+gap*i+gap*grp/2):(bx+bw/2);s+='<text x="'+lx.toFixed(1)+'" y="'+(y+h+10)+'" text-anchor="middle" font-size="7.5" fill="'+_OVC.mut+'">'+d.l+'</text>';}
+    if(d.top!=null)s+='<text x="'+(bx+bw/2).toFixed(1)+'" y="'+(by-3).toFixed(1)+'" text-anchor="middle" font-size="8.5" font-weight="700" fill="'+_OVC.tx+'">'+d.top+'</text>';});return s;}
+function _ovFunnel(data,x,y,w,h){var n=data.length,topW=w,botW=w*0.16,cx=x+w/2,bh=h/n,s='';
+  var wAt=function(i){return topW-(topW-botW)*(i/n);};
+  for(var i=0;i<n;i++){var wT=wAt(i),wB=wAt(i+1),yT=y+i*bh,yB=yT+bh-2;
+    s+='<polygon points="'+(cx-wT/2).toFixed(1)+','+yT+' '+(cx+wT/2).toFixed(1)+','+yT+' '+(cx+wB/2).toFixed(1)+','+yB+' '+(cx-wB/2).toFixed(1)+','+yB+'" fill="'+data[i][2]+'"/>';
+    s+='<text x="'+cx+'" y="'+(yT+bh/2+1)+'" text-anchor="middle" font-size="8" font-weight="600" fill="#fff">'+data[i][0]+'</text>';
+    s+='<text x="'+(x+w+6)+'" y="'+(yT+bh/2+3)+'" font-size="8.5" font-weight="700" fill="'+_OVC.tx+'">'+data[i][1]+'</text>';}
+  return s;}
+// s-curve group per proyek (toggle via dropdown)
+window._ovGoTab=function(t){try{var tabs=document.querySelectorAll('.tab');for(var i=0;i<tabs.length;i++){var oc=tabs[i].getAttribute('onclick')||'';if(oc.indexOf("sw('"+t+"'")>=0){sw(t,tabs[i]);return;}}if(typeof sw==='function')sw(t,tabs[0]);}catch(e){}};
+// ── Efek 3D tilt kartu overview (ikut kursor/sentuhan) ───────────────────
+(function(){
+  if(window._ovTiltInit)return; window._ovTiltInit=true;
+  var MAX=8,cur=null;
+  function reset(){if(cur){cur.style.transition='transform .3s ease, box-shadow .3s ease';cur.style.transform='';cur.style.boxShadow='';cur=null;}}
+  function tilt(e){
+    var c=e.target&&e.target.closest?e.target.closest('.ov-clk'):null;
+    if(!c){reset();return;}
+    if(cur&&cur!==c)reset();
+    cur=c;
+    var r=c.getBoundingClientRect();if(!r.width||!r.height)return;
+    var px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
+    var ry=(Math.max(0,Math.min(1,px))-0.5)*2*MAX,rx=-(Math.max(0,Math.min(1,py))-0.5)*2*MAX;
+    c.style.transition='transform .06s linear';
+    c.style.transform='perspective(640px) rotateX('+rx.toFixed(2)+'deg) rotateY('+ry.toFixed(2)+'deg) translateZ(6px)';
+    c.style.boxShadow='0 16px 32px rgba(0,0,0,.45)';
   }
-
-  // WEATHER
-  const wmap={'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> Sunny':'Sunny','Partly Cloudy':'Partly Cloudy','Partly Overcast':'Overcast','Rainy':'Rainy','Thunderstorm':'Thunderstorm','Foggy':'Foggy'};
-  const wico={Sunny:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>','Partly Cloudy':'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M12 2v2M4.93 4.93l1.41 1.41M20 12h2M19.07 4.93l-1.41 1.41M15.947 12.65a4 4 0 0 0-5.925-4.128"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6z"/></svg>',Overcast:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/></svg>',Rainy:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M20 17.58A5 5 0 0 0 18 8h-1.26A8 8 0 1 0 4 16.25"/><line x1="8" y1="19" x2="8" y2="21"/><line x1="8" y1="13" x2="8" y2="15"/><line x1="16" y1="19" x2="16" y2="21"/><line x1="16" y1="13" x2="16" y2="15"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="12" y1="15" x2="12" y2="17"/></svg>',Thunderstorm:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 16.9A5 5 0 0 0 18 7h-1.26a8 8 0 1 0-11.62 9"/><polyline points="13 11 9 17 15 17 11 23"/></svg>',Foggy:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="3" y1="8" x2="21" y2="8"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="16" x2="21" y2="16"/></svg>'};
-  const wclr={Sunny:'var(--yw)','Partly Cloudy':'var(--tx)',Overcast:'var(--mt)',Rainy:'var(--bl)',Thunderstorm:'var(--rd)',Foggy:'var(--mt)'};
-  const wg=$('weatherGrid');
-  if(!P.length){wg.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--mt);font-size:12px;padding:20px">Belum ada project</div>';}
-  else{wg.innerHTML=P.slice(0,6).map(p=>{
-    const raw=p.weather||'Partly Cloudy';
-    const desc=wmap[raw]||raw.replace(/^[^\s]+\s/,'');
-    return `<div class="wi"><div class="wi-ico">${wico[desc]||''}</div><div class="wi-name">${p.nama.split(' ').slice(0,3).join(' ')}</div><div class="wi-desc" style="color:${wclr[desc]||'var(--tx)'}">${desc}</div></div>`;
-  }).join('');
-  // Animate progress bars after DOM render
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    const _el=$('projStatusCards');
-    if(_el)_el.querySelectorAll('.psc-bar-fill[data-w]').forEach(b=>{
-      b.style.width = (b.dataset.w||0)+'%';
-    });
-  }));
-}
-
-  // ACCIDENT LOG aggregate
-  const agg={fatality:0,lti:0,minorInjury:0,medTreatment:0,propertyDamage:0,fire:0,traffic:0,environment:0,nearMiss:0};
-  ACCLOGS.forEach(a=>Object.keys(agg).forEach(k=>agg[k]+=(+a[k]||0)));
-  const rows=[['Fatality Case','fatality',true],['Lost Time Injury','lti',true],['Minor Injury','minorInjury',false],['Medical Treatment','medTreatment',false],['Property Damage','propertyDamage',false],['Fire','fire',false],['Traffic Case','traffic',false],['Near Miss','nearMiss',false]];
-  // Summary aggregat
-  const summaryHtml=rows.map(([l,k,crit])=>`<div class="acc-row"><span style="color:var(--mt)">${l}</span><span class="acc-val" style="color:${(agg[k]||0)>0?(crit?'var(--rd)':'var(--or)'):'var(--mt)'}">${(agg[k]||0)>0?agg[k]:'\u2014'}</span></div>`).join('');
-  // Recent entries list with edit button
-  const recentHtml=ACCLOGS.length>0?`
-    <div style="margin-top:8px;padding-top:7px;border-top:1px dashed var(--bd);font-size:10px;color:var(--mt);margin-bottom:4px">Log terbaru:</div>
-    ${ACCLOGS.slice(-3).reverse().map(a=>{
-      const pr=P.find(p=>p.id===a.projId);
-      return `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid rgba(30,45,69,.3);font-size:10px">
-        <span style="font-family:var(--fm);color:var(--mt);flex-shrink:0">${fmtDate(a.date)}</span>
-        <span style="color:var(--mt);flex-shrink:0">${pr?.kode||'\u2014'}</span>
-        <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--mt)">${a.notes||'Kejadian tercatat'}</span>
-        ${a.timeLost>0?`<span style="color:var(--rd);font-family:var(--fm);flex-shrink:0">${a.timeLost}hr</span>`:''}
-        <button class="btn btn-sm" style="padding:1px 5px;font-size:9px;flex-shrink:0" onclick="editAccLog('${a.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-      </div>`;
-    }).join('')}` : '';
-  $('accLog').innerHTML=summaryHtml+recentHtml;
-
-  // PROC STATUS
-  const ps={Overdue:0,'Due Today':0,'In Transit':0,'On Site':0,'Waiting Approval':0,'PO Issued':0};
-  const _todayOV=new Date();_todayOV.setHours(0,0,0,0);
-  PROC.forEach(i=>{
-    if(ps[i.status]!==undefined)ps[i.status]++;                       // breakdown per status (seperti semula)
-    // Overdue / Due Today dari TANGGAL due (independen, konsisten dgn kartu di tab Procurement)
-    const done=i.status==='On Site'||i.status==='Done';
-    if(!done&&i.due){
-      const d=parseLocalDate(i.due);d.setHours(0,0,0,0);
-      const days=Math.round((d-_todayOV)/86400000);
-      if(days<0)ps['Overdue']++; else if(days===0)ps['Due Today']++;
-    }
+  function attach(){
+    var d=document.getElementById('ovDash');
+    if(!d){document.addEventListener('pointermove',tilt);document.addEventListener('pointerup',reset,true);document.addEventListener('pointercancel',reset,true);return;}
+    if(d._tilt)return; d._tilt=true;
+    d.addEventListener('pointermove',tilt);
+    d.addEventListener('pointerdown',tilt);
+    d.addEventListener('pointerleave',reset);
+    d.addEventListener('pointerup',reset);
+    d.addEventListener('pointercancel',reset);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',attach);else attach();
+})();
+// ── Saat tema berganti, render ulang tab aktif (warna teks SVG via var() di atribut tidak reaktif) ──
+(function(){
+  if(window._ovThemeObs||typeof MutationObserver==='undefined')return; window._ovThemeObs=true;
+  var wasLight=document.documentElement.classList.contains('light');
+  var obs=new MutationObserver(function(){
+    var isLight=document.documentElement.classList.contains('light');
+    if(isLight===wasLight)return; wasLight=isLight;
+    if(window._ovInitialBulk)return; // masih load awal — dilewati
+    if(typeof window.render==='function'){try{window.render();return;}catch(e){}}
+    if(typeof window.renderOV==='function'&&document.getElementById('ovDash')){try{window.renderOV();}catch(e){}}
   });
-  const pc={Overdue:'var(--rd)','Due Today':'var(--yw)','In Transit':'var(--bl)','On Site':'var(--gn)','Waiting Approval':'var(--pu)','PO Issued':'#a9b4f5'};
-  $('procGrid').innerHTML=Object.entries(ps).map(([k,v])=>`<div class="proc-item"><div class="proc-dot" style="background:${pc[k]||'var(--mt)'}"></div><div class="proc-lbl">${k}</div><div class="proc-cnt" style="color:${pc[k]||'var(--mt)'}">${v}</div></div>`).join('');
+  obs.observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+})();
+function _ovCostByRab(costs){var RABa=(typeof RAB!=='undefined')?RAB:[];var by={};costs.forEach(function(c){var nm=null;if(c.rabKatId){var rk=RABa.find(function(r){return String(r.id)===String(c.rabKatId);});if(rk)nm=rk.name||rk.nama;}if(!nm&&c.rabItemId){var ri=RABa.find(function(r){return String(r.id)===String(c.rabItemId);});if(ri){var rk2=RABa.find(function(r){return String(r.id)===String(ri.katId);});if(rk2)nm=rk2.name||rk2.nama;}}if(!nm)nm=c.kategori||'Lainnya';by[nm]=(by[nm]||0)+(+c.amount||0);});return by;}
+window._ovScShow=function(id){var gs=document.querySelectorAll('#ovScSvg [id^="ovsc-"]');gs.forEach(function(g){g.style.display=(g.id==='ovsc-'+id)?'':'none';});};
+function _ovScurve(curves,w,h){var pL=30,pB=24,pT=8,cw=w-pL-8,ch=h-pB-pT;
+  var xx=function(i,n){return pL+(n<=1?0:(i/(n-1))*cw);},yy=function(v){return pT+ch-(Math.max(0,Math.min(100,v))/100)*ch;};
+  var axes='';[0,25,50,75,100].forEach(function(t){var gy=pT+ch-(t/100)*ch;axes+='<line x1="'+pL+'" y1="'+gy+'" x2="'+(pL+cw)+'" y2="'+gy+'" stroke="'+_OVC.bd+'" stroke-width="0.5"/><text x="'+(pL-4)+'" y="'+(gy+3)+'" text-anchor="end" font-size="7" fill="'+_OVC.mut+'">'+t+'%</text>';});
+  var groups='';curves.forEach(function(cv,idx){var n=Math.max(cv.plan.length,cv.act.length,2);
+    var pp=cv.plan.map(function(v,i){return xx(i,cv.plan.length).toFixed(1)+','+yy(v).toFixed(1);}).join(' ');
+    var ap=cv.act.map(function(v,i){return xx(i,cv.plan.length).toFixed(1)+','+yy(v).toFixed(1);}).join(' ');
+    var g='',lines='';
+    if(cv.wk&&cv.wk.length){var np=cv.plan.length||cv.wk.length,st=Math.max(1,Math.ceil(cv.wk.length/7));cv.wk.forEach(function(wn,i){if(i%st===0||i===cv.wk.length-1){g+='<text x="'+xx(i,np).toFixed(1)+'" y="'+(pT+ch+12)+'" text-anchor="middle" font-size="7" fill="'+_OVC.mut+'">W'+wn+'</text>';}});}
+    if(cv.plan.length)lines+='<polyline points="'+pp+'" fill="none" stroke="'+_OVC.ind+'" stroke-width="1.8" stroke-dasharray="5 3"/>';
+    if(cv.act.length)lines+='<polyline points="'+ap+'" fill="none" stroke="'+_OVC.grn+'" stroke-width="2.2"/>';
+    if(!cv.plan.length&&!cv.act.length)g+='<text x="'+(pL+cw/2)+'" y="'+(pT+ch/2)+'" text-anchor="middle" font-size="9" fill="'+_OVC.mut+'">Belum ada data S-Curve</text>';
+    if(lines)g+='<clipPath id="ovclip-'+cv.id+'"><rect class="ov-clip" data-w="'+w+'" x="0" y="0" width="'+w+'" height="'+h+'"/></clipPath><g clip-path="url(#ovclip-'+cv.id+')">'+lines+'</g>';
+    groups+='<g id="ovsc-'+cv.id+'"'+(idx===0?'':' style="display:none"')+'>'+g+'</g>';});
+  return '<svg id="ovScSvg" viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'">'+axes+groups+'</svg>';}
 
-  renderProjStatusCards();
+function _ovAnimate(root){try{
+  var arcs=[].slice.call(root.querySelectorAll('.ov-arc')),needles=[].slice.call(root.querySelectorAll('.ov-needle')),counts=[].slice.call(root.querySelectorAll('.ov-count')),barvs=[].slice.call(root.querySelectorAll('.ov-barv')),barhs=[].slice.call(root.querySelectorAll('.ov-barh')),clips=[].slice.call(root.querySelectorAll('.ov-clip'));
+  if(!arcs.length&&!needles.length&&!counts.length&&!barvs.length&&!barhs.length&&!clips.length)return;
+  if(typeof requestAnimationFrame!=='function')return;
+  if(window._ovRaf)cancelAnimationFrame(window._ovRaf); window._ovAnimating=true; // batalkan animasi lama & tandai berjalan (anti-terpotong render)
+  // reset ke 0 (sinkron sebelum paint) -> tanpa kedip; markup tetap berisi nilai final bila JS gagal
+  arcs.forEach(function(a){var cc=+a.getAttribute('data-cc');a.setAttribute('stroke-dasharray','0 '+cc.toFixed(2));});
+  needles.forEach(function(n){var cx=+n.getAttribute('data-cx'),cy=+n.getAttribute('data-cy'),r=+n.getAttribute('data-r');n.setAttribute('x2',(cx-(r-3)).toFixed(1));n.setAttribute('y2',cy.toFixed?cy.toFixed(1):cy);});
+  counts.forEach(function(c){c.textContent='0';});
+  barvs.forEach(function(b){var by=+b.getAttribute('data-by');b.setAttribute('height','0');b.setAttribute('y',by.toFixed(1));});
+  barhs.forEach(function(b){b.setAttribute('width','0');});
+  clips.forEach(function(c){c.setAttribute('width','0');});
+  var t0=null,DUR=1700,ease=function(x){return x<0.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;}; // ease-in-out cubic: mulai & selesai lembut (lebih smooth, tidak nyentak)
+  function frame(ts){if(t0==null)t0=ts;var p=Math.min(1,(ts-t0)/DUR),e=ease(p);
+    arcs.forEach(function(a){var len=+a.getAttribute('data-len'),cc=+a.getAttribute('data-cc');a.setAttribute('stroke-dasharray',(e*len).toFixed(2)+' '+(cc-e*len).toFixed(2));});
+    needles.forEach(function(n){var cx=+n.getAttribute('data-cx'),cy=+n.getAttribute('data-cy'),r=+n.getAttribute('data-r'),val=+n.getAttribute('data-val'),v=e*val,ang=Math.PI*(1-Math.max(0,Math.min(100,v))/100);n.setAttribute('x2',(cx+(r-3)*Math.cos(ang)).toFixed(1));n.setAttribute('y2',(cy-(r-3)*Math.sin(ang)).toFixed(1));});
+    counts.forEach(function(c){var tg=+c.getAttribute('data-target');c.textContent=Math.round(e*tg);});
+    barvs.forEach(function(b){var by=+b.getAttribute('data-by'),hh=+b.getAttribute('data-h'),ch2=hh*e;b.setAttribute('height',ch2.toFixed(1));b.setAttribute('y',(by-ch2).toFixed(1));});
+    barhs.forEach(function(b){var ww=+b.getAttribute('data-w');b.setAttribute('width',(ww*e).toFixed(1));});
+    clips.forEach(function(c){var ww=+c.getAttribute('data-w');c.setAttribute('width',(ww*e).toFixed(1));});
+    if(p<1)window._ovRaf=requestAnimationFrame(frame);
+    else{arcs.forEach(function(a){var len=+a.getAttribute('data-len'),cc=+a.getAttribute('data-cc');a.setAttribute('stroke-dasharray',len.toFixed(2)+' '+(cc-len).toFixed(2));});counts.forEach(function(c){c.textContent=c.getAttribute('data-target');});barvs.forEach(function(b){var by=+b.getAttribute('data-by'),hh=+b.getAttribute('data-h');b.setAttribute('height',hh.toFixed(1));b.setAttribute('y',(by-hh).toFixed(1));});barhs.forEach(function(b){b.setAttribute('width',b.getAttribute('data-w'));});clips.forEach(function(c){c.setAttribute('width',c.getAttribute('data-w'));});window._ovAnimating=false;window._ovRaf=0;}
+  }
+  window._ovRaf=requestAnimationFrame(frame);
+}catch(e){window._ovAnimating=false;}}
+function _ovCard(t,b,flex,right,tab){var cls='ov-card'+(tab?' ov-clk':'');var oc=tab?(' onclick="_ovGoTab(\''+tab+'\')"'):'';return '<div class="'+cls+'"'+oc+' style="flex:'+flex+';min-width:0;display:flex;flex-direction:column"><div class="ov-ch"><span>'+t+'</span>'+(right||'')+'</div><div class="ov-cb" style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0">'+b+'</div></div>';}
+function _ovBadge(s){var m={'Critical':[_OVC.red,'rgba(244,112,122,.15)'],'On Track':[_OVC.grn,'rgba(61,220,151,.15)'],'Delayed':[_OVC.amb,'rgba(245,196,82,.15)'],'Done':[_OVC.teal,'rgba(31,158,135,.15)'],'Planning':[_OVC.ind,'rgba(124,140,240,.15)']};var c=m[s]||[_OVC.mut,'var(--sf2)'];return '<span style="background:'+c[1]+';color:'+c[0]+';font-size:7.5px;font-weight:700;padding:2px 6px;border-radius:5px">'+(s||'').toUpperCase()+'</span>';}
+function _ovShort(n){n=+n||0;if(n>=1e9)return 'Rp '+(n/1e9).toFixed(n>=1e10?0:1)+' M';if(n>=1e6)return 'Rp '+(n/1e6).toFixed(0)+' jt';if(n>=1e3)return 'Rp '+(n/1e3).toFixed(0)+' rb';return 'Rp '+n;}
+function _ovCur(n){var s=_ovShort(n).replace('Rp ',''),m=s.match(/^[\d.,]+/),num=m?m[0]:s,unit=s.slice(num.length);return 'Rp <span style="font-size:.65em"><span class="ov-count" data-target="'+num.replace(/,/g,'')+'">'+num+'</span>'+unit+'</span>';}
+
+function renderOV(){
+  var $d=document.getElementById('ovDash'); if(!$d){ if(typeof renderProjStatusCards==='function'){try{renderProjStatusCards();}catch(e){}} return; }
+  // ── Tahan paint pertama sampai data sekunder proyek (costs/wbs/scurve) tersedia ──
+  // Loader core.js bekerja 2 fase: fase 1 hanya proyek (COSTS dikosongkan), fase 2 baru isi
+  // detail per-proyek. Tanpa penahan ini, overview sempat tampil Rp 0 lalu (idealnya) terisi.
+  // _ovReady di-set oleh core.js saat data proyek pertama masuk. Fallback timer mencegah nyangkut
+  // bila memakai loader lama yang tak men-set flag.
+  if(typeof window!=='undefined' && !window._ovReady && !window._ovForce){
+    if(!window.__ovFbT){ window.__ovFbT=setTimeout(function(){ window._ovForce=true; try{ if(document.getElementById('ovDash')) renderOV(); }catch(e){} }, 3500); }
+    return;
+  }
+  if(window.__apBegin)window.__apBegin();
+  // Resolve warna tema (CSS var) -> nilai nyata, agar fill SVG pasti berwarna di semua browser
+  (function(){try{var cs=getComputedStyle(document.documentElement),g=function(n){return (cs.getPropertyValue(n)||'').trim();},m={ind:'--bl',grn:'--gn',red:'--rd',amb:'--yw',pur:'--pu',blu:'--atb',teal:'--att',tx:'--tx',mut:'--mt',bd:'--bd',sf:'--sf',sf2:'--sf2'};Object.keys(m).forEach(function(k){var v=g(m[k]);if(v)_OVC[k]=v;});}catch(e){}})();
+  try{
+  var projs=(typeof P!=='undefined'?P:[]);
+  var A=projs.map(function(p){var a=null;try{a=(typeof analyzeProject==='function')?analyzeProject(p.id):null;}catch(e){a=null;}return {p:p,a:a||{}};});
+  var ps={};try{if(typeof portfolioScore==='function')ps=portfolioScore()||{};}catch(e){}
+  var health=Math.round(+ps.avg||0), healthColor=ps.color||_OVC.mut, healthLbl=health>=80?'SEHAT':health>=55?'PERHATIAN':'KRITIS';
+  // KPI
+  var nCrit=A.filter(function(x){return x.p.status==='Critical'||(x.a.score!=null&&x.a.score<55);}).length;
+  var allCosts=[];try{if(typeof getAllCosts==='function')allCosts=getAllCosts()||[];}catch(e){}
+  var totalCost=allCosts.reduce(function(s,c){return s+(+c.amount||0);},0);
+  var procCost=allCosts.filter(function(c){return c.type==='procurement';}).reduce(function(s,c){return s+(+c.amount||0);},0);
+  var opexCost=totalCost-procCost;
+  var ISSa=(typeof ISS!=='undefined'?ISS:[]), DOCSa=(typeof DOCS!=='undefined'?DOCS:[]), PROCa=(typeof PROC!=='undefined'?PROC:[]), MPa=(typeof MPLOGS!=='undefined'?MPLOGS:[]), ACCa=(typeof ACCLOGS!=='undefined'?ACCLOGS:[]), SCa=(typeof SCURVE!=='undefined'?SCURVE:[]);
+  var openIss=ISSa.filter(function(i){return i.status!=='Closed';}).length;
+
+  // KPI strip (tanpa Portfolio Score, ada Health gauge)
+  var kf=function(v,l,s,c,tab){var oc=tab?(' onclick="_ovGoTab(\''+tab+'\')"'):'';var isNum=(typeof v==='number')||(/^\d+$/.test(String(v)));var kv=isNum?('<div class="ov-kv ov-count" data-target="'+v+'" style="color:'+(c||_OVC.tx)+'">'+v+'</div>'):('<div class="ov-kv" style="color:'+(c||_OVC.tx)+'">'+v+'</div>');return '<div class="ov-card ov-kpi'+(tab?' ov-clk':'')+'"'+oc+'><div class="ov-kl">'+l+'</div>'+kv+'<div class="ov-ks">'+s+'</div></div>';};
+  var _docStat='Seluruh proyek';
+  try{
+    var _dk=(typeof _DOC_STATUS_KEYS!=='undefined')?_DOC_STATUS_KEYS:['Submitted','On Review','Approved','Approved with Note','Rejected','WIP'];
+    var _dcfg=(typeof _DOC_STATUS_CFG!=='undefined')?_DOC_STATUS_CFG:{};
+    var _dab={'Submitted':'Sub','On Review':'Review','Approved':'Apv','Approved with Note':'Apv+N','Rejected':'Rej','WIP':'WIP'};
+    var _dp=_dk.map(function(s){var c=DOCSa.filter(function(d){return d.status===s;}).length;if(!c)return '';var col=(_dcfg[s]&&_dcfg[s].c)||_OVC.mut;return '<span style="color:'+col+';font-weight:700">'+c+'</span> '+(_dab[s]||s);}).filter(Boolean);
+    if(_dp.length)_docStat=_dp.join(' · ');
+  }catch(e){}
+  var kpis=kf(projs.length,'ACTIVE PROJECT','Proyek Aktif',_OVC.ind,'projects')
+   +kf(nCrit,'CRITICAL PROJECT','Skor &lt; 55 / Critical',_OVC.red,'projects')
+   +kf(_ovCur(totalCost),'TOTAL COST (PROC+OPEX)','Proc '+_ovShort(procCost)+' · OPEX '+_ovShort(opexCost),_OVC.tx,'cost')
+   +kf(openIss,'OPEN ISSUE','Semua proyek',openIss?_OVC.amb:_OVC.grn,'issues')
+   +kf(DOCSa.length,'TOTAL DOKUMEN',_docStat,_OVC.pur,'documents');
+  var health_c='<div class="ov-card" style="flex:2;min-width:0;padding:8px"><div class="ov-ch" style="justify-content:center">PORTFOLIO HEALTH</div><svg viewBox="0 0 200 86" width="100%" height="84">'+_ovGauge(health,100,70,60,healthColor,healthLbl)+'</svg></div>';
+
+  // Sec1 progress comparison
+  var ROWH=62,TOPy=44,bw=120,bx=160,bx2=340,vx=510,BH=18,pcH=TOPy+A.length*ROWH;
+  var pc='<svg viewBox="0 0 600 '+pcH+'" width="100%"><text x="'+bx+'" y="26" font-size="14" font-weight="700" fill="'+_OVC.mut+'">PLAN</text><text x="'+bx2+'" y="26" font-size="14" font-weight="700" fill="'+_OVC.mut+'">ACTUAL</text><text x="'+vx+'" y="26" font-size="14" font-weight="700" fill="'+_OVC.mut+'">VARIANCE</text>';
+  A.forEach(function(x,i){var ac=(x.a.act!=null?+x.a.act:(+x.p.actual||0)),vr=(x.a.variance!=null?+x.a.variance:0),pl=((x.a.act!=null&&x.a.variance!=null)?Math.round((ac-vr)*10)/10:(+x.a.p||+x.p.plan||0)),cy=TOPy+i*ROWH+ROWH/2,barY=cy-BH/2,nm=(x.p.nama||x.p.kode||'-').replace('PT. ','').slice(0,20);
+    pc+='<text x="0" y="'+(cy+5)+'" font-size="15" fill="'+_OVC.tx+'">'+nm+'</text><rect x="'+bx+'" y="'+barY+'" width="'+bw+'" height="'+BH+'" rx="5" fill="'+_OVC.bd+'"/><rect class="ov-barh" data-w="'+(bw*Math.min(100,pl)/100).toFixed(1)+'" x="'+bx+'" y="'+barY+'" width="'+(bw*Math.min(100,pl)/100).toFixed(1)+'" height="'+BH+'" rx="5" fill="'+_OVC.ind+'"/><text x="'+(bx+bw+8)+'" y="'+(cy+5)+'" font-size="13" fill="'+_OVC.mut+'">'+pl.toFixed(0)+'%</text><rect x="'+bx2+'" y="'+barY+'" width="'+bw+'" height="'+BH+'" rx="5" fill="'+_OVC.bd+'"/><rect class="ov-barh" data-w="'+(bw*Math.min(100,ac)/100).toFixed(1)+'" x="'+bx2+'" y="'+barY+'" width="'+(bw*Math.min(100,ac)/100).toFixed(1)+'" height="'+BH+'" rx="5" fill="'+_OVC.grn+'"/><text x="'+(bx2+bw+8)+'" y="'+(cy+5)+'" font-size="13" fill="'+_OVC.mut+'">'+ac.toFixed(0)+'%</text><text x="'+vx+'" y="'+(cy+5)+'" font-size="16" font-weight="700" fill="'+(vr<0?_OVC.red:_OVC.grn)+'">'+(vr>0?'+':'')+vr+'%</text>';});
+  pc+='</svg>';
+  var sec1a=_ovCard('PETA LOKASI PROYEK','<div id="ovMap" style="width:100%;height:200px;border-radius:8px;overflow:hidden;background:var(--sf2)"></div>',3,null,null);
+  var sec1b=_ovCard('1. PROGRESS OVERVIEW',pc,2,null,'projects');
+
+  // Sec2 s-curve + dropdown
+  var curves=A.map(function(x){var byW={};SCa.forEach(function(s){if(String(s.projId)===String(x.p.id))byW[+s.week]=s;});var wks=Object.keys(byW).map(Number).sort(function(a,b){return a-b;});
+    return {id:x.p.id,name:x.p.nama||x.p.kode,wk:wks,plan:wks.map(function(w){return +byW[w].cPlan||0;}),act:wks.filter(function(w){return byW[w].cAct!=null&&byW[w].cAct!=='';}).map(function(w){return +byW[w].cAct||0;})};});
+  var scDrop='<select onchange="_ovScShow(this.value)" onclick="event.stopPropagation()" class="ov-sel">'+A.map(function(x){return '<option value="'+x.p.id+'">'+(x.p.nama||x.p.kode||'-').replace('PT. ','')+'</option>';}).join('')+'</select>';
+  var sec2a=_ovCard('2. SCHEDULE PERFORMANCE — S-CURVE',(curves.length?_ovScurve(curves,560,150):'<div style="color:'+_OVC.mut+';font-size:10px;padding:20px">Belum ada proyek</div>')+'<div style="font-size:7.5px;color:'+_OVC.mut+';margin-top:2px"><span style="color:'+_OVC.ind+'">▬▬</span> Plan &nbsp; <span style="color:'+_OVC.grn+'">▬▬</span> Actual</div>',3,curves.length?scDrop:'','wbs');
+  // SPI ranking + worst
+  var ranked=A.slice().sort(function(a,b){return (+b.a.spi||0)-(+a.a.spi||0);});
+  var rk='';ranked.forEach(function(x,i){var spi=+x.a.spi||0,c=spi>=0.95?_OVC.grn:spi>=0.85?_OVC.amb:_OVC.red;rk+='<div class="ov-rrow"><span class="ov-rnum">'+(i+1)+'</span><span style="flex:1;font-size:9px;color:'+_OVC.tx+'">'+(x.p.nama||x.p.kode||'-').replace('PT. ','').slice(0,22)+'</span><span style="font-size:10px;font-weight:700;color:'+_OVC.tx+'">'+spi.toFixed(2)+'</span><span style="width:7px;height:7px;border-radius:50%;background:'+c+';margin-left:6px"></span></div>';});
+  var worst=A.slice().sort(function(a,b){return (+a.a.variance||0)-(+b.a.variance||0);})[0];
+  if(worst)rk+='<div style="margin-top:7px;padding-top:7px;border-top:1px solid '+_OVC.bd+'"><div class="ov-sub">WORST PROJECT TODAY</div><div style="font-size:10px;color:'+_OVC.tx+'">'+(worst.p.nama||worst.p.kode||'-').replace('PT. ','')+'</div><div style="font-size:17px;font-weight:700;color:'+_OVC.red+'">'+(+worst.a.variance||0)+'%<span style="font-size:8px;color:'+_OVC.mut+';font-weight:400;margin-left:4px">Variance</span></div></div>';
+  var sec2b=_ovCard('SPI RANKING',rk||'<div style="color:'+_OVC.mut+';font-size:10px">Belum ada data</div>',2,null,'projects');
+
+  // Sec3 CPI / Budget / Cost breakdown
+  var cpiBars=A.map(function(x){var v=+x.a.cpi||0;return {l:(x.p.kode||(x.p.nama||'').slice(0,5)),v:v,top:v.toFixed(2),c:v<0.95?_OVC.red:_OVC.grn};});
+  var cpi='<svg viewBox="0 0 190 150" width="100%" height="150">'+_ovBars(cpiBars,28,14,150,118,1.5)+'</svg>';
+  var sec3a=_ovCard('CPI (COST PERF. INDEX)',cpi,2,null,'cost');
+  var maxBud=Math.max.apply(null,A.map(function(x){return Math.max(+x.a.rab||0,+x.a.costReal||0);}).concat([1]));
+  var bvaBars=[];A.forEach(function(x){bvaBars.push({l:(x.p.kode||'').slice(0,5),v:(+x.a.rab||0)/maxBud,c:_OVC.ind});bvaBars.push({l:'',v:(+x.a.costReal||0)/maxBud,c:_OVC.grn});});
+  var bva='<svg viewBox="0 0 190 150" width="100%" height="150"><circle cx="18" cy="8" r="3" fill="'+_OVC.ind+'"/><text x="24" y="10.5" font-size="7" fill="'+_OVC.mut+'">Budget</text><circle cx="64" cy="8" r="3" fill="'+_OVC.grn+'"/><text x="70" y="10.5" font-size="7" fill="'+_OVC.mut+'">Actual</text>'+_ovBars(bvaBars,42,18,140,112,1.0,function(v){return _ovShort(v*maxBud).replace('Rp ','').replace(' ','');},2)+'</svg>';
+  var sec3b=_ovCard('BUDGET VS ACTUAL',bva,2,null,'cost');
+  // cost breakdown by type/kategori
+  var byCat=_ovCostByRab(allCosts);
+  var catAll=Object.keys(byCat).map(function(k){return {k:k,v:byCat[k]};}).sort(function(a,b){return b.v-a.v;});
+  var catArr=catAll.slice(0,6);if(catAll.length>6){var _rest=catAll.slice(6).reduce(function(s,c){return s+c.v;},0);if(_rest>0)catArr.push({k:'Lainnya',v:_rest});}
+  var palette=[_OVC.ind,_OVC.grn,_OVC.amb,_OVC.red,_OVC.pur,_OVC.blu,_OVC.teal];
+  var cbSegs=catArr.map(function(c,i){return {v:c.v,c:palette[i%palette.length]};});
+  var totCB=catArr.reduce(function(s,c){return s+c.v;},0)||1;
+  var cbDonut='<svg viewBox="0 0 150 150" width="100%" height="150">'+_ovDonut(cbSegs.length?cbSegs:[{v:1,c:_OVC.bd}],75,75,50,15,_ovShort(totalCost).replace('Rp ',''))+'</svg>';
+  var cbLeg=catArr.map(function(c,i){return '<div class="ov-irow"><span style="width:9px;height:9px;border-radius:2px;background:'+palette[i%palette.length]+';flex-shrink:0"></span><span style="flex:1;font-size:8.5px;color:'+_OVC.tx+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+c.k+'</span><span style="font-size:8.5px;font-weight:600;color:'+_OVC.mut+'">'+Math.round(c.v/totCB*100)+'%</span></div>';}).join('');
+  var sec3c=_ovCard('COST BREAKDOWN','<div style="display:flex;align-items:center;gap:8px"><div style="flex:0 0 42%;max-width:150px">'+cbDonut+'</div><div style="flex:1;min-width:0">'+cbLeg+'</div></div>',3,null,'cost');
+
+  // Sec4 procurement funnel + material status
+  var pst={'Waiting Approval':0,'PO Issued':0,'On Production':0,'In Transit':0,'On Site':0,'Done':0};
+  var todayD=new Date();todayD.setHours(0,0,0,0);var overdueN=0,prCount=PROCa.length;
+  PROCa.forEach(function(i){if(pst[i.status]!=null)pst[i.status]++;var done=(i.status==='On Site'||i.status==='Done');if(!done&&i.due){var d=(typeof parseLocalDate==='function'?parseLocalDate(i.due):new Date(i.due));if(d){d.setHours(0,0,0,0);if(d<todayD)overdueN++;}}});
+  var sev={High:0,Medium:0,Low:0};ISSa.filter(function(i){return i.status!=='Closed';}).forEach(function(i){var p=(i.priority||'Medium');if(sev[p]==null)sev[p]=0;sev[p]++;});
+  var isTot=sev.High+sev.Medium+sev.Low;
+  var isv='<svg viewBox="0 0 110 120" width="100" height="110">'+_ovDonut([{v:sev.High||0.001,c:_OVC.red},{v:sev.Medium,c:_OVC.amb},{v:sev.Low,c:_OVC.grn}],54,58,38,12,String(isTot),'Total')+'</svg>';
+  var isLeg=[['High',sev.High,_OVC.red],['Medium',sev.Medium,_OVC.amb],['Low',sev.Low,_OVC.grn]];
+  var isleg='';isLeg.forEach(function(x){isleg+='<div class="ov-irow"><span style="width:8px;height:8px;border-radius:2px;background:'+x[2]+'"></span><span style="flex:1;font-size:9px;color:'+_OVC.tx+'">'+x[0]+'</span><span style="font-size:9px;font-weight:700;color:'+_OVC.tx+'">'+x[1]+'</span></div>';});
+  var sec4a=_ovCard('4. ISSUE &amp; RISK','<div style="display:flex;align-items:center;gap:6px">'+isv+'<div style="flex:1">'+isleg+'</div></div>',2,null,'issues');
+  var arrived=pst['On Site']+pst['Done'];var matSegs=[{v:pst['On Site']||0.001,c:_OVC.grn},{v:pst['In Transit'],c:_OVC.blu},{v:pst['PO Issued']+pst['On Production'],c:_OVC.pur},{v:pst['Waiting Approval'],c:_OVC.amb},{v:overdueN,c:_OVC.red}];
+  var totMat=prCount||1;
+  var mat='<svg viewBox="0 0 250 160" width="100%" height="160">'+_ovDonut(matSegs,62,82,50,15);
+  var matLeg=[['On Site',pst['On Site'],_OVC.grn],['In Transit',pst['In Transit'],_OVC.blu],['PO/Produksi',pst['PO Issued']+pst['On Production'],_OVC.pur],['Waiting Appr.',pst['Waiting Approval'],_OVC.amb],['Overdue',overdueN,_OVC.red]];
+  matLeg.forEach(function(x,i){mat+='<rect x="142" y="'+(34+i*24)+'" width="9" height="9" rx="2" fill="'+x[2]+'"/><text x="156" y="'+(42+i*24)+'" font-size="8.5" fill="'+_OVC.tx+'">'+x[0]+'</text><text x="246" y="'+(42+i*24)+'" text-anchor="end" font-size="8.5" fill="'+_OVC.mut+'">'+x[1]+' ('+Math.round(x[1]/totMat*100)+'%)</text>';});
+  mat+='</svg>';
+  var sec4b=_ovCard('MATERIAL STATUS',mat,3,null,'procurement');
+
+  // Sec5 manpower
+  var mpByProj=A.map(function(x){var logs=MPa.filter(function(m){return String(m.projId)===String(x.p.id);}).sort(function(a,b){return (a.date<b.date?1:-1);});return {n:x.p.kode||(x.p.nama||'').slice(0,6),v:logs.length?(+logs[0].total||0):0};}).filter(function(m){return m.v>0;});
+  var totMp=mpByProj.reduce(function(s,m){return s+m.v;},0);
+  var mpPal=[_OVC.red,_OVC.ind,_OVC.grn,_OVC.amb,_OVC.pur];
+  var mpw='<svg viewBox="0 0 230 140" width="100%" height="140">'+_ovDonut(mpByProj.length?mpByProj.map(function(m,i){return {v:m.v,c:mpPal[i%mpPal.length]};}):[{v:1,c:_OVC.bd}],52,72,42,13,String(totMp),'Total');
+  var _nL=mpByProj.slice(0,5).length,_lY=72-(_nL-1)*19/2+3;
+  mpByProj.slice(0,5).forEach(function(m,i){var yy2=_lY+i*19,col=mpPal[i%mpPal.length];mpw+='<rect x="104" y="'+(yy2-7).toFixed(0)+'" width="9" height="9" rx="2" fill="'+col+'"/><text x="117" y="'+yy2.toFixed(0)+'" font-size="9" fill="'+_OVC.tx+'">'+(m.n||'').slice(0,8)+'</text><text x="174" y="'+yy2.toFixed(0)+'" font-size="9"><tspan font-weight="700" fill="'+_OVC.tx+'">'+m.v+'</tspan> <tspan fill="'+_OVC.mut+'">('+Math.round(m.v/(totMp||1)*100)+'%)</tspan></text>';});
+  mpw+='</svg>';
+  // manhours last 7 days
+  var days=['Min','Sen','Sel','Rab','Kam','Jum','Sab'];var mhTrend=[];var todayObj=new Date();
+  for(var dd=6;dd>=0;dd--){var dt=new Date(todayObj);dt.setDate(dt.getDate()-dd);var ds=dt.toISOString().slice(0,10);var sum=MPa.filter(function(m){return m.date===ds;}).reduce(function(s,m){return s+(+m.mhActual||0);},0);mhTrend.push({l:days[dt.getDay()],v:sum});}
+  var mhToday=mhTrend[6]?mhTrend[6].v:0, mhYest=mhTrend[5]?mhTrend[5].v:0, mhVar=mhToday-mhYest, mhMax=Math.max.apply(null,mhTrend.map(function(t){return t.v;}).concat([1]));
+  var mht='<svg viewBox="0 0 230 140" width="100%" height="140"><text x="6" y="12" font-size="7.5" fill="'+_OVC.mut+'">Total Manhours Hari Ini</text><text x="6" y="30" font-size="17" font-weight="700" fill="'+_OVC.tx+'">'+mhToday+' <tspan font-size="9" fill="'+_OVC.mut+'">jam</tspan></text><text x="6" y="44" font-size="7" fill="'+_OVC.mut+'">Kemarin: '+mhYest+' jam</text><text x="6" y="55" font-size="7" fill="'+(mhVar<0?_OVC.red:_OVC.grn)+'">Variance: '+(mhVar>0?'+':'')+mhVar+' jam</text>'+_ovBars(mhTrend.map(function(t){return {l:t.l,v:t.v,c:_OVC.ind};}),100,22,124,95,mhMax)+'</svg>';
+  var sec5=_ovCard('5. MANPOWER &amp; MANHOURS','<div class="ov-g2"><div><div class="ov-sub">MANPOWER DISTRIBUTION</div>'+mpw+'</div><div><div class="ov-sub">MANHOURS TREND (JAM)</div>'+mht+'</div></div>',3,null,'manpower');
+
+  // Sec6 safety
+  var aggK={fatality:0,lti:0,minorInjury:0,medTreatment:0,nearMiss:0};
+  ACCa.forEach(function(a){Object.keys(aggK).forEach(function(k){aggK[k]+=(+a[k]||0);});});
+  var lastInc=null;ACCa.forEach(function(a){var hasInc=(+a.fatality||0)+(+a.lti||0)+(+a.minorInjury||0)+(+a.medTreatment||0)>0;if(hasInc&&a.date){if(!lastInc||a.date>lastInc)lastInc=a.date;}});
+  var daysNoAcc;
+  if(lastInc){daysNoAcc=Math.max(0,Math.round((todayObj-new Date(lastInc))/86400000));}
+  else{var _st=A.map(function(x){return x.p.mulai;}).filter(Boolean).map(function(d){return new Date(d).getTime();}).filter(function(t){return !isNaN(t);});daysNoAcc=_st.length?Math.max(0,Math.round((todayObj-Math.min.apply(null,_st))/86400000)):'—';}
+  var incRows=[['Near Miss',aggK.nearMiss,_OVC.amb],['Minor Injury',aggK.minorInjury,_OVC.grn],['Medical',aggK.medTreatment,_OVC.teal],['LTI',aggK.lti,_OVC.red],['Fatality',aggK.fatality,'#9a3a44']];
+  var saf='<div style="display:flex;gap:8px"><div style="flex:0 0 84px;text-align:center"><div class="ov-sub">HARI TANPA KECELAKAAN</div><div style="font-size:30px;font-weight:700;color:'+_OVC.grn+';margin:6px 0 0">'+daysNoAcc+'</div><div style="font-size:9px;color:'+_OVC.mut+'">Hari</div></div><div style="flex:1"><div class="ov-sub">RINGKASAN INSIDEN</div>';
+  incRows.forEach(function(x){saf+='<div class="ov-irow"><span style="width:7px;height:7px;border-radius:50%;background:'+x[2]+'"></span><span style="flex:1;font-size:9px;color:'+_OVC.tx+'">'+x[0]+'</span><span style="font-size:10px;font-weight:700;color:'+(x[1]?_OVC.tx:_OVC.mut)+'">'+x[1]+'</span></div>';});
+  saf+='</div></div>';
+  var sec6=_ovCard('6. SAFETY (HSE)',saf,2,null,'manpower');
+
+  // Sec7 issue & risk
+  var _dsK=(typeof _DOC_STATUS_KEYS!=='undefined')?_DOC_STATUS_KEYS:['Submitted','On Review','Approved','Approved with Note','Rejected','WIP'];
+  var _dsCfg=(typeof _DOC_STATUS_CFG!=='undefined')?_DOC_STATUS_CFG:{};
+  var _dsCnt=_dsK.map(function(s){return {k:s,v:DOCSa.filter(function(d){return d.status===s;}).length,c:(_dsCfg[s]&&_dsCfg[s].c)||_OVC.mut};});
+  var _dsTot=DOCSa.length;
+  var _dsSegs=_dsCnt.filter(function(x){return x.v>0;}).map(function(x){return {v:x.v,c:x.c};});if(!_dsSegs.length)_dsSegs=[{v:1,c:_OVC.bd}];
+  var dsv='<svg viewBox="0 0 110 120" width="100" height="110">'+_ovDonut(_dsSegs,54,58,38,12,String(_dsTot),'Dokumen')+'</svg>';
+  var _dsAb={'Submitted':'Submitted','On Review':'On Review','Approved':'Approved','Approved with Note':'Approved w/ Note','Rejected':'Rejected','WIP':'WIP'};
+  var dsleg='';_dsCnt.forEach(function(x){var pct=_dsTot?Math.round(x.v/_dsTot*100):0;dsleg+='<div class="ov-irow"><span style="width:8px;height:8px;border-radius:2px;background:'+x.c+'"></span><span style="flex:1;font-size:9px;color:'+_OVC.tx+'">'+(_dsAb[x.k]||x.k)+'</span><span style="font-size:9px;font-weight:700;color:'+_OVC.tx+'">'+x.v+'</span><span style="font-size:8px;color:'+_OVC.mut+';width:32px;text-align:right">'+pct+'%</span></div>';});
+  var sec7=_ovCard('7. DOCUMENT STATUS','<div class="ov-g2"><div><div class="ov-sub">BY STATUS</div><div style="display:flex;justify-content:center;align-items:center">'+dsv+'</div></div><div><div class="ov-sub">DETAIL</div>'+dsleg+'</div></div>',3,null,'documents');
+
+  // Sec8 summary table
+  var rows='';A.forEach(function(x){var a=x.a,p=x.p,ac=(a.act!=null?+a.act:(+p.actual||0)),vr=(a.variance!=null?+a.variance:0),pl=((a.act!=null&&a.variance!=null)?(ac-vr):(+a.p||+p.plan||0)),spi=+a.spi||0,cpi=+a.cpi||0;
+    var logs=MPa.filter(function(m){return String(m.projId)===String(p.id);}).sort(function(u,v){return (u.date<v.date?1:-1);});
+    var mhTo=0,mhKe=0;if(logs[0]&&logs[0].date===todayObj.toISOString().slice(0,10))mhTo=+logs[0].mhActual||0;
+    var risk=p.status==='Critical'?'High':(spi<0.85?'High':spi<0.95?'Medium':'Low');
+    rows+='<tr><td style="text-align:left">'+(p.nama||p.kode||'-')+'</td><td>'+_ovBadge(p.status)+'</td><td><div class="ov-mb"><div style="width:'+Math.min(100,pl)+'%;background:'+_OVC.ind+'"></div></div>'+pl.toFixed(0)+'%</td><td><div class="ov-mb"><div style="width:'+Math.min(100,ac)+'%;background:'+_OVC.grn+'"></div></div>'+ac.toFixed(0)+'%</td><td style="color:'+(vr<0?_OVC.red:_OVC.grn)+';font-weight:700">'+(vr>0?'+':'')+vr+'%</td><td style="color:'+(spi<0.85?_OVC.red:_OVC.grn)+';font-weight:700">'+spi.toFixed(2)+'</td><td style="color:'+(cpi<0.95?_OVC.red:_OVC.grn)+';font-weight:700">'+cpi.toFixed(2)+'</td><td>'+(a.procOverdue||0)+'</td><td>'+(a.issOpen||0)+'</td><td style="color:'+(risk==='High'?_OVC.red:risk==='Medium'?_OVC.amb:_OVC.grn)+';font-weight:700">'+risk+'</td></tr>';});
+  var sec8='<div class="ov-card ov-clk" onclick="_ovGoTab(\'projects\')" style="flex:1;min-width:0"><div class="ov-ch">8. PROJECT OVERVIEW SUMMARY</div><div style="overflow-x:auto"><table class="ov-sumt"><thead><tr><th style="text-align:left">PROJECT</th><th>STATUS</th><th>PLAN</th><th>ACTUAL</th><th>VARIANCE</th><th>SPI</th><th>CPI</th><th>OVD MAT</th><th>OPEN ISS</th><th>RISK</th></tr></thead><tbody>'+(rows||'<tr><td colspan="10" style="color:var(--mt)">Belum ada proyek</td></tr>')+'</tbody></table></div></div>';
+
+  // project list (kolom kiri)
+  var plist='';A.forEach(function(x){var pl=+x.a.p||0,ac=+x.a.act||0;plist+='<div class="ov-pcard"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:5px"><div style="font-size:9.5px;font-weight:600;color:'+_OVC.tx+';line-height:1.25">'+(x.p.nama||x.p.kode||'-')+'</div>'+_ovBadge(x.p.status)+'</div><div style="display:flex;align-items:center;gap:3px;font-size:8px;color:'+_OVC.mut+';margin:4px 0 5px">'+_ovIc(_OVI.pin,9,_OVC.mut,2)+' '+(x.p.lokasi||'-')+'</div><div style="display:flex;justify-content:space-between;font-size:8px;border-top:1px solid '+_OVC.bd+';padding-top:5px"><span style="color:'+_OVC.mut+'">Act <b style="color:'+_OVC.tx+'">'+ac.toFixed(0)+'%</b></span><span style="color:'+_OVC.mut+'">Plan <b style="color:'+_OVC.tx+'">'+pl.toFixed(0)+'%</b></span></div></div>';});
+
+  var _ovFirst=!!$d.querySelector('.ov-skel'); // masih skeleton = paint pertama → animasikan entrance sekali
+  $d.innerHTML='<style>#ovDash .ov-clk{will-change:transform}#ovDash .ov-kpi{padding:14px 16px;display:flex;flex-direction:column;justify-content:center}#ovDash .ov-kl{font-size:clamp(8px,6cqi,11px)!important;margin-bottom:8px}#ovDash .ov-kv{font-size:clamp(20px,19cqi,34px)!important;margin-bottom:6px}#ovDash .ov-ks{font-size:clamp(8px,5cqi,9.5px)!important;line-height:1.35}@media(max-width:768px){#ovDash .ov-r{flex-direction:column;flex-wrap:nowrap}#ovDash .ov-r>.ov-card{flex:0 0 auto!important;width:100%!important;min-width:0}#ovDash .ov-kstrip>.ov-card{flex:1 1 46%!important;min-width:130px}#ovDash .ov-g2{flex-direction:column}}</style><div class="ov-main"><div class="ov-kstrip">'+kpis+health_c+'</div><div class="ov-r">'+sec1a+sec1b+sec2a+sec2b+'</div><div class="ov-r">'+sec3a+sec3b+sec3c+sec4a+sec4b+'</div><div class="ov-r">'+sec5+sec6+sec7+'</div><div class="ov-r">'+sec8+'</div></div>';
+  if(_ovFirst||window._ovAnimating){ try{_ovAnimate($d);}catch(e){} } // animasi entrance; ulang bila render menyela di tengah jalan
+
+  }catch(_e){try{if(typeof console!=='undefined'&&console.error)console.error('renderOV error',_e);}catch(__){}}
+  if(window.__apEnd)window.__apEnd();
 }
+
 
 // ── Hitung plan% project untuk minggu SAAT INI (dari SCURVE — konsisten dengan WBS tab) ──
 function _calcProjCurrentPlan(projId) {
@@ -433,7 +615,7 @@ function renderDetail(id){
   $('detail').innerHTML=`<div class="fade">
     <div class="dtop" style="margin-bottom:11px">
       <div><div class="dname">${p.nama}</div>
-        <div class="dmeta"><span class="pill ${sc[p.status]||'p-plan'}">${p.status}</span><span>${p.kode}</span><span style="color:var(--bd)">·</span><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${p.lokasi||'\u2014'}</span><span style="color:var(--bd)">·</span>${p.logo?`<img src="${p.logo}" style="height:36px;max-width:120px;object-fit:contain;border-radius:4px;vertical-align:middle" onerror="this.style.display='none'">`:`<span>${p.client||'\u2014'}</span>`}${p.weather?`<span>${p.weather}</span>`:''}${p.picPm?`<span style="font-size:10px;background:rgba(139,92,246,.12);color:var(--pu);padding:2px 7px;border-radius:10px;border:1px solid rgba(139,92,246,.2)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${p.picPm}</span>`:''}</div>
+        <div class="dmeta"><span class="pill ${sc[p.status]||'p-plan'}">${p.status}</span><span>${p.kode}</span><span style="color:var(--bd)">·</span><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${p.lokasi||'\u2014'}</span><span style="color:var(--bd)">·</span>${p.logo?`<img src="${p.logo}" style="height:36px;max-width:120px;object-fit:contain;border-radius:4px;vertical-align:middle" onerror="this.style.display='none'">`:`<span>${p.client||'\u2014'}</span>`}${p.picPm?`<span style="font-size:10px;background:rgba(139,92,246,.12);color:var(--pu);padding:2px 7px;border-radius:10px;border:1px solid rgba(139,92,246,.2)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${p.picPm}</span>`:''}</div>
       </div>
       ${_canEdit ? `<div style="display:flex;gap:6px"><button class="btn btn-sm" onclick="openModal('editProj','${p.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit</button>${(typeof currentRole!=='undefined'&&currentRole==='admin')?`<button class="btn btn-sm" onclick="openCloneModal('${p.id}')" style="border-color:var(--bl);color:var(--bl)" title="Clone WBS ke project baru">${ic('copy',13)} Clone</button>`:''}<button class="btn btn-sm bp" onclick="openModal('updProgress')">${ic('arrowUp',13)} Update</button></div>` : `<div style="display:flex;align-items:center"><span style="font-size:10px;font-weight:600;padding:4px 10px;border-radius:8px;background:rgba(245,196,82,.12);color:var(--yw);border:1px solid rgba(245,196,82,.25);display:inline-flex;align-items:center;gap:5px" title="Anda tidak di-assign ke proyek ini — hanya bisa melihat"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Read-only</span></div>`}
     </div>
@@ -917,7 +1099,7 @@ function openModal(type,id=null){
     sv('fNama',p?.nama||'');sv('fLok',p?.lokasi||'');sv('fClient',p?.client||'');
     sv('fMulai',p?.mulai||'');sv('fSelesai',p?.selesai||'');sv('fStat',p?.status||'Planning');
     sv('fMpP',p?.mdPlan||p?.mpPlan||'');sv('fMhP',p?.mhPlan||'');sv('fNotes',p?.notes||'');
-    sv('fWeather',p?.weather||'Partly Cloudy');
+    sv('fLat',p?.lat??'');sv('fLon',p?.lon??'');
     // Load logo
     sv('fLogo',p?.logo||'');
     setLogoPreview(p?.logo||'');
@@ -965,6 +1147,9 @@ function openModal(type,id=null){
     } else {
       delete $('mpProj').dataset.editId;
     }
+    sv('mpNM','0');sv('mpMin','0');sv('mpMed','0');sv('mpLti','0');sv('mpFat','0');
+    // Muat HSE/insiden tersimpan utk project+tanggal ini (jika ada)
+    (function(){var _pj=gv('mpProj'),_dt=gv('mpDate');var _a=(typeof ACCLOGS!=='undefined'?ACCLOGS:[]).find(function(x){return String(x.projId)===String(_pj)&&x.date===_dt;});if(_a){sv('mpNM',_a.nearMiss||0);sv('mpMin',_a.minorInjury||0);sv('mpMed',_a.medTreatment||0);sv('mpLti',_a.lti||0);sv('mpFat',_a.fatality||0);}})();
     fillMpPlan();
     renderMpActivityRows();
     recalcMpManhours();
@@ -976,12 +1161,6 @@ function openModal(type,id=null){
     ['accFat','accLti','accMin','accMed','accProp','accFire','accTraf','accEnv','accNM','accTL'].forEach(k=>sv(k,'0'));
     sv('accNotes','');
     show('ov-addAccident');
-  }
-  if(type==='editWeather'){
-    $('wFields').innerHTML=P.map(p=>`<div class="fg"><label class="fl">${p.kode} \u2014 ${p.nama}</label>
-      <select class="fi" id="wf_${p.id}">${['<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> Sunny','Partly Cloudy','Partly Overcast','Rainy','Thunderstorm','Foggy'].map(w=>`<option ${p.weather===w?'selected':''}>${w}</option>`).join('')}</select>
-    </div>`).join('');
-    show('ov-editWeather');
   }
   if(type==='addIssue'||type==='editIssue'){
     editIssId=id?String(id):null;
@@ -1064,7 +1243,8 @@ async function saveProj(){
     mulai:gv('fMulai'),selesai:gv('fSelesai'),status:gv('fStat'),
     plan:existing?.plan||0, actual:existing?.actual||0,
     mdPlan:+gv('fMpP')||0,mpPlan:+gv('fMpP')||0,mhPlan:+gv('fMhP')||0,
-    weather:gv('fWeather'),notes:gv('fNotes').trim(),
+    notes:gv('fNotes').trim(),
+    lat:parseFloat(gv('fLat'))||null,lon:parseFloat(gv('fLon'))||null,
     logo:gv('fLogo')||'',
     picPm:gv('fPicPm').trim(),picSm:gv('fPicSm').trim(),
     picEng:gv('fPicEng').trim(),picProc:gv('fPicProc').trim()};
@@ -1167,7 +1347,7 @@ function executeCloneProject(){
     selesai:$('cloneSelesai')?.value||'',
     status:$('cloneStat')?.value||'Planning',
     plan:0,actual:0,mdPlan:0,mpPlan:0,mpActual:0,mhPlan:0,
-    weather:'',notes:'',logo:'',
+    weather:'',notes:'',logo:'',lat:null,lon:null,
     picPm:'',picSm:'',picEng:'',picProc:'',history:[]
   };
   P.push(newProj);

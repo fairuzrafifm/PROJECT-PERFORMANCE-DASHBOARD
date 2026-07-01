@@ -586,7 +586,7 @@ select.fi{cursor:pointer}
 .sb-arrow{transition:transform .2s;display:block}
 
 /* SIDEBAR */
-.sidebar{background:linear-gradient(180deg,#1c2240 0%,#171c33 100%);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden}
+.sidebar{background:linear-gradient(180deg,#1c2240 0%,#171c33 100%);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow:hidden;position:relative;z-index:15}
 .sb-head{padding:10px 12px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
 .sb-title{font-family:var(--fd);font-size:12px;letter-spacing:2px;color:var(--mt)}
 .proj-list{flex:1;overflow-y:auto;padding:6px}
@@ -1086,6 +1086,42 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px!important}
   .tbl input,.tbl select,.tbl textarea{font-size:13px!important}
 }
+/* ===== Portfolio Overview Infografis ===== */
+#ovDash .ov-shell{display:flex;min-width:1080px;gap:0}
+#ovDash .ov-side{width:172px;flex-shrink:0;padding:0 9px 0 0}
+#ovDash .ov-sh{font-size:8px;letter-spacing:1px;color:var(--mt);font-weight:700;margin:2px 0 7px;text-transform:uppercase}
+#ovDash .ov-pcard{background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:7px;margin-bottom:6px}
+#ovDash .ov-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+#ovDash .ov-r{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+#ovDash .ov-kstrip{display:flex;gap:8px;flex-wrap:wrap}
+#ovDash .ov-card{background:var(--sf);border:1px solid var(--bd);border-radius:9px;padding:9px;min-width:0;overflow:hidden}
+#ovDash .ov-card svg{max-width:100%;height:auto;display:block}
+#ovDash .ov-card{transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease}
+#ovDash .ov-clk{cursor:pointer}
+#ovDash .ov-clk:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(0,0,0,.4);border-color:var(--bl);z-index:2}
+#ovDash .ov-clk:active{transform:translateY(-1px)}
+#ovDash .ov-skel{display:flex;flex-direction:column;gap:8px}
+#ovDash .ov-skrow{display:flex;gap:8px}
+#ovDash .ov-skb{flex:1;border-radius:9px;background:linear-gradient(90deg,var(--sf) 25%,var(--sf2) 37%,var(--sf) 63%);background-size:400% 100%;animation:ovshim 1.4s ease infinite;border:1px solid var(--bd)}
+@keyframes ovshim{0%{background-position:100% 0}100%{background-position:-100% 0}}
+#ovDash .ov-kpi{flex:1 1 120px;padding:10px;container-type:inline-size}
+#ovDash .ov-kl{font-size:clamp(6.5px,5cqi,8.5px);letter-spacing:.5px;color:var(--mt);font-weight:700;margin-bottom:5px}
+#ovDash .ov-kv{font-size:clamp(15px,15cqi,23px);font-weight:800;line-height:1;margin-bottom:3px;white-space:nowrap}
+#ovDash .ov-ks{font-size:clamp(6.5px,4.5cqi,8px);color:var(--mt)}
+#ovDash .ov-ch{font-size:8.5px;letter-spacing:.5px;color:var(--mt);font-weight:700;margin-bottom:6px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center;gap:6px}
+#ovDash .ov-sub{font-size:7.5px;letter-spacing:.3px;color:var(--mt);font-weight:700;margin-bottom:4px}
+#ovDash .ov-g2{display:flex;gap:10px}#ovDash .ov-g2>div{flex:1;min-width:0}
+#ovDash .ov-rrow{display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--bd)}
+#ovDash .ov-rnum{width:16px;height:16px;border-radius:4px;background:var(--sf2);color:var(--tx);font-size:8px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#ovDash .ov-rnum2{width:14px;height:14px;border-radius:3px;background:var(--sf2);color:var(--mt);font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#ovDash .ov-irow{display:flex;align-items:center;gap:6px;padding:3.5px 0}
+#ovDash .ov-mb{display:inline-block;width:30px;height:5px;border-radius:3px;background:var(--bd);overflow:hidden;vertical-align:middle;margin-right:4px}#ovDash .ov-mb div{height:100%;border-radius:3px}
+#ovDash .ov-sel{background:var(--sf2);color:var(--tx);border:1px solid var(--bd);border-radius:6px;font-size:9px;padding:3px 7px;font-family:inherit;max-width:180px}
+#ovDash .ov-sumt{width:100%;border-collapse:collapse;font-size:8.5px}
+#ovDash .ov-sumt th{background:var(--sf2);color:var(--mt);font-size:7.5px;font-weight:700;padding:5px 4px;border:1px solid var(--bd);text-transform:uppercase}
+#ovDash .ov-sumt td{padding:6px 5px;border:1px solid var(--bd);text-align:center;color:var(--tx)}
+@media(max-width:900px){#ovDash .ov-shell{flex-direction:column}#ovDash .ov-side{width:auto;padding:0 0 8px}}
+
 </style>
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1128,9 +1164,8 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     </div>
     <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()" title="Ganti tema" aria-label="Ganti tema terang/gelap"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
     <div id="roleBadgeHdr" class="role-badge rb-viewer" style="display:none"></div>
-    <button class="btn btn-sm" id="btnChangePw" onclick="openModal('changePw')" style="display:none;border-color:var(--mt);color:var(--mt)" title="Ganti Password"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>
+    <button class="btn btn-sm" id="btnChangePw" data-modal="changePw" style="display:none;border-color:var(--mt);color:var(--mt)" title="Ganti Password"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></button>
     <button class="btn btn-sm" onclick="doLogout()" id="btnLogout" style="display:none;border-color:var(--mt);color:var(--mt)" title="Keluar" aria-label="Keluar / logout"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
-    <div id="gsBadge" class="gs-badge gs-off" onclick="openModal('gsConfig')" title="Konfigurasi Google Sheets" style="display:none!important">GSheet</div>
   </div>
 </div>
 
@@ -1195,7 +1230,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   <div class="sidebar" id="mainSidebar" style="position:relative">
     <div class="sb-head">
       <div class="sb-title">PROJECTS (<span id="pcount">0</span>)</div>
-      <button class="btn btn-sm bg" onclick="openModal('addProj')" style="padding:2px 7px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      <button class="btn btn-sm bg" data-modal="addProj" style="padding:2px 7px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
     </div>
     <div class="proj-list" id="projList"></div>
   </div>
@@ -1233,92 +1268,12 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 
     <!-- ══ PORTFOLIO OVERVIEW ══ -->
     <div id="tp-overview" class="tp active">
-      <!-- KPI TOP ROW: 7 cards -->
-      <div class="krow" style="grid-template-columns:repeat(7,1fr)">
-        <div class="kpi ko" onclick="const te=document.querySelector('.tab[onclick*=\'projects\']');if(te)sw('projects',te)" title="Skor kesehatan rata-rata portofolio (mesin Diagnosa) — klik untuk buka Projects"><div class="kl">Skor Portofolio</div><div id="ov1" class="kv skel">0</div><div id="ov1sub" class="ks">Active portfolio</div></div>
-        <div class="kpi kb" onclick="const te=document.querySelector('.tab[onclick*=\'manpower\']');if(te)sw('manpower',te)" title="Buka tab Manpower"><div class="kl">Total Manhours Hari Ini</div><div id="ov2" class="kv skel">0</div><div class="ks" id="ov2s">Plan: 0 jam</div></div>
-        <div class="kpi kg" onclick="const te=document.querySelector('.tab[onclick*=\'projects\']');if(te)sw('projects',te)" title="Buka tab Projects">
-          <div class="kl">Status Portfolio</div>
-          <div style="display:flex;gap:8px;align-items:baseline;margin-top:4px;flex-wrap:wrap">
-            <span><span style="font-family:var(--fn);font-weight:600;font-variant-numeric:tabular-nums;font-size:21px;color:var(--tx)" id="ovOT">0</span><span style="font-size:9px;color:var(--gn);margin-left:3px">OT</span></span>
-            <span><span style="font-family:var(--fn);font-weight:600;font-variant-numeric:tabular-nums;font-size:21px;color:var(--tx)" id="ovDL">0</span><span style="font-size:9px;color:var(--yw);margin-left:3px">DEL</span></span>
-            <span><span style="font-family:var(--fn);font-weight:600;font-variant-numeric:tabular-nums;font-size:21px;color:var(--tx)" id="ovCR">0</span><span style="font-size:9px;color:var(--rd);margin-left:3px">CRIT</span></span>
-          </div>
-        </div>
-        <div class="kpi kr" onclick="const te=document.querySelector('.tab[onclick*=\'issues\']');if(te)sw('issues',te)" title="Buka tab Issues"><div class="kl">Open Issues</div><div id="ov4" class="kv skel">0</div><div class="ks">All projects</div></div>
-        <div class="kpi ky" onclick="const te=document.querySelector('.tab[onclick*=\'manpower\']');if(te)sw('manpower',te)" title="Buka tab Manpower"><div class="kl">Total Time Lost</div><div id="ov5" class="kv skel">0 hr</div><div class="ks">Acc + Weather</div></div>
-        <div class="kpi kg" onclick="const te=document.querySelector('.tab[onclick*=\'cost\']');if(te)sw('cost',te)" title="Buka tab Cost/Finance">
-          <div class="kl">Total Pengeluaran</div>
-          <div id="ov6" class="kv skel" style="color:var(--tx);font-size:14px;letter-spacing:0">Rp 0</div>
-          <div class="ks" id="ov6s">Procurement + OPEX</div>
-        </div>
-        <div class="kpi kp" onclick="const te=document.querySelector('.tab[onclick*=\'documents\']');if(te){sw('documents',te);_syncDocProjDropdown();renderDocs();}" title="Buka tab Dokumen">
-          <div class="kl">Total Dokumen</div>
-          <div id="ovDoc" class="kv skel" style="color:var(--tx)">0</div>
-          <div class="ks" id="ovDocS" style="font-size:9px"></div>
-        </div>
-      </div>
-
-      <!-- PROJECT STATUS CARDS -->
-      <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--bd)">
-          <div style="display:flex;align-items:center;gap:10px">
-            <div style="width:3px;height:16px;background:var(--or);border-radius:2px"></div>
-            <div style="font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--mt)">Project Status Cards</div>
-          </div>
-          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-            <input class="fi" id="ovSearch" placeholder="Cari project..." oninput="renderProjStatusCards()" style="padding:4px 9px;font-size:11px;width:160px">
-            <select class="fi" id="ovFiltStatus" onchange="renderProjStatusCards()" style="padding:4px 9px;font-size:11px;width:auto">
-              <option value="">Semua Status</option>
-              <option>On Track</option><option>Delayed</option><option>Critical</option><option>Planning</option><option>Done</option>
-            </select>
-          </div>
-        </div>
-        <div id="projStatusCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:10px"></div>
-      </div>
-
-      <!-- 3-panel row: Weather · Accident · Procurement -->
-      <div class="g3">
-        <!-- WEATHER -->
-        <div class="card card-link" onclick="const te=document.querySelector('.tab[onclick*=\'daily\']');if(te)sw('daily',te)" title="Buka Daily Report">
-          <span class="card-link-bar"></span>
-          <div class="ct"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M12 2v2M4.93 4.93l1.41 1.41M20 12h2M19.07 4.93l-1.41 1.41M15.947 12.65a4 4 0 0 0-5.925-4.128"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6z"/></svg> WEATHER — ALL SITES <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gn);animation:pulse 3s infinite;vertical-align:1px;margin-right:3px"></span><span style="color:var(--gn);animation:pulse 3s infinite;font-size:10px">LIVE</span></div>
-          <div class="wg" id="weatherGrid"></div>
-          <div style="margin-top:9px;text-align:right">
-            <button class="btn btn-sm" onclick="openModal('editWeather')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit Cuaca</button>
-          </div>
-        </div>
-
-        <!-- ACCIDENT LOG -->
-        <div class="card card-link" title="Buka Manpower">
-          <span class="card-link-bar"></span>
-          <div class="ct" onclick="const te=document.querySelector('.tab[onclick*=\'manpower\']');if(te)sw('manpower',te)" style="cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="2" y="6" width="20" height="15" rx="2"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="12" y1="11" x2="12" y2="16"/><line x1="9.5" y1="13.5" x2="14.5" y2="13.5"/></svg> ACCIDENT LOG — PORTFOLIO
-            <button class="btn btn-sm bp" onclick="event.stopPropagation();openModal('addAccident')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Input</button>
-          </div>
-          <div id="accLog"></div>
-          <div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--bd)">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-              <span style="font-size:10px;color:var(--mt)">Accident Time Lost</span>
-              <span id="tltAcc" style="font-family:var(--fm);color:var(--rd);font-weight:600">0 hrs</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
-              <span style="font-size:10px;color:var(--mt)">Weather/Lainnya</span>
-              <span id="tltMp" style="font-family:var(--fm);color:var(--yw);font-weight:600">0 hrs</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;padding-top:4px;border-top:1px dashed var(--bd)">
-              <span style="font-size:10px;color:var(--mt);font-weight:600">Total Time Lost</span>
-              <span id="tlt" style="font-family:var(--fm);color:var(--rd);font-weight:700">0 hrs</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- PROCUREMENT STATUS -->
-        <div class="card card-link" onclick="const te=document.querySelector('.tab[onclick*=\'procurement\']');if(te)sw('procurement',te)" title="Buka Procurement">
-          <span class="card-link-bar"></span>
-          <div class="ct"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg> PROCUREMENT STATUS</div>
-          <div class="proc-grid" id="procGrid"></div>
-        </div>
-      </div>
+      <div id="ovDash"><div class="ov-skel">
+        <div class="ov-skrow"><div class="ov-skb" style="height:78px"></div><div class="ov-skb" style="height:78px"></div><div class="ov-skb" style="height:78px"></div><div class="ov-skb" style="height:78px"></div><div class="ov-skb" style="height:78px"></div><div class="ov-skb" style="height:78px;flex:2"></div></div>
+        <div class="ov-skrow"><div class="ov-skb" style="height:150px;flex:5"></div><div class="ov-skb" style="height:150px;flex:3"></div></div>
+        <div class="ov-skrow"><div class="ov-skb" style="height:150px;flex:5"></div><div class="ov-skb" style="height:150px;flex:3"></div></div>
+        <div class="ov-skrow"><div class="ov-skb" style="height:140px;flex:2"></div><div class="ov-skb" style="height:140px;flex:2"></div><div class="ov-skb" style="height:140px;flex:4"></div></div>
+      </div></div>
     </div>
 
     <!-- ══ PROJECTS ══ -->
@@ -1336,9 +1291,8 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
           <div style="font-size:13px;margin-bottom:5px">Pilih project dari sidebar</div>
           <div style="font-size:11px;margin-bottom:13px">atau load data dari Google Sheet / file Excel</div>
           <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-            <button class="btn bgs" onclick="openModal('gsConfig')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Setup Google Sheet</button>
             <button class="btn bb" onclick="triggerImport()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><line x1="12" y1="13" x2="12" y2="21"/></svg> Buka Excel</button>
-            <button class="btn bg" onclick="openModal('addProj')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Project Baru</button>
+            <button class="btn bg" data-modal="addProj"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Project Baru</button>
           </div>
         </div>
       </div>
@@ -1362,7 +1316,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
       <!-- Plan vs Actual table -->
       <div class="card">
         <div class="ct">DATA PEKERJA & MANHOURS — HARI INI
-          <button class="btn btn-sm bg" onclick="openModal('inputMp')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Input Harian</button>
+          <button class="btn btn-sm bg" data-modal="inputMp"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Input Harian</button>
         </div>
         <div class="mp-hdr"><div>Project</div><div>Mandays (Actual vs Plan)</div><div>SPV</div><div>Mdr</div><div>Inst</div><div>Tukang</div><div>Helper</div><div>Safety</div><div>Hari Ini</div><div>Time Lost</div></div>
         <div id="mpTable"></div>
@@ -1432,7 +1386,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
           <select class="fi" style="width:auto;padding:4px 9px;font-size:11px" id="ifPri" onchange="renderIssues()"><option value="">Semua Prioritas</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
           <select class="fi" style="width:auto;padding:4px 9px;font-size:11px" id="ifStat" onchange="renderIssues()"><option value="">Semua Status</option><option>Open</option><option>In Progress</option><option>Monitoring</option><option>Closed</option></select>
         </div>
-        <button class="btn bg btn-sm" onclick="openModal('addIssue')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Issue</button>
+        <button class="btn bg btn-sm" data-modal="addIssue"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Issue</button>
       </div>
       <div class="krow" style="grid-template-columns:repeat(4,1fr)">
         <div class="kpi kr"><div class="kl">Critical</div><div class="kv" id="ic1" style="color:var(--rd)">0</div></div>
@@ -1467,7 +1421,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
           <input class="fi" style="width:160px;padding:4px 9px;font-size:11px" id="procSearch" placeholder="Cari item..." oninput="renderProc()">
         </div>
         <button class="btn bg btn-sm" onclick="exportProcExcel()" title="Export procurement (sesuai filter) ke Excel"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Excel</button>
-        <button class="btn bg btn-sm" onclick="openModal('addProc')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Item</button>
+        <button class="btn bg btn-sm" data-modal="addProc"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Item</button>
       </div>
       <div class="krow" style="grid-template-columns:repeat(6,1fr)">
         <div class="kpi kr"><div class="kl">Overdue</div><div class="kv" id="pc1" style="color:var(--rd)">0</div></div>
@@ -1496,9 +1450,9 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <div style="font-size:12px;color:var(--mt)">Project:</div>
           <select class="fi" style="width:auto;min-width:200px" id="scProjSel" onchange="renderSCurve()"></select>
-          <button class="btn btn-sm edit-only" style="border-color:var(--bl);color:var(--bl)" onclick="openModal('scPlan')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="16" y1="17" x2="16" y2="21"/><line x1="14" y1="19" x2="18" y2="19"/></svg> Input Plan</button>
-          <button class="btn btn-sm bp edit-only" onclick="openModal('scActual')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Update Actual</button>
-          <button class="btn btn-sm" onclick="openModal('scManage')" style="border-color:var(--mt);color:var(--mt)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Kelola Data</button>
+          <button class="btn btn-sm edit-only" style="border-color:var(--bl);color:var(--bl)" data-modal="scPlan"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="16" y1="17" x2="16" y2="21"/><line x1="14" y1="19" x2="18" y2="19"/></svg> Input Plan</button>
+          <button class="btn btn-sm bp edit-only" data-modal="scActual"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Update Actual</button>
+          <button class="btn btn-sm" data-modal="scManage" style="border-color:var(--mt);color:var(--mt)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Kelola Data</button>
           <button class="btn btn-sm" style="border-color:var(--bl);color:var(--bl)" onclick="resyncScurveFromWbs()" title="Rebuild S-Curve dari data WBS"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Sync dari WBS</button>
         </div>
       </div>
@@ -1537,18 +1491,18 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
           <div style="font-size:12px;color:var(--mt)">Project:</div>
           <select class="fi" style="width:auto;min-width:220px" id="wbsProjSel" onchange="onWbsProjChange(this.value)"></select>
           <div style="display:flex;border:1px solid var(--bd);border-radius:6px;overflow:hidden" class="edit-only">
-            <button class="btn btn-sm" style="border:none;border-radius:0;border-right:1px solid var(--bd);color:var(--bl)" onclick="openModal('wbsAddCat')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Kategori</button>
-            <button class="btn btn-sm" style="border:none;border-radius:0;border-right:1px solid var(--bd);color:var(--bl)" onclick="openModal('wbsAddSub')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Sub-Kategori</button>
-            <button class="btn btn-sm bp" style="border:none;border-radius:0" onclick="openModal('wbsAddItem')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Item</button>
+            <button class="btn btn-sm" style="border:none;border-radius:0;border-right:1px solid var(--bd);color:var(--bl)" data-modal="wbsAddCat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Kategori</button>
+            <button class="btn btn-sm" style="border:none;border-radius:0;border-right:1px solid var(--bd);color:var(--bl)" data-modal="wbsAddSub"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Sub-Kategori</button>
+            <button class="btn btn-sm bp" style="border:none;border-radius:0" data-modal="wbsAddItem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Item</button>
           </div>
           <div style="display:flex;border:1px solid var(--bd);border-radius:6px;overflow:hidden" class="edit-only">
-            <button class="btn btn-sm" style="border:none;border-radius:0;border-right:1px solid var(--bd);color:var(--bl)" onclick="openModal('wbsPlan')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="16" y1="17" x2="16" y2="21"/><line x1="14" y1="19" x2="18" y2="19"/></svg> Input Plan</button>
-            <button class="btn btn-sm bp" style="border:none;border-radius:0" onclick="openModal('wbsActual')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Update Actual</button>
+            <button class="btn btn-sm" style="border:none;border-radius:0;border-right:1px solid var(--bd);color:var(--bl)" data-modal="wbsPlan"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="16" y1="17" x2="16" y2="21"/><line x1="14" y1="19" x2="18" y2="19"/></svg> Input Plan</button>
+            <button class="btn btn-sm bp" style="border:none;border-radius:0" data-modal="wbsActual"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Update Actual</button>
           </div>
           <!-- View toggle -->
           <div style="display:flex;border:1px solid var(--bd);border-radius:6px;overflow:hidden;margin-left:auto">
-            <button id="wbsViewTable" class="btn btn-sm" style="border:none;border-radius:0;border-right:1px solid var(--bd);background:var(--bl);color:#fff" onclick="setWbsView('table')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> Tabel</button>
-            <button id="wbsViewGantt" class="btn btn-sm" style="border:none;border-radius:0;color:var(--mt)" onclick="setWbsView('gantt')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg> Gantt</button>
+            <button id="wbsViewTable" class="btn btn-sm" style="border:none;border-radius:0;border-right:1px solid var(--bd);background:var(--bl);color:#fff" data-call="setWbsView" data-arg="table"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg> Tabel</button>
+            <button id="wbsViewGantt" class="btn btn-sm" style="border:none;border-radius:0;color:var(--mt)" data-call="setWbsView" data-arg="gantt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg> Gantt</button>
           </div>
           <div id="wbsTotalBobot" style="font-size:11px;font-family:var(--fm);color:var(--mt)">Total bobot: 0%</div>
         </div>
@@ -1616,8 +1570,8 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
           <select class="fi" style="width:auto;min-width:220px" id="drProjSel" onchange="onDrProjChange(this.value)"></select>
           <div style="font-size:12px;color:var(--mt)">Tanggal:</div>
           <input type="date" class="fi" style="width:auto" id="drDate" onchange="renderDailyReport()">
-          <button class="btn btn-sm edit-only" style="border-color:var(--bl);color:var(--bl)" onclick="openModal('drInput')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Input Harian</button>
-          <button class="btn btn-sm" style="border-color:var(--bl);color:var(--bl)" onclick="openModal('drQtySetup')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Setup Qty Plan</button>
+          <button class="btn btn-sm edit-only" style="border-color:var(--bl);color:var(--bl)" data-modal="drInput"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Input Harian</button>
+          <button class="btn btn-sm" style="border-color:var(--bl);color:var(--bl)" data-modal="drQtySetup"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Setup Qty Plan</button>
           <button class="btn btn-sm" style="border-color:#475569;color:var(--tx)" onclick="generateDailyReportPDF()" title="Cetak Laporan Harian (PDF)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Cetak PDF</button>
           <div id="drWeekBadge" style="margin-left:auto;font-size:11px;font-family:var(--fm);background:rgba(124,140,240,.1);color:var(--or);padding:3px 10px;border-radius:20px;display:none"></div>
         </div>
@@ -1672,7 +1626,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
             <option value="opex">Operasional (OPEX)</option>
           </select>
           <input class="fi" id="costSearch" placeholder="Cari item..." oninput="renderCost()" style="width:160px;padding:4px 9px;font-size:11px">
-          <button class="btn btn-sm edit-only" style="border-color:var(--bl);color:var(--bl);margin-left:auto" onclick="openModal('addCost')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Pengeluaran</button>
+          <button class="btn btn-sm edit-only" style="border-color:var(--bl);color:var(--bl);margin-left:auto" data-modal="addCost"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah Pengeluaran</button>
         </div>
       </div>
 
@@ -1774,7 +1728,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- ═══ ADD / EDIT DOKUMEN MODAL ═══ -->
 <div class="ov" id="ov-addDoc" onclick="if(event.target===this)cm('addDoc')">
 <div class="modal wide" style="max-width:640px">
-  <div class="mtitle"><span id="docMT">TAMBAH DOKUMEN</span><button class="mclose" onclick="cm('addDoc')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"><span id="docMT">TAMBAH DOKUMEN</span><button class="mclose" data-cmd="addDoc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="f2">
     <div class="fg"><label class="fl">Project *</label><select class="fi" id="docModalProj"></select></div>
     <div class="fg"><label class="fl">Tanggal Dokumen</label><input class="fi" type="date" id="docModalTgl"></div>
@@ -1824,7 +1778,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   </div>
   <div class="mfoot">
     <button class="btn brd edit-only" id="btnDelDoc" onclick="delDoc()" style="margin-right:auto;display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Hapus</button>
-    <button class="btn" onclick="cm('addDoc')">Batal</button>
+    <button class="btn" data-cmd="addDoc">Batal</button>
     <button class="btn bp edit-only" id="btnSaveDoc" onclick="saveDoc()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah</button>
   </div>
 </div></div>
@@ -1833,7 +1787,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- ADD/EDIT PROJECT -->
 <div class="ov" id="ov-addProj" onclick="if(event.target===this)cm('addProj')">
 <div class="modal">
-  <div class="mtitle"><span id="projMT">TAMBAH PROJECT</span><button class="mclose" onclick="cm('addProj')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"><span id="projMT">TAMBAH PROJECT</span><button class="mclose" data-cmd="addProj"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="f2">
     <div class="fg"><label class="fl">Kode *</label><input class="fi" id="fKode" placeholder="ATW-001"></div>
     <div class="fg"><label class="fl">Status</label><select class="fi" id="fStat"><option>Planning</option><option>On Track</option><option>Delayed</option><option>Critical</option><option>Done</option></select></div>
@@ -1842,6 +1796,12 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   <div class="f2">
     <div class="fg"><label class="fl">Lokasi</label><input class="fi" id="fLok" placeholder="Cikarang, Bekasi"></div>
     <div class="fg"><label class="fl">Client</label><input class="fi" id="fClient" placeholder="PT ABC Energy"></div>
+    <div class="fg"><label class="fl">Koordinat Lokasi <span style="color:var(--mt);font-weight:400">(opsional — untuk cuaca live)</span></label>
+      <div style="display:flex;gap:8px">
+        <input class="fi" id="fLat" type="number" step="any" placeholder="Latitude (mis. -7.5)" style="flex:1">
+        <input class="fi" id="fLon" type="number" step="any" placeholder="Longitude (mis. 110.4)" style="flex:1">
+      </div>
+    </div>
     <div class="fg"><label class="fl">Tgl Mulai</label><input class="fi" type="date" id="fMulai"></div>
     <div class="fg"><label class="fl">Tgl Selesai</label><input class="fi" type="date" id="fSelesai"></div>
   </div>
@@ -1867,9 +1827,6 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   <div class="f2">
     <div class="fg"><label class="fl">Mandays Plan (total orang-hari)</label><input class="fi" type="number" id="fMpP" placeholder="mis: 1000 MD" min="0"></div>
     <div class="fg"><label class="fl">Manhours Plan/hari</label><input class="fi" type="number" id="fMhP" placeholder="480" min="0"></div>
-    <div class="fg"><label class="fl">Cuaca Lokasi</label>
-      <select class="fi" id="fWeather"><option><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg> Sunny</option><option>Partly Cloudy</option><option> Overcast</option><option>Rainy</option><option> Thunderstorm</option><option>Foggy</option></select>
-    </div>
     <div class="fg"><label class="fl">Catatan</label><input class="fi" id="fNotes" placeholder="Keterangan..."></div>
   </div>
   <!-- PIC / TIM PROJECT -->
@@ -1882,7 +1839,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   </div>
   <div class="mfoot">
     <button class="btn brd" id="btnDelProj" onclick="delProj()" style="margin-right:auto;display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Hapus</button>
-    <button class="btn" onclick="cm('addProj')">Batal</button>
+    <button class="btn" data-cmd="addProj">Batal</button>
     <button class="btn bp" onclick="saveProj()" id="btnSaveProj"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah</button>
   </div>
 </div></div>
@@ -1890,7 +1847,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- CLONE PROJECT MODAL -->
 <div class="ov" id="ov-cloneProj" onclick="if(event.target===this)cm('cloneProj')">
 <div class="modal" style="max-width:500px">
-  <div class="mtitle" style="color:var(--gn)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> CLONE PROJECT — Copy WBS<button class="mclose" onclick="cm('cloneProj')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle" style="color:var(--gn)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> CLONE PROJECT — Copy WBS<button class="mclose" data-cmd="cloneProj"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div style="background:rgba(61,220,151,.07);border:1px solid rgba(61,220,151,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:11px;color:var(--mt)">
     <b style="color:var(--gn)">Yang akan di-copy:</b> Seluruh struktur WBS (Kategori, Sub-Kategori, Item), Bobot, Satuan, Qty Plan, Start/Finish date plan.<br>
     <b style="color:var(--rd)">Yang TIDAK di-copy:</b> Progress actual, Daily logs, Manpower logs, S-Curve data, Issues, Procurement.
@@ -1920,7 +1877,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <div style="color:var(--mt);font-style:italic">Pilih project sumber untuk melihat preview WBS...</div>
   </div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('cloneProj')">Batal</button>
+    <button class="btn" data-cmd="cloneProj">Batal</button>
     <button class="btn" style="background:var(--bl);color:#fff;border-color:var(--bl)" onclick="executeCloneProject()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Clone &amp; Buat Project</button>
   </div>
 </div></div>
@@ -1928,7 +1885,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- UPDATE PROGRESS -->
 <div class="ov" id="ov-updProgress" onclick="if(event.target===this)cm('updProgress')">
 <div class="modal" style="width:400px">
-  <div class="mtitle">UPDATE PROGRESS<button class="mclose" onclick="cm('updProgress')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle">UPDATE PROGRESS<button class="mclose" data-cmd="updProgress"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div style="background:var(--sf2);border-radius:7px;padding:7px 11px;margin-bottom:11px;font-size:12px">
     <span style="color:var(--mt)">Project: </span><span id="updNm" style="font-weight:600"></span>
   </div>
@@ -1946,7 +1903,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   </div>
   <div class="fg"><label class="fl">Keterangan</label><input class="fi" id="uNotes" placeholder="Progres minggu ini, kendala, dll..."></div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('updProgress')">Batal</button>
+    <button class="btn" data-cmd="updProgress">Batal</button>
     <button class="btn bp" onclick="saveUpdate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan</button>
   </div>
 </div></div>
@@ -1954,7 +1911,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- INPUT MANPOWER -->
 <div class="ov" id="ov-inputMp" onclick="if(event.target===this)cm('inputMp')">
 <div class="modal" style="max-width:820px;width:96vw">
-  <div class="mtitle">INPUT HARIAN — MANPOWER & PROGRESS<button class="mclose" onclick="cm('inputMp')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle">INPUT HARIAN — MANPOWER & PROGRESS<button class="mclose" data-cmd="inputMp"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="f2">
     <div class="fg"><label class="fl">Project *</label><select class="fi" id="mpProj" onchange="fillMpPlan();renderMpActivityRows()"></select></div>
     <div class="fg"><label class="fl">Tanggal</label><input class="fi" type="date" id="mpDate" onchange="renderMpActivityRows()"></div>
@@ -2010,10 +1967,21 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <label class="fl">Catatan Harian</label>
     <input class="fi" id="mpNotes" placeholder="Aktivitas hari ini, kendala, dll...">
   </div>
+  <div class="fg" style="border-top:1px solid var(--bd);padding-top:10px;margin-top:6px">
+    <label class="fl" style="color:var(--rd)">HSE / Insiden Hari Ini (opsional)</label>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px">
+      <div><div style="font-size:10px;color:var(--mt);margin-bottom:2px">Near Miss</div><input class="fi" type="number" id="mpNM" min="0" value="0" style="text-align:center"></div>
+      <div><div style="font-size:10px;color:var(--mt);margin-bottom:2px">Minor Injury</div><input class="fi" type="number" id="mpMin" min="0" value="0" style="text-align:center"></div>
+      <div><div style="font-size:10px;color:var(--mt);margin-bottom:2px">Medical</div><input class="fi" type="number" id="mpMed" min="0" value="0" style="text-align:center"></div>
+      <div><div style="font-size:10px;color:var(--mt);margin-bottom:2px">LTI</div><input class="fi" type="number" id="mpLti" min="0" value="0" style="text-align:center"></div>
+      <div><div style="font-size:10px;color:var(--mt);margin-bottom:2px">Fatality</div><input class="fi" type="number" id="mpFat" min="0" value="0" style="text-align:center"></div>
+    </div>
+    <div style="font-size:10px;color:var(--mt);margin-top:3px">Isi bila ada insiden hari ini. "Hari Tanpa Kecelakaan" dihitung otomatis dari tanggal insiden terakhir.</div>
+  </div>
   <div id="mpActSummary" style="display:none"></div>
 
   <div class="mfoot" style="margin-top:14px">
-    <button class="btn" onclick="cm('inputMp')">Batal</button>
+    <button class="btn" data-cmd="inputMp">Batal</button>
     <button class="btn bp" onclick="saveMp()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan</button>
   </div>
 </div></div>
@@ -2021,7 +1989,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- ACCIDENT LOG INPUT (per-project) -->
 <div class="ov" id="ov-addAccident" onclick="if(event.target===this)cm('addAccident')">
 <div class="modal wide">
-  <div class="mtitle">INPUT ACCIDENT LOG<button class="mclose" onclick="cm('addAccident')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle">INPUT ACCIDENT LOG<button class="mclose" data-cmd="addAccident"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="f2">
     <div class="fg"><label class="fl">Project *</label><select class="fi" id="accProj"></select></div>
     <div class="fg"><label class="fl">Tanggal Kejadian</label><input class="fi" type="date" id="accDate"></div>
@@ -2041,23 +2009,16 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   </div>
   <div class="fg"><label class="fl">Deskripsi Kejadian</label><input class="fi" id="accNotes" placeholder="Deskripsikan kejadian..."></div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('addAccident')">Batal</button>
+    <button class="btn" data-cmd="addAccident">Batal</button>
     <button class="btn bp" onclick="saveAcc()">Simpan</button>
   </div>
 </div></div>
 
-<!-- EDIT WEATHER -->
-<div class="ov" id="ov-editWeather" onclick="if(event.target===this)cm('editWeather')">
-<div class="modal" style="width:380px">
-  <div class="mtitle">UPDATE CUACA<button class="mclose" onclick="cm('editWeather')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-  <div id="wFields"></div>
-  <div class="mfoot"><button class="btn" onclick="cm('editWeather')">Batal</button><button class="btn bp" onclick="saveWeather()">Simpan</button></div>
-</div></div>
 
 <!-- ADD ISSUE -->
 <div class="ov" id="ov-addIssue" onclick="if(event.target===this)cm('addIssue')">
 <div class="modal">
-  <div class="mtitle"><span id="issMT">TAMBAH ISSUE</span><button class="mclose" onclick="cm('addIssue')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"><span id="issMT">TAMBAH ISSUE</span><button class="mclose" data-cmd="addIssue"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="f2">
     <div class="fg"><label class="fl">Project</label><select class="fi" id="iProj"></select></div>
     <div class="fg"><label class="fl">Tanggal</label><input class="fi" type="date" id="iTgl"></div>
@@ -2074,7 +2035,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   <div class="fg"><label class="fl">Tindakan Korektif</label><input class="fi" id="iAction" placeholder="Langkah penanganan..."></div>
   <div class="mfoot">
     <button class="btn brd" id="btnDelIss" onclick="delIss()" style="margin-right:auto;display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Hapus</button>
-    <button class="btn" onclick="cm('addIssue')">Batal</button>
+    <button class="btn" data-cmd="addIssue">Batal</button>
     <button class="btn bp" onclick="saveIss()" id="btnSaveIss">Simpan</button>
   </div>
 </div></div>
@@ -2082,7 +2043,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- ADD PROCUREMENT -->
 <div class="ov" id="ov-addProc" onclick="if(event.target===this)cm('addProc')">
 <div class="modal" style="max-width:640px">
-  <div class="mtitle"><span id="procMT">TAMBAH ITEM</span><button class="mclose" onclick="cm('addProc')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"><span id="procMT">TAMBAH ITEM</span><button class="mclose" data-cmd="addProc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="fg"><label class="fl">Project</label><select class="fi" id="pProj" onchange="_onProcProjChange()"></select></div>
   <!-- Kategori: auto-fill & hidden jika RAB dipilih -->
   <div class="fg" id="pKatWrap">
@@ -2159,7 +2120,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   <div class="fg"><label class="fl">Keterangan</label><input class="fi" id="pNotes"></div>
   <div class="mfoot">
     <button class="btn brd" id="btnDelProc" onclick="delProc()" style="margin-right:auto;display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Hapus</button>
-    <button class="btn" onclick="cm('addProc')">Batal</button>
+    <button class="btn" data-cmd="addProc">Batal</button>
     <button class="btn bp" onclick="saveProc()" id="btnSaveProc">Simpan</button>
   </div>
 </div></div>
@@ -2167,7 +2128,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- COST / OPEX MODAL -->
 <div class="ov" id="ov-addCost" onclick="if(event.target===this)cm('addCost')">
 <div class="modal">
-  <div class="mtitle"><span id="costMT">TAMBAH PENGELUARAN</span><button class="mclose" onclick="cm('addCost')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"><span id="costMT">TAMBAH PENGELUARAN</span><button class="mclose" data-cmd="addCost"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="f2">
     <div class="fg"><label class="fl">Project *</label>
       <select class="fi" id="cProj" onchange="_onCostProjChange()"></select>
@@ -2241,7 +2202,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   </div>
   <div class="mfoot">
     <button class="btn brd" id="btnDelCost" onclick="delCost()" style="margin-right:auto;display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Hapus</button>
-    <button class="btn" onclick="cm('addCost')">Batal</button>
+    <button class="btn" data-cmd="addCost">Batal</button>
     <button class="btn bp" onclick="saveCost()" id="btnSaveCost"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah</button>
   </div>
 </div></div>
@@ -2249,7 +2210,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- MODAL: ADD/EDIT RAB KATEGORI -->
 <div class="ov" id="ov-addRabKat" onclick="if(event.target===this)cm('addRabKat')">
 <div class="modal">
-  <div class="mtitle"><span id="rabKatMT">TAMBAH KATEGORI RAB</span><button class="mclose" onclick="cm('addRabKat')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"><span id="rabKatMT">TAMBAH KATEGORI RAB</span><button class="mclose" data-cmd="addRabKat"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="fg"><label class="fl">Project *</label>
     <select class="fi" id="rkProj" onchange="updateRabKatDropdown()"></select>
   </div>
@@ -2269,7 +2230,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   </div>
   <div class="mfoot">
     <button class="btn brd" id="btnDelRabKat" onclick="delRabKat()" style="margin-right:auto;display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Hapus</button>
-    <button class="btn" onclick="cm('addRabKat')">Batal</button>
+    <button class="btn" data-cmd="addRabKat">Batal</button>
     <button class="btn bp" onclick="saveRabKat()" id="btnSaveRabKat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah</button>
   </div>
 </div></div>
@@ -2277,7 +2238,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- MODAL: ADD/EDIT RAB ITEM -->
 <div class="ov" id="ov-addRabItem" onclick="if(event.target===this)cm('addRabItem')">
 <div class="modal wide">
-  <div class="mtitle"><span id="rabItemMT">TAMBAH ITEM RAB</span><button class="mclose" onclick="cm('addRabItem')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"><span id="rabItemMT">TAMBAH ITEM RAB</span><button class="mclose" data-cmd="addRabItem"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="f2">
     <div class="fg"><label class="fl">Project *</label>
       <select class="fi" id="riProj" onchange="updateRabItemDropdown()"></select>
@@ -2328,7 +2289,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   </div>
   <div class="mfoot">
     <button class="btn brd" id="btnDelRabItem" onclick="delRabItem()" style="margin-right:auto;display:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Hapus</button>
-    <button class="btn" onclick="cm('addRabItem')">Batal</button>
+    <button class="btn" data-cmd="addRabItem">Batal</button>
     <button class="btn bp" onclick="saveRabItem()" id="btnSaveRabItem"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Tambah</button>
   </div>
 </div></div>
@@ -2336,7 +2297,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- CLONE RAB MODAL -->
 <div class="ov" id="ov-cloneRab" onclick="if(event.target===this)cm('cloneRab')">
 <div class="modal" style="max-width:520px">
-  <div class="mtitle" style="color:var(--or)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> CLONE RAB — Copy Struktur Anggaran<button class="mclose" onclick="cm('cloneRab')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle" style="color:var(--or)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> CLONE RAB — Copy Struktur Anggaran<button class="mclose" data-cmd="cloneRab"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div style="background:rgba(124,140,240,.07);border:1px solid rgba(124,140,240,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:11px;color:var(--mt)">
     <b style="color:var(--or)">Yang akan di-copy:</b> Seluruh Kategori RAB, Item RAB, Satuan, Volume, Harga Satuan, Total, Procurement Kategori.<br>
     <b style="color:var(--rd)">Yang TIDAK di-copy:</b> Data aktual pengeluaran (COSTS), link procurement yang sudah ada.
@@ -2369,7 +2330,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <div style="color:var(--mt);font-style:italic">Pilih project sumber untuk melihat preview RAB...</div>
   </div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('cloneRab')">Batal</button>
+    <button class="btn" data-cmd="cloneRab">Batal</button>
     <button class="btn" style="background:var(--bl);color:#fff;border-color:var(--bl)" onclick="executeCloneRab()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Clone RAB</button>
   </div>
 </div></div>
@@ -2377,7 +2338,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- CLONE DOKUMEN -->
 <div class="ov" id="ov-cloneDoc" onclick="if(event.target===this)cm('cloneDoc')">
 <div class="modal" style="max-width:520px">
-  <div class="mtitle" style="color:var(--pu)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block;margin-right:6px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>CLONE DOKUMEN — Salin Dokumen Antar Project<button class="mclose" onclick="cm('cloneDoc')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle" style="color:var(--pu)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block;margin-right:6px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>CLONE DOKUMEN — Salin Dokumen Antar Project<button class="mclose" data-cmd="cloneDoc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div style="background:rgba(139,92,246,.07);border:1px solid rgba(139,92,246,.2);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:11px;color:var(--mt)">
     <b style="color:var(--pu)">Yang akan di-copy:</b> Nama, No. Dokumen, Kategori, Revisi, Tanggal, Status, Submitted By, Approved By, Catatan, Link.<br>
     <b style="color:var(--rd)">Yang TIDAK di-copy:</b> ID dokumen (dibuat baru), relasi project asli.
@@ -2410,58 +2371,17 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <div style="color:var(--mt);font-style:italic">Pilih project sumber untuk melihat preview dokumen...</div>
   </div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('cloneDoc')">Batal</button>
+    <button class="btn" data-cmd="cloneDoc">Batal</button>
     <button class="btn" id="btnExecCloneDoc" style="background:var(--bl);color:#fff;border-color:var(--bl)" onclick="executeCloneDocAll()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block;margin-right:4px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Clone Dokumen</button>
   </div>
 </div></div>
 
 <!-- GOOGLE SHEET CONFIG -->
-<div class="ov" id="ov-gsConfig" onclick="if(event.target===this)cm('gsConfig')">
-<div class="modal wide">
-  <div class="mtitle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> GOOGLE SHEET INTEGRATION<button class="mclose" onclick="cm('gsConfig')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-
-  <!-- Status saat ini -->
-  <div id="gsCurrentStatus" style="border-radius:7px;padding:8px 12px;margin-bottom:12px;font-size:11px;font-family:var(--fm);display:flex;align-items:center;gap:8px;background:rgba(100,116,139,.1);border:1px solid var(--bd)">
-    <span id="gsStatusDot" style="width:8px;height:8px;border-radius:50%;background:var(--mt);flex-shrink:0"></span>
-    <span id="gsStatusMsg" style="color:var(--mt)">Belum dicek</span>
-  </div>
-
-  <div style="font-size:11px;color:var(--mt);background:rgba(124,140,240,.07);border:1px solid rgba(124,140,240,.2);border-radius:7px;padding:10px 12px;margin-bottom:12px;line-height:1.7">
-    <b style="color:var(--bl)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> Cara setup Apps Script (1 kali):</b><br>
-    1. Buka <b style="color:var(--bl)">script.google.com</b> → New Project → paste kode Apps Script v11<br>
-    2. Pastikan <b>SHEET_ID</b> di baris 4 = ID Google Sheet Anda<br>
-    3. <b>Deploy → New Deployment → Web App</b><br>
-    &nbsp;&nbsp;&nbsp;· Execute as: <b style="color:var(--gn)">Me</b> &nbsp;·&nbsp; Access: <b style="color:var(--gn)">Anyone</b><br>
-    4. Copy URL <code style="background:var(--sf2);padding:1px 5px;border-radius:3px">.../exec</code> → paste di bawah<br>
-    <span style="color:var(--yw)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Setiap edit kode Apps Script → harus <b>New Deployment</b> (bukan edit lama)</span>
-  </div>
-
-  <div class="fg"><label class="fl">Apps Script Web App URL *</label>
-    <input class="fi" id="gsScriptUrl" placeholder="https://script.google.com/macros/s/AKfy.../exec" oninput="_gsUrlHint(this.value)">
-    <div id="gsUrlHint" style="font-size:10px;margin-top:3px;color:var(--mt)"></div>
-  </div>
-  <div class="fg"><label class="fl">Google Sheet ID (opsional, untuk referensi)</label>
-    <input class="fi" id="gsSheetUrl" placeholder="1XeECJqg-...">
-  </div>
-
-  <!-- Test result -->
-  <div id="gsTestRes" style="font-size:11px;margin-bottom:10px;padding:9px 12px;border-radius:6px;display:none;white-space:pre-line;line-height:1.6"></div>
-
-  <div style="display:flex;gap:8px;margin-bottom:8px">
-    <button class="btn bb" onclick="testGS()" style="flex:1;justify-content:center;font-weight:600"> Test Koneksi</button>
-    <button class="btn bgs" onclick="copyGsScript()" style="flex:1;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Salin Script v11</button>
-  </div>
-  <button class="btn" onclick="copyShareUrl()" style="width:100%;justify-content:center;margin-bottom:12px;border-color:var(--bl);color:var(--bl)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Salin Link Share untuk Tim</button>
-  <div class="mfoot">
-    <button class="btn" onclick="cm('gsConfig')">Batal</button>
-    <button class="btn bp" onclick="saveGS()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan & Sambungkan</button>
-  </div>
-</div></div>
 
 <!-- EDIT HISTORY ENTRY -->
 <div class="ov" id="ov-editHist" onclick="if(event.target===this)cm('editHist')">
 <div class="modal" style="width:400px">
-  <div class="mtitle">EDIT RIWAYAT UPDATE<button class="mclose" onclick="cm('editHist')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle">EDIT RIWAYAT UPDATE<button class="mclose" data-cmd="editHist"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <input type="hidden" id="ehProjId"><input type="hidden" id="ehIdx">
   <div class="f2">
     <div class="fg"><label class="fl">Tanggal</label><input class="fi" id="ehDate"></div>
@@ -2480,7 +2400,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <div class="fg"><label class="fl">Keterangan</label><input class="fi" id="ehNotes"></div>
   </div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('editHist')">Batal</button>
+    <button class="btn" data-cmd="editHist">Batal</button>
     <button class="btn bp" onclick="saveHistEntry()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan</button>
   </div>
 </div></div>
@@ -2488,7 +2408,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- EDIT ACCIDENT LOG -->
 <div class="ov" id="ov-editAcc" onclick="if(event.target===this)cm('editAcc')">
 <div class="modal wide">
-  <div class="mtitle">EDIT ACCIDENT LOG<button class="mclose" onclick="cm('editAcc')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle">EDIT ACCIDENT LOG<button class="mclose" data-cmd="editAcc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <input type="hidden" id="eaId">
   <div class="f2">
     <div class="fg"><label class="fl">Project</label><select class="fi" id="eaProj"></select></div>
@@ -2509,7 +2429,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   <div class="fg"><label class="fl">Keterangan</label><input class="fi" id="eaNotes"></div>
   <div class="mfoot">
     <button class="btn brd" onclick="delAccLog()" style="margin-right:auto"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Hapus</button>
-    <button class="btn" onclick="cm('editAcc')">Batal</button>
+    <button class="btn" data-cmd="editAcc">Batal</button>
     <button class="btn bp" onclick="saveAccEdit()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan</button>
   </div>
 </div></div>
@@ -2517,7 +2437,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- S-CURVE INPUT PLAN -->
 <div class="ov" id="ov-scPlan" onclick="if(event.target===this)cm('scPlan')">
 <div class="modal wide">
-  <div class="mtitle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> INPUT PLAN — S-CURVE<button class="mclose" onclick="cm('scPlan')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> INPUT PLAN — S-CURVE<button class="mclose" data-cmd="scPlan"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div style="background:rgba(124,140,240,.08);border:1px solid rgba(124,140,240,.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:11px;color:var(--mt)">
     Isi <b style="color:var(--bl)">Weekly Plan %</b> untuk semua minggu sekaligus. Cumulative Plan dihitung otomatis. Biasanya diisi sekali di awal project.
   </div>
@@ -2537,7 +2457,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <span style="color:var(--mt)">Cumulative dihitung otomatis</span>
   </div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('scPlan')">Batal</button>
+    <button class="btn" data-cmd="scPlan">Batal</button>
     <button class="btn bg" onclick="saveSCurvePlan()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan Plan</button>
   </div>
 </div></div>
@@ -2545,7 +2465,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- S-CURVE UPDATE ACTUAL -->
 <div class="ov" id="ov-scActual" onclick="if(event.target===this)cm('scActual')">
 <div class="modal" style="width:480px">
-  <div class="mtitle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> UPDATE ACTUAL MINGGU INI<button class="mclose" onclick="cm('scActual')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> UPDATE ACTUAL MINGGU INI<button class="mclose" data-cmd="scActual"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div style="background:rgba(124,140,240,.08);border:1px solid rgba(124,140,240,.2);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:11px;color:var(--mt)">
     Isi <b style="color:var(--or)">Weekly Actual %</b> setiap minggu sesuai laporan S-Curve.
   </div>
@@ -2585,7 +2505,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <span id="scActVarPreview"></span>
   </div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('scActual')">Batal</button>
+    <button class="btn" data-cmd="scActual">Batal</button>
     <button class="btn bp" onclick="saveSCurveActual()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan Actual</button>
   </div>
 </div></div>
@@ -2593,18 +2513,18 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- WBS ADD CATEGORY -->
 <div class="ov" id="ov-wbsAddCat" onclick="if(event.target===this)cm('wbsAddCat')">
 <div class="modal" style="width:420px">
-  <div class="mtitle"> TAMBAH KATEGORI<button class="mclose" onclick="cm('wbsAddCat')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"> TAMBAH KATEGORI<button class="mclose" data-cmd="wbsAddCat"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="fg"><label class="fl">Project</label><select class="fi" id="wbsCatProj"></select></div>
   <div class="fg"><label class="fl">Nama Kategori *</label><input class="fi" id="wbsCatName" placeholder="misal: A. PROCUREMENT"></div>
   <div class="fg"><label class="fl">Bobot Kategori (%) <span style="color:var(--mt);font-size:9px">— opsional, bisa diisi otomatis dari sub-item</span></label>
     <input class="fi" type="number" id="wbsCatBobot" placeholder="misal: 43" min="0" max="100" step="0.1"></div>
-  <div class="mfoot"><button class="btn" onclick="cm('wbsAddCat')">Batal</button><button class="btn bp" onclick="saveWbsCat()">Simpan</button></div>
+  <div class="mfoot"><button class="btn" data-cmd="wbsAddCat">Batal</button><button class="btn bp" onclick="saveWbsCat()">Simpan</button></div>
 </div></div>
 
 <!-- WBS ADD SUB-CATEGORY -->
 <div class="ov" id="ov-wbsAddSub" onclick="if(event.target===this)cm('wbsAddSub')">
 <div class="modal" style="width:420px">
-  <div class="mtitle"> TAMBAH SUB-KATEGORI<button class="mclose" onclick="cm('wbsAddSub')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"> TAMBAH SUB-KATEGORI<button class="mclose" data-cmd="wbsAddSub"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="fg"><label class="fl">Project</label><select class="fi" id="wbsSubProj" onchange="populateWbsParents('wbsSubParent','wbsSubProj','cat')"></select></div>
   <div class="fg"><label class="fl">Kategori Induk *</label><select class="fi" id="wbsSubParent"></select></div>
   <div class="fg"><label class="fl">Nama Sub-Kategori *</label><input class="fi" id="wbsSubName" placeholder="misal: 1. PV Module"></div>
@@ -2613,13 +2533,13 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <div class="fg"><label class="fl">Start Date</label><input class="fi" type="date" id="wbsSubStart"></div>
     <div class="fg"><label class="fl">Finish Date</label><input class="fi" type="date" id="wbsSubFinish"></div>
   </div>
-  <div class="mfoot"><button class="btn" onclick="cm('wbsAddSub')">Batal</button><button class="btn bp" onclick="saveWbsSub()">Simpan</button></div>
+  <div class="mfoot"><button class="btn" data-cmd="wbsAddSub">Batal</button><button class="btn bp" onclick="saveWbsSub()">Simpan</button></div>
 </div></div>
 
 <!-- WBS ADD ITEM -->
 <div class="ov" id="ov-wbsAddItem" onclick="if(event.target===this)cm('wbsAddItem')">
 <div class="modal" style="width:420px">
-  <div class="mtitle"> TAMBAH ITEM PEKERJAAN<button class="mclose" onclick="cm('wbsAddItem')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"> TAMBAH ITEM PEKERJAAN<button class="mclose" data-cmd="wbsAddItem"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="fg"><label class="fl">Project</label><select class="fi" id="wbsItemProj" onchange="populateWbsParents('wbsItemParent','wbsItemProj','subcat')"></select></div>
   <div class="fg"><label class="fl">Sub-Kategori Induk *</label><select class="fi" id="wbsItemParent"></select></div>
   <div class="fg"><label class="fl">Nama Item *</label><input class="fi" id="wbsItemName" placeholder="misal: PV Module Installation"></div>
@@ -2629,13 +2549,13 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <div class="fg"><label class="fl">Start Date</label><input class="fi" type="date" id="wbsItemStart"></div>
     <div class="fg"><label class="fl">Finish Date</label><input class="fi" type="date" id="wbsItemFinish"></div>
   </div>
-  <div class="mfoot"><button class="btn" onclick="cm('wbsAddItem')">Batal</button><button class="btn bp" onclick="saveWbsItem()">Simpan</button></div>
+  <div class="mfoot"><button class="btn" data-cmd="wbsAddItem">Batal</button><button class="btn bp" onclick="saveWbsItem()">Simpan</button></div>
 </div></div>
 
 <!-- WBS INPUT PLAN -->
 <div class="ov" id="ov-wbsPlan" onclick="if(event.target===this)cm('wbsPlan')">
 <div class="modal" style="max-width:98vw;width:98vw;max-height:94vh;overflow:hidden;display:flex;flex-direction:column">
-  <div class="mtitle" style="color:var(--bl);flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> INPUT PLAN WBS — Cumulative Achievement per Minggu<button class="mclose" onclick="cm('wbsPlan')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle" style="color:var(--bl);flex-shrink:0"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> INPUT PLAN WBS — Cumulative Achievement per Minggu<button class="mclose" data-cmd="wbsPlan"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
 
   <!-- Header controls -->
   <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-shrink:0;margin-bottom:8px">
@@ -2665,7 +2585,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <div style="font-size:11px;color:var(--mt)">
       Project S-Curve akan diperbarui otomatis setelah disimpan
     </div>
-    <button class="btn" onclick="cm('wbsPlan')">Batal</button>
+    <button class="btn" data-cmd="wbsPlan">Batal</button>
     <button class="btn bg" onclick="saveWbsPlanGrid()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan Plan</button>
   </div>
 </div></div>
@@ -2673,7 +2593,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- WBS UPDATE ACTUAL -->
 <div class="ov" id="ov-wbsActual" onclick="if(event.target===this)cm('wbsActual')">
 <div class="modal wide" style="max-height:92vh;overflow-y:auto">
-  <div class="mtitle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> UPDATE ACTUAL WBS<button class="mclose" onclick="cm('wbsActual')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> UPDATE ACTUAL WBS<button class="mclose" data-cmd="wbsActual"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="f2" style="margin-bottom:10px">
     <div class="fg"><label class="fl">Project</label>
       <select class="fi" id="wbsProgProj" onchange="renderWbsProgressForm()"></select>
@@ -2700,7 +2620,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     &nbsp;|&nbsp; <span id="wbsProgCumAct" style="color:var(--yw);font-family:var(--fm)">—</span>
   </div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('wbsActual')">Batal</button>
+    <button class="btn" data-cmd="wbsActual">Batal</button>
     <button class="btn bp" onclick="saveWbsProgress()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan Actual</button>
   </div>
 </div></div>
@@ -2709,13 +2629,13 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <div class="ov" id="ov-wbsProgress" onclick="if(event.target===this)cm('wbsProgress')">
 <div class="modal" style="width:300px;padding:20px;text-align:center">
   <div style="color:var(--mt);font-size:12px;margin-bottom:12px">Gunakan tombol Input Plan atau <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Update Actual</div>
-  <button class="btn" onclick="cm('wbsProgress')">Tutup</button>
+  <button class="btn" data-cmd="wbsProgress">Tutup</button>
 </div></div>
 
 <!-- WBS UPDATE HARIAN -->
 <div class="ov" id="ov-wbsDaily" onclick="if(event.target===this)cm('wbsDaily')">
 <div class="modal wide" style="max-height:92vh;overflow-y:auto">
-  <div class="mtitle" style="color:var(--gn)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="15" x2="12" y2="19"/><line x1="10" y1="17" x2="14" y2="17"/></svg> UPDATE HARIAN ITEM PEKERJAAN<button class="mclose" onclick="cm('wbsDaily')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle" style="color:var(--gn)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="15" x2="12" y2="19"/><line x1="10" y1="17" x2="14" y2="17"/></svg> UPDATE HARIAN ITEM PEKERJAAN<button class="mclose" data-cmd="wbsDaily"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="f2" style="margin-bottom:10px">
     <div class="fg"><label class="fl">Project</label>
       <select class="fi" id="wbsDailyProj" onchange="renderWbsDailyForm()"></select>
@@ -2729,7 +2649,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   </div>
   <div id="wbsDailyForm"></div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('wbsDaily')">Tutup</button>
+    <button class="btn" data-cmd="wbsDaily">Tutup</button>
     <button class="btn" style="border-color:var(--bl);color:var(--bl)" onclick="saveAllDailyLogs()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan Semua</button>
   </div>
 </div></div>
@@ -2737,7 +2657,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- WEEKLY REPORT SELECTOR -->
 <div class="ov" id="ov-weeklyReport" onclick="if(event.target===this)cm('weeklyReport')">
 <div class="modal wide" style="max-height:92vh;overflow-y:auto;width:560px">
-  <div class="mtitle" style="color:var(--bl)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg> GENERATE WEEKLY REPORT<button class="mclose" onclick="cm('weeklyReport')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle" style="color:var(--bl)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg> GENERATE WEEKLY REPORT<button class="mclose" data-cmd="weeklyReport"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="f2" style="margin-bottom:10px">
     <div class="fg"><label class="fl">Project</label>
       <select class="fi" id="wrProj" onchange="populateWeekOptions()"></select>
@@ -2810,7 +2730,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     Upload foto terlebih dahulu jika ingin menyertakan dokumentasi. Foto akan otomatis masuk ke halaman 2 report.
   </div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('weeklyReport')">Batal</button>
+    <button class="btn" data-cmd="weeklyReport">Batal</button>
     <button class="btn bg" onclick="generateWeeklyReport()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Generate & Print PDF</button>
   </div>
 </div></div>
@@ -2818,7 +2738,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- MANPOWER REPORT MODAL -->
 <div class="ov" id="ov-mpReport" onclick="if(event.target===this)cm('mpReport')">
 <div class="modal" style="max-width:480px">
-  <div class="mtitle" style="color:var(--pu,#8b5cf6)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M12 2a9 9 0 0 1 9 9H3a9 9 0 0 1 9-9z"/><path d="M3 11v2a9 9 0 0 0 18 0v-2"/><line x1="3" y1="15" x2="21" y2="15"/></svg> GENERATE MANPOWER REPORT<button class="mclose" onclick="cm('mpReport')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle" style="color:var(--pu,#8b5cf6)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M12 2a9 9 0 0 1 9 9H3a9 9 0 0 1 9-9z"/><path d="M3 11v2a9 9 0 0 0 18 0v-2"/><line x1="3" y1="15" x2="21" y2="15"/></svg> GENERATE MANPOWER REPORT<button class="mclose" data-cmd="mpReport"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="f2" style="margin-bottom:10px">
     <div class="fg"><label class="fl">Project</label>
       <select class="fi" id="mrProj"></select>
@@ -2841,7 +2761,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     Report akan menampilkan rekap manpower per item pekerjaan beserta detail harian dalam format A4 siap cetak.
   </div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('mpReport')">Batal</button>
+    <button class="btn" data-cmd="mpReport">Batal</button>
     <button class="btn" style="background:var(--pu,#8b5cf6);color:#fff;border-color:var(--pu,#8b5cf6)" onclick="generateMpReport()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Generate & Print PDF</button>
   </div>
 </div></div>
@@ -2849,7 +2769,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- DAILY REPORT: SETUP QTY PLAN -->
 <div class="ov" id="ov-drQtySetup" onclick="if(event.target===this)cm('drQtySetup')">
 <div class="modal wide" style="max-height:92vh;overflow-y:auto">
-  <div class="mtitle" style="color:var(--bl)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> SETUP QUANTITY PLAN PER ITEM<button class="mclose" onclick="cm('drQtySetup')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle" style="color:var(--bl)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> SETUP QUANTITY PLAN PER ITEM<button class="mclose" data-cmd="drQtySetup"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="fg" style="margin-bottom:10px">
     <label class="fl">Project</label>
     <select class="fi" id="drSetupProj" onchange="renderDrQtySetupForm()"></select>
@@ -2859,7 +2779,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
   </div>
   <div id="drQtySetupForm"></div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('drQtySetup')">Batal</button>
+    <button class="btn" data-cmd="drQtySetup">Batal</button>
     <button class="btn bg" onclick="saveDrQtySetup()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan Setup</button>
   </div>
 </div></div>
@@ -2867,7 +2787,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- DAILY REPORT: INPUT HARIAN -->
 <div class="ov" id="ov-drInput" onclick="if(event.target===this)cm('drInput')">
 <div class="modal wide" style="max-height:92vh;overflow-y:auto">
-  <div class="mtitle" style="color:var(--gn)"> INPUT DAILY REPORT<button class="mclose" onclick="cm('drInput')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle" style="color:var(--gn)"> INPUT DAILY REPORT<button class="mclose" data-cmd="drInput"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="f2" style="margin-bottom:10px">
     <div class="fg"><label class="fl">Project</label>
       <select class="fi" id="drInputProj" onchange="renderDrInputForm()"></select>
@@ -2885,7 +2805,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     &nbsp;|&nbsp; Cum. Actual: <b id="drInputCumPct" style="color:var(--or);font-family:var(--fm)">0.00%</b>
   </div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('drInput')">Batal</button>
+    <button class="btn" data-cmd="drInput">Batal</button>
     <button class="btn" style="border-color:var(--bl);color:var(--bl)" onclick="saveDrInput()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan Daily Report</button>
   </div>
 </div></div>
@@ -2893,7 +2813,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- WBS EDIT -->
 <div class="ov" id="ov-wbsEdit" onclick="if(event.target===this)cm('wbsEdit')">
 <div class="modal" style="width:420px">
-  <div class="mtitle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> EDIT WBS<button class="mclose" onclick="cm('wbsEdit')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> EDIT WBS<button class="mclose" data-cmd="wbsEdit"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <input type="hidden" id="wbsEditId">
   <div class="fg"><label class="fl">Nama *</label><input class="fi" id="wbsEditName" placeholder="Nama item"></div>
   <div class="fg"><label class="fl" id="wbsEditBobotLbl">Bobot (%)</label>
@@ -2914,27 +2834,27 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <div style="font-size:9px;color:var(--mt);margin-top:5px">FS: item ini mulai setelah predecessor selesai. Lag = jeda hari (boleh minus).</div>
   </div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('wbsEdit')">Batal</button>
+    <button class="btn" data-cmd="wbsEdit">Batal</button>
     <button class="btn bp" onclick="saveEditWbs()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan</button>
   </div>
 </div></div>
 
 <div class="ov" id="ov-scManage" onclick="if(event.target===this)cm('scManage')">
 <div class="modal wide">
-  <div class="mtitle">KELOLA DATA S-CURVE<button class="mclose" onclick="cm('scManage')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle">KELOLA DATA S-CURVE<button class="mclose" data-cmd="scManage"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="fg" style="margin-bottom:10px">
     <label class="fl">Project</label>
     <select class="fi" id="scMgProj" onchange="renderScManageTable()"></select>
   </div>
   <div id="scMgTable" style="overflow-x:auto;max-height:400px;overflow-y:auto"></div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('scManage')">Tutup</button>
+    <button class="btn" data-cmd="scManage">Tutup</button>
   </div>
 </div></div>
 
 <div class="ov" id="ov-import" onclick="if(event.target===this)cm('import')">
 <div class="modal">
-  <div class="mtitle">BUKA FILE EXCEL<button class="mclose" onclick="cm('import')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle">BUKA FILE EXCEL<button class="mclose" data-cmd="import"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div class="dz" id="dz" onclick="triggerImport()" ondragover="dov(event)" ondragleave="dol()" ondrop="dof(event)">
     <div style="font-size:30px;opacity:.4;margin-bottom:6px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;display:inline-block"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
     <div style="font-size:12px;color:var(--mt)">Klik atau drag & drop file .xlsx</div>
@@ -2945,44 +2865,12 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <div id="impTbl" style="max-height:170px;overflow-y:auto;border:1px solid var(--bd);border-radius:6px"></div>
   </div>
   <div class="mfoot">
-    <button class="btn" onclick="cm('import')">Batal</button>
+    <button class="btn" data-cmd="import">Batal</button>
     <button class="btn bp" id="btnConfImp" onclick="confirmImport()" style="display:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="20 6 9 17 4 12"/></svg> Load Data</button>
   </div>
 </div></div>
 
 <!-- EDIT MANPOWER LOG -->
-<div class="ov" id="ov-editMpLog" onclick="if(event.target===this)cm('editMpLog')">
-<div class="modal wide">
-  <div class="mtitle">EDIT INPUT MANPOWER<button class="mclose" onclick="cm('editMpLog')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-  <div class="f2">
-    <div class="fg"><label class="fl">Project</label><select class="fi" id="emlProj"></select></div>
-    <div class="fg"><label class="fl">Tanggal</label><input class="fi" type="date" id="emlDate"></div>
-  </div>
-  <div class="f3">
-    <div class="fg"><label class="fl">SPV</label><input class="fi" type="number" id="emlSpv" min="0" oninput="calcEmlTot()"></div>
-    <div class="fg"><label class="fl">Mandor</label><input class="fi" type="number" id="emlMandor" min="0" oninput="calcEmlTot()"></div>
-    <div class="fg"><label class="fl">Installer</label><input class="fi" type="number" id="emlInstaller" min="0" oninput="calcEmlTot()"></div>
-  </div>
-  <div class="f3">
-    <div class="fg"><label class="fl">Tukang</label><input class="fi" type="number" id="emlTukang" min="0" oninput="calcEmlTot()"></div>
-    <div class="fg"><label class="fl">Helper</label><input class="fi" type="number" id="emlHelper" min="0" oninput="calcEmlTot()"></div>
-    <div class="fg"><label class="fl">Safety Man</label><input class="fi" type="number" id="emlSafety" min="0" oninput="calcEmlTot()"></div>
-  </div>
-  <div class="f3">
-    <div class="fg"><label class="fl">Total Pekerja (auto)</label><input class="fi" id="emlTot" readonly style="background:var(--sf2);color:var(--gn);font-weight:600"></div>
-    <div class="fg"><label class="fl">Manhours Actual (jam)</label><input class="fi" type="number" id="emlMhAct" min="0"></div>
-    <div class="fg"><label class="fl">Time Lost (jam)</label><input class="fi" type="number" id="emlTL" min="0"></div>
-  </div>
-  <div class="fg"><label class="fl">Penyebab Time Lost</label>
-    <select class="fi" id="emlTLReason"><option value="">— Tidak ada —</option><option>Hujan Deras</option><option>Badai / Thunderstorm</option><option>Angin Kencang</option><option>Kecelakaan Kerja</option><option>Masalah Material</option><option>Lainnya</option></select>
-  </div>
-  <div class="fg"><label class="fl">Keterangan</label><input class="fi" id="emlNotes"></div>
-  <div class="mfoot">
-    <button class="btn brd" onclick="delMpLog()" style="margin-right:auto"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Hapus</button>
-    <button class="btn" onclick="cm('editMpLog')">Batal</button>
-    <button class="btn bp" onclick="saveEditMpLog()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan</button>
-  </div>
-</div></div>
 
 <!-- ═══ AUTH SCREEN ═══ -->
 <div class="auth-screen" id="authScreen">
@@ -2994,12 +2882,12 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <div class="auth-sub">ATW Solar · Silakan Login [v2.0]</div>
 
     <div class="auth-roles" id="authRoles">
-      <div class="role-btn" id="rb-admin" onclick="selectRole('admin')">
+      <div class="role-btn" id="rb-admin" data-call="selectRole" data-arg="admin">
         <div class="role-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg></div>
         <div class="role-name">Admin</div>
         <div class="role-desc">Akses penuh</div>
       </div>
-      <div class="role-btn" id="rb-editor" onclick="selectRole('editor')">
+      <div class="role-btn" id="rb-editor" data-call="selectRole" data-arg="editor">
         <div class="role-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
         <div class="role-name">Editor</div>
         <div class="role-desc">Input & update</div>
@@ -3026,7 +2914,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <!-- CHANGE PASSWORD MODAL -->
 <div class="ov" id="ov-changePw" onclick="if(event.target===this)cm('changePw')">
 <div class="modal" style="width:380px">
-  <div class="mtitle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> GANTI PASSWORD<button class="mclose" onclick="cm('changePw')"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="mtitle"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> GANTI PASSWORD<button class="mclose" data-cmd="changePw"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px;display:inline-block"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
   <div style="background:var(--sf2);border-radius:7px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--mt)">
     Ganti password untuk role: <span id="cpRoleName" style="color:var(--tx);font-weight:600"></span>
   </div>
@@ -3045,8 +2933,7 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     <input class="fi" type="password" id="cpConfPw" placeholder="Ulangi password baru">
   </div>
   <div class="mfoot">
-    <button class="btn bb btn-sm" onclick="testPwSync()" style="margin-right:auto"> Test Koneksi PW</button>
-    <button class="btn" onclick="cm('changePw')">Batal</button>
+    <button class="btn" data-cmd="changePw">Batal</button>
     <button class="btn bp" onclick="saveNewPw()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;display:inline-block"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Simpan</button>
   </div>
 </div></div>
@@ -3056,11 +2943,13 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
 <script src="js/cost-rab.js"></script>
 <script src="js/wbs.js"></script>
 <script src="js/projects.js"></script>
+<script src="js/weather-live.js"></script>
+<script src="js/project-map.js"></script>
 <script src="js/manpower.js"></script>
 <script src="js/scurve.js"></script>
 <script src="js/daily.js"></script>
 <script src="js/reports.js"></script>
-<script src="js/pptassets.js"></script>
+<!-- pptassets.js di-lazy-load oleh pptreport.js saat fitur PPT dipakai (hemat ~906KB di initial load) -->
 <script src="js/pptreport.js"></script>
 <script src="js/gantt.js"></script>
 <script src="js/documents.js"></script>
@@ -3133,7 +3022,6 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
     'ov-editHist':     function(){ if(typeof saveHistEntry==='function') saveHistEntry(); },
     'ov-editAcc':      function(){ if(typeof saveAccEdit==='function') saveAccEdit(); },
     'ov-addAccident':  function(){ if(typeof saveAcc==='function') saveAcc(); },
-    'ov-editMpLog':    function(){ var btn=document.querySelector('#ov-editMpLog .btn.bp'); if(btn)btn.click(); },
     'ov-scPlan':       function(){ var btn=document.querySelector('#ov-scPlan .btn.bp'); if(btn)btn.click(); },
     'ov-scActual':     function(){ var btn=document.querySelector('#ov-scActual .btn.bp'); if(btn)btn.click(); },
   };
@@ -3212,6 +3100,87 @@ body.viewer-mode input,body.viewer-mode select,body.viewer-mode textarea{pointer
       if(typeof toast==='function') toast('Ctrl+S = Simpan · Escape = Tutup modal · Ctrl+R = Refresh data','info');
     }
   });
+})();
+</script>
+<script>
+/* ── Event delegation: tombol [data-cmd] → cm(cmd) ──────────────
+   Migrasi bertahap dari inline onclick="cm('x')". Satu listener
+   menggantikan 69 handler. Backdrop modal (if(event.target===this))
+   sengaja TIDAK diubah — tetap inline. */
+(function () {
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    var el = t && t.closest ? t.closest('[data-cmd],[data-modal],[data-call]') : null;
+    if (!el) return;
+    if (el.hasAttribute('data-cmd')) {
+      var cmd = el.getAttribute('data-cmd');
+      if (typeof window.cm === 'function') { window.cm(cmd); }
+      else { console.error('[delegasi] cm() tak tersedia untuk data-cmd="' + cmd + '"'); }
+    } else if (el.hasAttribute('data-modal')) {
+      var md = el.getAttribute('data-modal');
+      if (typeof window.openModal === 'function') { window.openModal(md); }
+      else { console.error('[delegasi] openModal() tak tersedia untuk data-modal="' + md + '"'); }
+    } else {
+      // Generik: data-call="namaFungsi" data-arg="argumen" → window.namaFungsi(arg)
+      var fn = el.getAttribute('data-call');
+      var arg = el.getAttribute('data-arg');
+      if (typeof window[fn] === 'function') { window[fn](arg); }
+      else { console.error('[delegasi] ' + fn + '() tak tersedia (data-call)'); }
+    }
+  });
+
+  /* ── Validator: deteksi tombol yang menunjuk fungsi MATI ────────
+     Menyelesaikan "breakage diam-diam": inline onclick yang memanggil
+     fungsi yang sudah di-rename/dihapus tidak akan ketahuan sampai
+     ada yang klik. Ini memindai saat load & warning di console. */
+  // Apakah `name` bisa diakses sbg fungsi dari scope GLOBAL (konteks inline
+  // onclick)? Tidak cukup cek window[name]: helper yang dideklarasikan
+  // `const`/`let` (mis. const $=...) adalah binding global leksikal yang
+  // valid dipanggil inline tapi BUKAN properti window. Cek via new Function
+  // yang berjalan di scope global. Aman dari injeksi: name dibatasi identifier.
+  function _isGlobalFn(name) {
+    if (typeof window[name] === 'function') return true;
+    if (!/^[A-Za-z_$][\w$]*$/.test(name)) return false;
+    try { return new Function('return typeof ' + name + ' === "function"')(); }
+    catch (e) { return false; }
+  }
+  window.cekHandlerMati = function () {
+    var bad = [];
+    document.querySelectorAll('[onclick]').forEach(function (el) {
+      var code = el.getAttribute('onclick') || '';
+      // Hanya pemanggilan fungsi GLOBAL: nama( yang TIDAK didahului '.'
+      // (yang didahului '.' adalah method, mis. document.getElementById, .click, .then).
+      var re = /(^|[^.\w$])([a-zA-Z_$][\w$]*)\s*\(/g, m;
+      var KW = ['if', 'for', 'while', 'switch', 'return', 'function', 'typeof',
+                'catch', 'do', 'else', 'new', 'void', 'delete', 'in', 'instanceof'];
+      while ((m = re.exec(code))) {
+        var fn = m[2];
+        if (KW.indexOf(fn) !== -1) continue;
+        if (!_isGlobalFn(fn)) {
+          bad.push({ fn: fn, onclick: code, el: el });
+        }
+      }
+    });
+    // Cakup juga handler terdelegasi: data-call="fn", dan target tetap cm/openModal.
+    document.querySelectorAll('[data-call]').forEach(function (el) {
+      var fn = el.getAttribute('data-call');
+      if (fn && !_isGlobalFn(fn)) bad.push({ fn: fn, onclick: 'data-call="' + fn + '"', el: el });
+    });
+    if (document.querySelector('[data-cmd]') && !_isGlobalFn('cm'))
+      bad.push({ fn: 'cm', onclick: 'data-cmd (dispatcher)', el: null });
+    if (document.querySelector('[data-modal]') && !_isGlobalFn('openModal'))
+      bad.push({ fn: 'openModal', onclick: 'data-modal (dispatcher)', el: null });
+    if (bad.length) {
+      console.warn('[validator] ' + bad.length + ' handler menunjuk fungsi yang tidak ada di window:');
+      bad.forEach(function (b) { console.warn('  • ' + b.fn + '()  ←  onclick="' + b.onclick + '"', b.el); });
+    } else {
+      console.log('[validator] ✓ Semua inline onclick menunjuk fungsi yang valid.');
+    }
+    return bad;
+  };
+  // Jalan otomatis sekali setelah semua modul siap (non-blocking).
+  if (document.readyState === 'complete') setTimeout(window.cekHandlerMati, 1500);
+  else window.addEventListener('load', function () { setTimeout(window.cekHandlerMati, 1500); });
 })();
 </script>
 </body>

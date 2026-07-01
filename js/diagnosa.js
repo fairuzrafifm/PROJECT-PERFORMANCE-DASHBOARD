@@ -17,36 +17,73 @@
   };
   var _d0 = function () { var d = new Date(); d.setHours(0, 0, 0, 0); return d; };
 
+  // ── EVM murni (testable) ──────────────────────────────────
+  // Fungsi-fungsi ini tanpa global/DOM: semua input via argumen,
+  // output via return. Identik dengan js/evm.js (lihat js/evm.test.js).
+  var _EVM = (function () {
+    var DAY = 86400000;
+    function r2(n) { return Math.round(n * 100) / 100; }
+    function calcSchedule(plan, actual) {
+      var cp = +plan || 0, act = +actual || 0;
+      return { plan: cp, actual: act, variance: r2(act - cp), spi: cp > 0 ? act / cp : null };
+    }
+    function calcForecast(mulai, selesai, spi, actual) {
+      var sd = mulai ? new Date(mulai) : null, ed = selesai ? new Date(selesai) : null, act = +actual || 0;
+      var ok = sd && ed && spi && spi > 0 && !isNaN(sd.getTime()) && !isNaN(ed.getTime()) && act < 99.5;
+      if (!ok) return { finish: null, delayDays: null };
+      var dur = Math.max(1, (ed - sd) / DAY);
+      var finish = new Date(sd.getTime() + (dur / spi) * DAY);
+      return { finish: finish, delayDays: Math.round((finish - ed) / DAY) };
+    }
+    function calcCost(rabTotal, costReal, costEarned, actual) {
+      var rab = +rabTotal || 0, real = +costReal || 0, earned = +costEarned || 0, act = +actual || 0;
+      var ev = rab * (act / 100);
+      var cpi = earned > 0 ? ev / earned : null;
+      var eac = (cpi && cpi > 0) ? rab / cpi : null;
+      return { rab: rab, ev: ev, cpi: cpi, eac: eac,
+        eacOver: eac != null ? eac - rab : null,
+        serap: rab > 0 ? Math.round(real / rab * 1000) / 10 : 0 };
+    }
+    // Earned Schedule: interpolasi titik waktu di kurva-S rencana.
+    // points = [{w:minggu, c:cPlan%}] terurut; actual = aktual%. → {es, pd}|null
+    function calcES(points, actual) {
+      var act = +actual || 0;
+      var pts = [{ w: 0, c: 0 }];
+      (points || []).forEach(function (s) { pts.push({ w: +s.w || 0, c: +s.c || 0 }); });
+      if (pts.length < 2) return null;
+      var last = pts[pts.length - 1], pd = last.w, k, dd;
+      for (k = 1; k < pts.length; k++) {
+        if (pts[k].c >= 100) {
+          dd = pts[k].c - pts[k - 1].c;
+          pd = dd > 0 ? pts[k - 1].w + (100 - pts[k - 1].c) / dd * (pts[k].w - pts[k - 1].w) : pts[k].w;
+          break;
+        }
+      }
+      var es = null, i, d;
+      if (act <= 0) es = 0;
+      else {
+        for (i = 1; i < pts.length; i++) {
+          if (act <= pts[i].c) {
+            d = pts[i].c - pts[i - 1].c;
+            es = d > 0 ? pts[i - 1].w + (act - pts[i - 1].c) / d * (pts[i].w - pts[i - 1].w) : pts[i].w;
+            break;
+          }
+        }
+        if (es == null) es = last.w; // aktual >= plan maksimum
+      }
+      return { es: Math.round(es * 10) / 10, pd: Math.round(pd * 10) / 10 };
+    }
+    return { calcSchedule: calcSchedule, calcForecast: calcForecast, calcCost: calcCost, calcES: calcES };
+  })();
+
   // Earned Schedule: cari minggu (pecahan) di kurva-S rencana yang setara progres 'act'.
   function _calcES(projId, act) {
     if (typeof SCURVE === 'undefined' || !SCURVE.length) return null;
     var sc = SCURVE.filter(function (s) { return String(s.projId) === String(projId); })
       .sort(function (a, b) { return (+a.week) - (+b.week); });
     if (!sc.length) return null;
-    var pts = [{ w: 0, c: 0 }];
-    sc.forEach(function (s) { pts.push({ w: +s.week || 0, c: +s.cPlan || 0 }); });
-    var last = pts[pts.length - 1];
-    var pd = last.w;
-    for (var k = 1; k < pts.length; k++) {
-      if (pts[k].c >= 100) {
-        var dd = pts[k].c - pts[k - 1].c;
-        pd = dd > 0 ? pts[k - 1].w + (100 - pts[k - 1].c) / dd * (pts[k].w - pts[k - 1].w) : pts[k].w;
-        break;
-      }
-    }
-    var es = null;
-    if (act <= 0) es = 0;
-    else {
-      for (var i = 1; i < pts.length; i++) {
-        if (act <= pts[i].c) {
-          var d = pts[i].c - pts[i - 1].c;
-          es = d > 0 ? pts[i - 1].w + (act - pts[i - 1].c) / d * (pts[i].w - pts[i - 1].w) : pts[i].w;
-          break;
-        }
-      }
-      if (es == null) es = last.w; // aktual >= plan maksimum (capai/lewati akhir kurva)
-    }
-    return { es: Math.round(es * 10) / 10, pd: Math.round(pd * 10) / 10 };
+    var points = sc.map(function (s) { return { w: +s.week || 0, c: +s.cPlan || 0 }; });
+    return _EVM.calcES(points, act);
   }
 
   // ── Kumpulkan seluruh metrik proyek ───────────────────────
@@ -73,21 +110,18 @@
     var pid = String(p.id);
     var today = _d0();
 
-    // Jadwal
+    // Jadwal (pakai _EVM.calcSchedule — pure)
     var cp = (typeof _calcProjCurrentPlan === 'function') ? _calcProjCurrentPlan(p.id) : (+p.plan || 0);
-    var act = +p.actual || 0;
-    var variance = Math.round((act - cp) * 100) / 100;
-    var spi = cp > 0 ? (act / cp) : null;
+    var _sch = _EVM.calcSchedule(cp, p.actual);
+    var act = _sch.actual;
+    var variance = _sch.variance;
+    var spi = _sch.spi;
     var rem = p.selesai ? Math.ceil((new Date(p.selesai) - new Date()) / 86400000) : null;
 
-    // Forecast jadwal (durasi rencana / SPI)
-    var fcFinish = null, fcDelay = null;
+    // Forecast jadwal (durasi rencana / SPI) — pakai _EVM.calcForecast (pure)
     var sd = p.mulai ? new Date(p.mulai) : null, ed = p.selesai ? new Date(p.selesai) : null;
-    if (sd && ed && spi && spi > 0 && !isNaN(sd.getTime()) && !isNaN(ed.getTime()) && act < 99.5) {
-      var dur = Math.max(1, (ed - sd) / 86400000);
-      fcFinish = new Date(sd.getTime() + (dur / spi) * 86400000);
-      fcDelay = Math.round((fcFinish - ed) / 86400000);
-    }
+    var _fc = _EVM.calcForecast(p.mulai, p.selesai, spi, act);
+    var fcFinish = _fc.finish, fcDelay = _fc.delayDays;
 
     // Earned Schedule (jadwal berbasis WAKTU) — akurat untuk proyek telat
     var at = (typeof _getProjCurrentWeek === 'function') ? _getProjCurrentWeek(p) : 0;
@@ -114,11 +148,12 @@
       .reduce(function (s, c) { return s + (+c.amount || 0); }, 0);
     var costEarned = allC_.filter(function (c) { return String(c.projId) === pid && !c._deleted && (c._src !== 'procurement' || c._hasIR); })
       .reduce(function (s, c) { return s + (+c.amount || 0); }, 0);
-    var ev = rab * (act / 100);
-    var cpi = costEarned > 0 ? (ev / costEarned) : null;
-    var eac = (cpi && cpi > 0) ? (rab / cpi) : null;
-    var eacOver = eac != null ? (eac - rab) : null;
-    var serap = rab > 0 ? Math.round(costReal / rab * 1000) / 10 : 0;
+    var ev_cost = _EVM.calcCost(rab, costReal, costEarned, act);
+    var ev = ev_cost.ev;
+    var cpi = ev_cost.cpi;
+    var eac = ev_cost.eac;
+    var eacOver = ev_cost.eacOver;
+    var serap = ev_cost.serap;
 
     // RAB kategori over/near
     var overKat = [], nearKat = [];
@@ -406,3 +441,65 @@
   window.copyDiagnosaPrompt = copyDiagnosaPrompt;
   window.toggleDiagnosaPrompt = toggleDiagnosaPrompt;
 })();
+
+// ── Pemeriksa Integritas Data (read-only) ────────────────────────────────────
+// Jalankan dari Console: cekIntegritas()
+// Memindai array di memori dan melaporkan anomali lintas-tabel. Tidak menulis
+// apa pun — murni diagnosa. Berguna mendeteksi sisa bug sinkron seperti baris
+// accident yatim, duplikat projId+date, atau referensi proyek yang sudah dihapus.
+window.cekIntegritas = function () {
+  var A = function (x) { return (typeof x !== 'undefined' && Array.isArray(x)) ? x : []; };
+  var P_ = A(typeof P !== 'undefined' ? P : null);
+  var ids = {}; P_.forEach(function (p) { ids[String(p.id)] = (p.kode || p.nama || p.id); });
+  var issues = [];
+  var add = function (kategori, pesan, data) { issues.push({ kategori: kategori, pesan: pesan, data: data }); };
+
+  // 1. Referensi proyek yatim (projId tak ada di daftar proyek)
+  [['ISS', typeof ISS !== 'undefined' ? ISS : null], ['PROC', typeof PROC !== 'undefined' ? PROC : null],
+   ['MPLOGS', typeof MPLOGS !== 'undefined' ? MPLOGS : null], ['ACCLOGS', typeof ACCLOGS !== 'undefined' ? ACCLOGS : null],
+   ['SCURVE', typeof SCURVE !== 'undefined' ? SCURVE : null], ['WBS', typeof WBS !== 'undefined' ? WBS : null],
+   ['COSTS', typeof COSTS !== 'undefined' ? COSTS : null], ['RAB', typeof RAB !== 'undefined' ? RAB : null]
+  ].forEach(function (pair) {
+    A(pair[1]).forEach(function (r) {
+      if (r && r.projId != null && !ids.hasOwnProperty(String(r.projId)))
+        add(pair[0] + ' yatim', 'projId ' + r.projId + ' tak ada di daftar proyek', r.id);
+    });
+  });
+
+  // 2. Duplikat projId+date (model: satu entri per proyek per hari)
+  [['MPLOGS', typeof MPLOGS !== 'undefined' ? MPLOGS : null], ['ACCLOGS', typeof ACCLOGS !== 'undefined' ? ACCLOGS : null]].forEach(function (pair) {
+    var seen = {};
+    A(pair[1]).forEach(function (r) {
+      if (!r || r.projId == null || !r.date) return;
+      var k = String(r.projId) + '|' + String(r.date).slice(0, 10);
+      if (seen[k]) add(pair[0] + ' duplikat', 'projId ' + r.projId + ' tgl ' + String(r.date).slice(0, 10) + ' muncul >1×', r.id);
+      else seen[k] = 1;
+    });
+  });
+
+  // 3. WBS dengan parentId yang tak ditemukan
+  var wbs = A(typeof WBS !== 'undefined' ? WBS : null);
+  var wbsIds = {}; wbs.forEach(function (w) { wbsIds[String(w.id)] = 1; });
+  wbs.forEach(function (w) {
+    if (w && w.parentId != null && w.parentId !== '' && !wbsIds.hasOwnProperty(String(w.parentId)))
+      add('WBS yatim', 'parentId ' + w.parentId + ' tak ditemukan', w.id);
+  });
+
+  // 4. Nilai insiden negatif (mustahil)
+  A(typeof ACCLOGS !== 'undefined' ? ACCLOGS : null).forEach(function (a) {
+    ['nearMiss', 'minorInjury', 'medTreatment', 'lti', 'fatality', 'timeLost'].forEach(function (f) {
+      if (a && +a[f] < 0) add('Nilai negatif', 'ACCLOGS.' + f + ' = ' + a[f], a.id);
+    });
+  });
+
+  // Laporan
+  if (typeof console !== 'undefined' && console.group) {
+    console.group('%cCek Integritas Data — ' + issues.length + ' anomali', 'font-weight:bold;color:' + (issues.length ? '#dc2626' : '#16a34a'));
+    if (!issues.length) console.log('%cBersih — tidak ada anomali terdeteksi.', 'color:#16a34a');
+    else { var by = {}; issues.forEach(function (i) { (by[i.kategori] = by[i.kategori] || []).push(i); });
+      Object.keys(by).forEach(function (k) { console.log('%c' + k + ' (' + by[k].length + ')', 'font-weight:bold'); by[k].forEach(function (i) { console.log('   • ' + i.pesan + (i.data != null ? '  [id:' + i.data + ']' : '')); }); }); }
+    console.groupEnd();
+  }
+  if (typeof toast === 'function') toast(issues.length ? (issues.length + ' anomali data — cek Console') : 'Integritas data bersih ✓', issues.length ? 'warn' : 'ok');
+  return { total: issues.length, issues: issues };
+};

@@ -60,7 +60,7 @@ function fmtDate(d){
 // cm() defined below in auth section
 function cm(t){
   const m={addProj:'ov-addProj',updProgress:'ov-updProgress',inputMp:'ov-inputMp',
-    addAccident:'ov-addAccident',editWeather:'ov-editWeather',addIssue:'ov-addIssue',
+    addAccident:'ov-addAccident',addIssue:'ov-addIssue',
     addProc:'ov-addProc',addCost:'ov-addCost',gsConfig:'ov-gsConfig',import:'ov-import',
     editMpLog:'ov-editMpLog',editHist:'ov-editHist',editAcc:'ov-editAcc',
     changePw:'ov-changePw',scPlan:'ov-scPlan',scActual:'ov-scActual',scManage:'ov-scManage',

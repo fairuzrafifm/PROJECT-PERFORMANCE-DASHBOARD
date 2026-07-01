@@ -55,18 +55,32 @@
     }
   }
 
-  let _autoDone = false;
+  let _autoDone = false, _autoTries = 0;
   function autoSnapshotWeekly() {
-    if (_autoDone) return; _autoDone = true;
+    if (_autoDone) return;
+    const P_ = (typeof P !== 'undefined' ? P : []);
+    // Akses dianggap siap bila role sudah di-set, dan untuk editor MYPROJ sudah termuat.
+    const roleReady = (typeof currentRole !== 'undefined' && currentRole !== null);
+    const accessReady = roleReady && (currentRole !== 'editor' || (typeof MYPROJ !== 'undefined' && MYPROJ !== null));
+    // Data/akses belum siap → coba lagi, JANGAN kunci _autoDone (cegah satu percobaan
+    // dini yang gagal mematikan snapshot otomatis seharian).
+    if (!P_.length || !accessReady) {
+      if (_autoTries++ < 12) setTimeout(autoSnapshotWeekly, 1500); // total ~18 dtk
+      return;
+    }
+    _autoDone = true;
     if (typeof SNAPSHOTS === 'undefined') return;
     const wk = _isoWeek(new Date());
-    (typeof P !== 'undefined' ? P : []).forEach(p => {
+    let made = 0, skipped = 0;
+    P_.forEach(p => {
       const act = +p.actual || 0;
-      if (act <= 0 || act >= 100) return;          // hanya proyek berjalan
-      if (typeof canEditProj === 'function' && !canEditProj(p.id)) return; // hanya proyek yang boleh diedit
+      if (act <= 0 || act >= 100) { skipped++; return; }                               // hanya proyek berjalan
+      if (typeof canEditProj === 'function' && !canEditProj(p.id)) { skipped++; return; } // hanya proyek yang boleh diedit
       const has = SNAPSHOTS.some(s => String(s.projId) === String(p.id) && s.week === wk);
-      if (!has) takeSnapshot(p.id, true);
+      if (!has) { takeSnapshot(p.id, true); made++; }
     });
+    if (typeof console !== 'undefined')
+      console.log('[autoSnapshot] minggu ' + wk + ': ' + made + ' dibuat, ' + skipped + ' dilewati (belum jalan / tak ada akses) dari ' + P_.length + ' proyek');
   }
 
   // ── Tren SVG (SPI & CPI dengan baseline 1.0) ──────────────
